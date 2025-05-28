@@ -43,7 +43,6 @@
 				<div class="user-card">
 					<div class="avatar">
 						<NcAvatar
-							:key="avatarKey"
 							:url="getAvatarUrl(data.uid)"
 							:size="100" />
 						<div v-if="show" class="center">
@@ -177,6 +176,11 @@ export default {
 			],
 		}
 	},
+	computed: {
+		avatarUrl() {
+			return generateUrl(`/avatar/${this.data.uid}/512?v=${this.avatarVersion}`)
+		},
+	},
 	mounted() {
 		this.$bus.on('show', (data) => {
 			this.show = data
@@ -222,12 +226,10 @@ export default {
 			formData.append('avatar', blob)
 			formData.append('uid', this.data.uid)
 			try {
-				await axios.post(generateUrl('/apps/empleados/uploadAvatar'), formData, {
+				const response = await axios.post(generateUrl('/apps/empleados/uploadAvatar'), formData, {
 					headers: { 'Content-Type': 'multipart/form-data' },
 				})
-				this.previewUrl = null
-				this.showCropper = false
-				this.refreshAvatar()
+				this.avatarVersion = response.data.version // Actualizar la versión
 			} catch (err) {
 				showError('Error al subir la imagen.')
 			}

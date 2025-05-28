@@ -8,6 +8,7 @@ use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http\ForbiddenException;
 use OCP\AppFramework\Http\DataResponse;
 use OCP\IRequest;
+use OCP\AppFramework\Http;
 use OCP\ISession;
 use OCP\IUserSession;
 use OCP\IUserManager;
@@ -103,7 +104,10 @@ class EmpleadosController extends BaseController {
         $avatar = $this->avatarManager->getAvatar($uid);
         $avatar->set($content);
 
-        return new DataResponse(['status' => 'success']);
+        // Generar una versión basada en la marca de tiempo actual
+        $version = time();
+
+        return new DataResponse(['status' => 'success', 'version' => $version]);
     }
 
     /**
