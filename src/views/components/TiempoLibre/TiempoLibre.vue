@@ -5,18 +5,10 @@
 				<section class="layout">
 					<div class="grow2">
 						<div class="text-center sectionPicker">
-							<DatePicker
-								ref="calendarRef"
-								:key="calendarKey"
-								v-model="date"
-								class="custom-calendar"
-								is-expanded
-								is-range
-								:min-date="FechaInitial"
-								:max-date="FechaMaxima"
-								@dayclick="calcularFechaMaxima()"
-								@input="onRangeSelected"
-								@drag="dragValue = $event" />
+							<FullCalendar
+								ref="fullCalendar"
+								:options="calendarOptions"
+								class="my-calendar" />
 						</div>
 					</div>
 					<div class="grow1">
@@ -47,21 +39,66 @@
 								</div>
 							</div>
 							<div class="infos">
-								<p class="titles">
-									ejemplo mensaje lorem
-								</p>
-								<p>
-									Lorem ipsum dolor sit amet consectetur adipisicing elit. Maxime mollitia,
-									molestiae quas vel sint commodi.
-								</p>
+								<NcButton
+									text="center (default)"
+									variant="secondary"
+									wide
+									@click="typePetition = null; $refs.fullCalendar.getApi().refetchEvents()">
+									Solo mis ausencias
+								</NcButton>
+								<NcButton
+									text="center (default)"
+									variant="secondary"
+									wide
+									class="btn-top"
+									@click="typePetition = 'all'; $refs.fullCalendar.getApi().refetchEvents()">
+									Mostrar todo mi equipo
+								</NcButton>
+								<div class="rst-title">
+									<div class="title_flex">
+										<div class="subtitle_flex">
+											<NcAvatar :user="Equipo.Id_jefe_equipo" :display-name="Equipo.Id_jefe_equipo" :size="20" />
+										</div>
+										<div>
+											<h1> {{ Equipo.Nombre }} </h1>
+										</div>
+									</div>
+								</div>
+								<div class="rst">
+									<!--
+									<ul class="container flex">
+										<li v-for="(item) in peopleEquipo.equipo"
+											:key="item.Id_empleados"
+											class="item flex-item">
+											<NcAvatar :user="item.Id_user" :display-name="item.Id_user" style="margin-top: inherit;" />
+											<h3>{{ item.Id_user }}</h3>
+											<NcAvatar :user="item.Id_user" :display-name="item.Id_user" />
+											<h3>{{ item.Id_user }}</h3>
+										</li>
+									</ul-->
+									<ul>
+										<NcListItem
+											v-for="(item) in peopleEquipo.equipo"
+											:key="item.Id_empleados"
+											:name="item.displayname ? item.displayname : item.Id_user"
+											@click.prevent="typePetition = 'employee'; selected_user = item; $refs.fullCalendar.getApi().refetchEvents()">
+											<template #icon>
+												<NcAvatar disable-menu
+													:size="44"
+													:user="item.Id_user"
+													:display-name="item.Id_user" />
+											</template>
+										</NcListItem>
+									</ul>
+								</div>
 							</div>
 							<div class="footers">
 								<p class="tags">
 									#HTML
 								</p>
-								<button type="button" class="action">
+								<!-- button type="button" class="action">
 									Get started
-								</button>
+								</button -->
 							</div>
 						</div>
 					</div>
@@ -140,13 +177,16 @@ import MensajeAniversarios from './MensajeAniversarios.vue'
 import TrofeosAniversarios from './TrofeosAniversarios.vue'
 import NuevaSolicitud from './Modal/NuevaSolicitud.vue'
 
+import FullCalendar from '@fullcalendar/vue'
+import dayGridPlugin from '@fullcalendar/daygrid'
+import interactionPlugin from '@fullcalendar/interaction'
+
 import { ref } from 'vue'
 
+import usernameToColor from '@nextcloud/vue/functions/usernameToColor'
 import { showError /* showSuccess */ } from '@nextcloud/dialogs'
 import { generateUrl } from '@nextcloud/router'
 import axios from '@nextcloud/axios'
-import 'v-calendar/src/styles/base.css'
-import { DatePicker } from 'v-calendar'
 
 // icons
 import Airplane from 'vue-material-design-icons/Airplane.vue'
@@ -157,6 +197,9 @@ import {
 	NcModal,
 	NcActions,
 	NcActionButton,
+	NcListItem,
+	NcAvatar,
+	NcButton,
 } from '@nextcloud/vue'
 export default {
 	name: 'TiempoLibre',
@@ -166,12 +209,15 @@ export default {
 		TrofeosAniversarios,
 		NuevaSolicitud,
 		NcAppContent,
-		DatePicker,
 		NcModal,
 		NcActions,
 		NcActionButton,
 		Airplane,
 		CalendarQuestionOutline,
+		FullCalendar,
+		NcListItem,
+		NcAvatar,
+		NcButton,
 	},
 
 	inject: ['employee', 'configuraciones'],
@@ -179,19 +225,32 @@ export default {
 	data() {
 		return {
 			modalRef: ref(null),
-			date: ref({
-				start: new Date(),
-				end: null,
-			}),
+			attributes: [],
 			FechaInitial: null,
 			FechaMaxima: null,
 			modal: false,
 			ModalAniversario: false,
 			Ausencias: [],
 			Aniversarios: [],
-			dragValue: null,
-			calendarKey: 0,
 			diasSolicitados: 0,
+			date: ref({
+				start: new Date(),
+				end: null,
+			}),
+			range: null,
+			calendarOptions: {
+				plugins: [dayGridPlugin, interactionPlugin],
+				initialView: 'dayGridMonth',
+				locale: 'es',
+				events: this.fetchEvents, // esto es suficiente
+				dateClick: this.onDateClick,
+				select: this.onDateRangeSelect,
+				selectable: true,
+			},
+			peopleEquipo: {},
+			Equipo: {},
+			typePetition: null,
+			selected_user: null, // Para almacenar el usuario seleccionado
 		}
 	},
 
@@ -238,52 +297,232 @@ export default {
 		this.$bus.on('close-solicitud', () => {
 			this.GetAusencias()
 			this.closeModal()
+			this.$refs.fullCalendar.getApi().refetchEvents()
 		})
 		this.GetAusencias()
-		document.addEventListener('keydown', this.detectarEscape)
-		document.addEventListener('click', this.handleClickOutside)
-	},
-	beforeUnmount() {
-		document.removeEventListener('keydown', this.detectarEscape)
-		document.removeEventListener('click', this.handleClickOutside)
+		this.getEquipos()
+		this.GetAllEquipo(this.employee[0].Id_equipo)
 	},
 	methods: {
-		detectarEscape(e) {
-			if (e.key === 'Escape') {
-				this.restartCalendar() // o cualquier acción que quieras
+		// Abre el modal de aniversarios y carga los datos
+		showAniversarioModal() {
+			this.getAniversarios()
+		},
+		// Cierra el modal de solicitud de vacaciones
+		closeModal() {
+			this.modal = false
+		},
+		// Cierra el modal de aniversarios
+		closeModalAniversario() {
+			this.ModalAniversario = false
+		},
+		// Obtiene los datos de ausencias del usuario actual
+		async GetAusencias() {
+			try {
+				const response = await axios.post(generateUrl('/apps/empleados/GetAusenciasByUser'), {
+					id: this.employee[0].Id_empleados,
+				})
+				this.Ausencias = response.data[0]
+			} catch (err) {
+				showError(t('empleados', 'Se ha producido una excepción [03] [' + err + ']'))
 			}
 		},
-		handleClickOutside(event) {
-			const calendar = this.$refs.calendarRef?.$el
-			const modal = this.$refs.modalRef?.$el
+		// Obtiene la tabla de aniversarios
+		async getAniversarios() {
+			try {
+				const response = await axios.get(generateUrl('/apps/empleados/Getaniversarios'))
+				this.Aniversarios = response.data
+				this.ModalAniversario = true
+			} catch (err) {
+				showError(t('empleados', 'Se ha producido una excepción [01] [' + err + ']'))
+			}
+		},
+		// Formatea los días disponibles para mostrar texto amigable
+		formatearDias(dias) {
+			const entero = Math.floor(dias)
+			const decimal = dias % 1
+			if (decimal === 0) {
+				return `${entero} ${entero === 1 ? 'día' : 'días'}`
+			} else if (decimal === 0.5) {
+				return `${entero} ${entero === 1 ? 'día' : 'días'} y medio`
+			} else {
+				return `${dias} días`
+			}
+		},
+		// Refresca los eventos del calendario al cambiar de mes/vista
+		onDatesSet() {
+			this.$refs.fullCalendar.getApi().refetchEvents()
+		},
+		// Carga los eventos de ausencias para el calendario
+		fetchEvents(fetchInfo, success, failure) {
+			switch (this.typePetition) {
+			case 'all':
+				this.getAllAusencias(fetchInfo, success, failure)
+				break
+			case 'employee':
+				this.getEmployeeAusencias(fetchInfo, success, failure)
+				break
+			default:
+				this.getMyAusencias(fetchInfo, success, failure)
+			}
+		},
 
+		getMyAusencias(fetchInfo, success, failure) {
+			// eslint-disable-next-line no-console
+			console.log('🔄 Llamando fetchEvents para:', fetchInfo)
+
+			axios.post(generateUrl('/apps/empleados/GetAusenciasHistorial'), {
+				desde: fetchInfo.startStr,
+				hasta: fetchInfo.endStr,
+			})
+				.then(r => {
+					const data = r.data.message || []
+					// eslint-disable-next-line no-console
+					console.log('📦 Datos recibidos:', data)
+
+					const events = data.map(item => {
+						const fechaInicio = new Date(item.fecha_de)
+						const fechaHasta = new Date(item.fecha_hasta)
+						fechaHasta.setDate(fechaHasta.getDate() + 1)
+
+						return {
+							id: item.id_historial_ausencias,
+							title: item.tipo_nombre,
+							start: fechaInicio.toISOString(),
+							end: fechaHasta.toISOString(),
+							allDay: true,
+							color: this.color(this.employee[0].Id_user), // Asignar color basado en el usuario
+						}
+					})
+
+					// eslint-disable-next-line no-console
+					console.log('✅ Eventos generados:', events)
+					success(events)
+				})
+				.catch(error => {
+					console.error('❌ Error al obtener eventos:', error)
+					failure(error)
+				})
+		},
+
+		getAllAusencias(fetchInfo, success, failure) {
+			// eslint-disable-next-line no-console
+			console.log('🔄 Llamando fetchEvents para:', fetchInfo)
+
+			axios.post(generateUrl('/apps/empleados/GetAusenciasHistorialAll'), {
+				desde: fetchInfo.startStr,
+				hasta: fetchInfo.endStr,
+			})
+				.then(r => {
+					const data = r.data.message || []
+					// eslint-disable-next-line no-console
+					console.log('📦 Datos recibidos:', data)
+
+					const events = data.map(item => {
+						const fechaInicio = new Date(item.fecha_de)
+						const fechaHasta = new Date(item.fecha_hasta)
+						fechaHasta.setDate(fechaHasta.getDate() + 1)
+
+						return {
+							id: item.id_historial_ausencias,
+							title: item.tipo_nombre,
+							start: fechaInicio.toISOString(),
+							end: fechaHasta.toISOString(),
+							allDay: true,
+							color: this.color(item.nombre_empleado), // Asignar color basado en el usuario
+						}
+					})
+
+					// eslint-disable-next-line no-console
+					console.log('✅ Eventos generados:', events)
+					success(events)
+				})
+				.catch(error => {
+					console.error('❌ Error al obtener eventos:', error)
+					failure(error)
+				})
+		},
+
+		getEmployeeAusencias(fetchInfo, success, failure) {
+			// eslint-disable-next-line no-console
+			console.log('🔄 Llamando fetchEvents para:', fetchInfo)
+
+			axios.post(generateUrl('/apps/empleados/GetAusenciasEmployeeHistorial'), {
+				id_employee: this.selected_user.Id_empleados,
+				desde: fetchInfo.startStr,
+				hasta: fetchInfo.endStr,
+			})
+				.then(r => {
+					const data = r.data.message || []
+					// eslint-disable-next-line no-console
+					console.log('📦 Datos recibidos:', data)
+
+					const events = data.map(item => {
+						const fechaInicio = new Date(item.fecha_de)
+						const fechaHasta = new Date(item.fecha_hasta)
+						fechaHasta.setDate(fechaHasta.getDate() + 1)
+
+						return {
+							id: item.id_historial_ausencias,
+							title: item.tipo_nombre,
+							start: fechaInicio.toISOString(),
+							end: fechaHasta.toISOString(),
+							allDay: true,
+							color: this.color(this.selected_user.Id_user), // Asignar color basado en el usuario
+						}
+					})
+
+					// eslint-disable-next-line no-console
+					console.log('✅ Eventos generados:', events)
+					success(events)
+				})
+				.catch(error => {
+					console.error('❌ Error al obtener eventos:', error)
+					this.selected_user = null
+					failure(error)
+				})
+		},
+
+		// Acción al hacer clic en una fecha (puedes implementar si se requiere)
+		onDateClick(arg) {
+			// console.log('Fecha clickeada:', arg.dateStr)
+		},
+
+		color(username) {
+			const { r, g, b } = usernameToColor(username)
+			return `rgb(${r}, ${g}, ${b})`
+		},
+
+		// Maneja la selección de un rango de fechas en el calendario
+		onDateRangeSelect(selection) {
+			const nDate = new Date()
+			this.range = selection
+			if (!this.range || !this.range.start || !this.range.end) return
+
+			const startDate = new Date(this.range.start)
+			const endDate = new Date(this.range.end)
+			endDate.setDate(endDate.getDate() - 1)
+
+			// No permitir fechas pasadas
 			if (
-				calendar
-				&& !calendar.contains(event.target)
-				&& (!modal || !modal.contains(event.target))
+				new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate())
+				< new Date(nDate.getFullYear(), nDate.getMonth(), nDate.getDate())
 			) {
-				this.restartCalendar()
-			}
-		},
-		onRangeSelected(range) {
-			if (!range || !range.start || !range.end) return
-
-			const startDate = new Date(range.start)
-			const endDate = new Date(range.end)
-
-			// Paso 1: Validar que no termine en fin de semana
-			const dia = endDate.getDay() // 0 = domingo, 6 = sábado
-			if (dia === 0 || dia === 6) {
-				console.warn('⚠️ El rango termina en fin de semana (sábado o domingo).')
-				showError('No puedes finalizar tu ausencia en fin de semana')
-				this.restartCalendar()
+				showError('No puedes solicitar ausencias en fechas pasadas')
 				return
 			}
 
-			// Paso 2: Contar los días hábiles
+			// No permitir iniciar o terminar en fin de semana
+			const dia = endDate.getDay()
+			const diaInicio = startDate.getDay()
+			if (dia === 0 || dia === 6 || diaInicio === 0 || diaInicio === 6) {
+				showError('No puedes iniciar o finalizar tu ausencia en fin de semana')
+				return
+			}
+
+			// Contar días hábiles
 			let fecha = new Date(startDate)
 			let diasHabiles = 0
-
 			while (fecha <= endDate) {
 				const diaSemana = fecha.getDay()
 				if (diaSemana !== 0 && diaSemana !== 6) {
@@ -292,158 +531,44 @@ export default {
 				fecha = new Date(fecha.getFullYear(), fecha.getMonth(), fecha.getDate() + 1) // ✅ AVANZAMOS la fecha
 			}
 
-			// eslint-disable-next-line no-console
-			console.log(`📅 Días hábiles seleccionados: ${diasHabiles}`)
-
-			// Aquí puedes guardar o usar los días hábiles como desees
 			this.diasSolicitados = diasHabiles
-			this.modal = true
-			// eslint-disable-next-line no-console
-			console.log('Selected range:', range)
-		},
-
-		showAniversarioModal() {
-			this.getAniversarios()
-		},
-		closeModal() {
-			this.modal = false
-			this.restartCalendar()
-		},
-		closeModalAniversario() {
-			this.ModalAniversario = false
-		},
-		async GetAusencias() {
-			try {
-				try {
-					const response = await axios.post(generateUrl('/apps/empleados/GetAusenciasByUser'), {
-						id: this.employee[0].Id_empleados,
-					})
-
-					// eslint-disable-next-line no-console
-					console.log(response.data)
-					this.Ausencias = response.data[0]
-				} catch (err) {
-					showError(err)
-				}
-			} catch (err) {
-				showError(t('empleados', 'Se ha producido una excepcion [03] [' + err + ']'))
+			this.date = {
+				start: startDate,
+				end: endDate,
 			}
+			this.modal = true
 		},
-		async getAniversarios() {
+		async GetAllEquipo(equipo) {
 			try {
-				await axios.get(generateUrl('/apps/empleados/Getaniversarios'))
+				await axios.get(generateUrl('/apps/empleados/GetEmpleadosEquipo/' + equipo))
 					.then(
 						(response) => {
-							this.Aniversarios = response.data
-							// eslint-disable-next-line no-console
-							console.log(this.Aniversarios)
-							// this.loading = false
-
-							this.ModalAniversario = true
-						},
-						(err) => {
-							showError(err)
+							this.peopleEquipo = response.data
 						},
 					)
 			} catch (err) {
-				showError(t('empleados', 'Se ha producido una excepcion [01] [' + err + ']'))
+				// eslint-disable-next-line no-console
+				console.log(err)
 			}
 		},
-		formatearDias(dias) {
-			const entero = Math.floor(dias)
-			const decimal = dias % 1
-
-			if (decimal === 0) {
-				return `${entero} ${entero === 1 ? 'día' : 'días'}`
-			} else if (decimal === 0.5) {
-				return `${entero} ${entero === 1 ? 'día' : 'días'} y medio`
-			} else {
-				return `${dias} días` // puedes redondear o manejar más decimales si quieres
-			}
-		},
-		calcularFechaMaxima() {
-			const nDate = new Date()
-			const start = this.dragValue?.start
-			const end = this.dragValue?.end
-			// eslint-disable-next-line no-console
-			console.log('start', start.getDate(), nDate.getDate())
-			// eslint-disable-next-line no-console
-			console.log('start', start.getMonth(), nDate.getMonth())
-			// eslint-disable-next-line no-console
-			console.log('start', start.getFullYear(), nDate.getFullYear())
-			// eslint-disable-next-line no-console
-			console.log('TOP', start, nDate)
-
-			// Validar si hay un rango seleccionado
-			if (!start || !end) return
-			if (
-				new Date(start.getFullYear(), start.getMonth(), start.getDate())
-				< new Date(nDate.getFullYear(), nDate.getMonth(), nDate.getDate())
-			) {
-				showError('No puedes solicitar ausencias en fechas pasadas')
-				this.restartCalendar()
-			}
-
-			// Paso 1: Validar si solo se seleccionaron sábado y/o domingo
-			let fecha = new Date(start) // 🟢 CLONAMOS correctamente
-			let soloFinesDeSemana = true
-
-			while (fecha <= end) {
-				const dia = fecha.getDay()
-				if (dia !== 0 && dia !== 6) {
-					soloFinesDeSemana = false
-					break
-				}
-				fecha = new Date(fecha.getFullYear(), fecha.getMonth(), fecha.getDate() + 1) // ✅ AVANZAMOS la fecha
-			}
-
-			if (soloFinesDeSemana) {
-				this.restartCalendar()
-				return
-			}
-
-			// Paso 2: Cálculo normal de FechaMaxima
-			this.FechaInitial = start
-
-			// Esta parte del código está comentada porque no se utiliza en el momento actual
-			// y se ha dejado para referencia futura.
-			// limita la fecha maxima segun las vacaciones disponibles
-			/*
-			const diasTotales = Math.floor(this.Ausencias.dias_disponibles)
-			const horasExtra = (this.Ausencias.dias_disponibles % 1) * 24
-
-			let diasContados = 1
-			const fechaMax = new Date(start)
-
-			while (diasContados < diasTotales) {
-				fechaMax.setDate(fechaMax.getDate() + 1)
-				const diaSemana = fechaMax.getDay()
-				if (diaSemana !== 0 && diaSemana !== 6) {
-					diasContados++
-				}
-			}
-
-			fechaMax.setHours(fechaMax.getHours() + horasExtra)
-			this.FechaMaxima = fechaMax
-			*/
-		},
-
-		restartCalendar() {
-			this.calendarKey++
-
-			this.date = {
-				start: new Date(),
-				end: null,
-			}
-			this.FechaInitial = null
-			this.FechaMaxima = null
-			this.dragValue = null
+		async getEquipos() {
+			axios.post(generateUrl(generateUrl('/apps/empleados/GetEquipoJefe')), {
+				id: this.employee[0].Id_equipo,
+			})
+				.then(r => {
+					const data = r.data.message || []
+					// eslint-disable-next-line no-console
+					console.log('📦 Datos recibidos:', data)
+					this.Equipo = r.data[0]
+				})
+				.catch(error => {
+					console.error('❌ Error al jefe de equipo:', error)
+				})
 		},
 	},
 }
 </script>
 <style scoped>
-/* 🎯 Estilos locales del componente */
 .layout {
   width: 100%;
   display: flex;
@@ -461,7 +586,6 @@ export default {
   justify-content: space-between;
   border-radius: 0.75rem;
   background-color: white;
-  height: 370px;
   border: 1px solid #cbd5e0;
 }
 
@@ -505,26 +629,6 @@ export default {
   font-size: .75rem;
 }
 
-.actions {
-  user-select: none;
-  border: none;
-  outline: none;
-  box-shadow: 0 4px 6px -1px rgba(33,150,243,.4), 0 2px 4px -2px rgba(33,150,243,.4);
-  color: white;
-  text-transform: uppercase;
-  font-weight: 700;
-  font-size: .75rem;
-  padding: 0.75rem 1.5rem;
-  background-color: rgb(33 150 243);
-  border-radius: 0.5rem;
-}
-
-.vacations {
-  display: flex;
-  justify-content: center;
-  color: white;
-}
-
 .h2-white {
   color: white;
 }
@@ -541,6 +645,9 @@ export default {
   cursor: pointer;
   font-size: 1rem;
   transition: transform 0.2s ease;
+}
+.btn-top {
+  margin-top: 10px
 }
 
 .btn-top-right:hover {
@@ -584,111 +691,12 @@ export default {
   margin: 50px;
 }
 
-.form-group {
-  margin: 2rem 0;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-}
-
 .sectionPicker {
 	padding: 2px 10px 0 22px;
 }
 
-/* Ocultar scrollbar */
-::-webkit-scrollbar {
-  width: 0px;
-}
-::-webkit-scrollbar-track {
-  display: none;
+.my-calendar {
+	--color-background-dark: transparent !important;
 }
 
-/* 🌐 Estilos globales para v-calendar */
-::v-deep(.custom-calendar.vc-container) {
-  --day-border: 1px solid #b8c2cc;
-  --day-border-highlight: 1px solid #b8c2cc;
-  --day-width: 90px;
-  --day-height: 90px;
-  --weekday-bg: #f8fafc;
-  --weekday-border: 1px solid #eaeaea;
-
-  border-radius: 0;
-  width: 100%;
-}
-
-::v-deep(.custom-calendar.vc-container .vc-header) {
-  background-color: #f1f5f8;
-  padding: 10px 0;
-}
-
-::v-deep(.custom-calendar.vc-container .vc-weeks) {
-  padding: 0;
-}
-
-::v-deep(.custom-calendar.vc-container .vc-weekday) {
-  background-color: var(--weekday-bg);
-  border-bottom: var(--weekday-border);
-  border-top: var(--weekday-border);
-  padding: 5px 0;
-}
-
-::v-deep(.custom-calendar.vc-container .vc-day) {
-  text-align: left;
-  height: var(--day-height);
-  min-width: var(--day-width);
-  background-color: white;
-}
-
-::v-deep(.custom-calendar.vc-container .vc-day-content) {
-  display: block;
-  width: 100%;
-  height: 100%;
-  border-radius: 0;
-  padding-left: 10px;
-}
-
-::v-deep(.custom-calendar.vc-container .vc-highlight) {
-	padding-left: 30px;
-}
-::v-deep(.custom-calendar.vc-container .vc-day-box-right-center) {
-  display: block;
-}
-::v-deep(.custom-calendar.vc-container .vc-highlight-base-start) {
-	width: 100% !important;
-}
-
-::v-deep(.custom-calendar.vc-container .vc-day-box-left-center) {
-  display: block;
-}
-::v-deep(.custom-calendar.vc-container .vc-highlight-base-end) {
-	width: 10% !important;
-  border-radius:0px 15px 19px 0px !important;
-}
-::v-deep(.custom-calendar.vc-container .vc-day-box-center-center) {
-  justify-content: center;
-  align-items: center;
-  transform-origin: 50% 50%;
-  display: block;
-}
-
-::v-deep(.custom-calendar.vc-container .vc-day.weekday-1),
-::v-deep(.custom-calendar.vc-container .vc-day.weekday-7) {
-  background-color: #eff8ff;
-}
-
-::v-deep(.custom-calendar.vc-container .vc-day:not(.on-bottom)) {
-  border-bottom: var(--day-border);
-}
-
-::v-deep(.custom-calendar.vc-container .vc-day.weekday-1:not(.on-bottom)) {
-  border-bottom: var(--day-border-highlight);
-}
-
-::v-deep(.custom-calendar.vc-container .vc-day:not(.on-right)) {
-  border-right: var(--day-border);
-}
-
-::v-deep(.custom-calendar.vc-container .vc-day-dots) {
-  margin-bottom: 5px;
-}
 </style>

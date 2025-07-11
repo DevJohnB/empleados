@@ -120,5 +120,4 @@ class ausenciasMapper extends QBMapper {
 
 		$qb->executeStatement();
 	}
-
 }

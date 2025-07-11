@@ -146,6 +146,16 @@ class equiposController extends BaseController {
     }
 
     /**
+     * Obtiene la jefe de equipo
+     */
+    #[UseSession]
+    #[NoAdminRequired]
+    public function GetEquipoJefe(): array {
+        $id = $this->request->getParam('id');
+        return $this->equiposMapper->GetEquipoJefe($id);
+    }
+
+    /**
      * Exporta la lista de equipos a un archivo XLSX.
      */
     public function ExportListEquipos(): array {

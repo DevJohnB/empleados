@@ -21,6 +21,7 @@ use OCP\IUserSession;
 
 use DateTime;
 
+use OCA\Empleados\Db\equiposMapper;
 use OCA\Empleados\Db\empleadosMapper;
 use OCA\Empleados\Db\ausenciasMapper;
 use OCA\Empleados\Db\tipoausenciaMapper;
@@ -37,6 +38,7 @@ class AusenciasController extends Controller {
 
     protected $userSession;
     protected $l10n;
+    protected $equiposMapper;
     protected $empleadosMapper;
     protected $ausenciasMapper;
     protected $tipoausenciaMapper;
@@ -51,6 +53,7 @@ class AusenciasController extends Controller {
         IRequest $request,
         IL10N $l10n,
         ausenciasMapper $ausenciasMapper,
+        equiposMapper $equiposMapper,
         historialausenciasMapper $historialausenciasMapper,
         tipoausenciaMapper $tipoausenciaMapper,
         empleadosMapper $empleadosMapper,
@@ -64,6 +67,7 @@ class AusenciasController extends Controller {
         $this->l10n = $l10n;
         $this->empleadosMapper = $empleadosMapper;
         $this->ausenciasMapper = $ausenciasMapper;
+        $this->equiposMapper = $equiposMapper;
         $this->tipoausenciaMapper = $tipoausenciaMapper;
         $this->historialausenciasMapper = $historialausenciasMapper;
         $this->userSession = $userSession;
@@ -277,6 +281,97 @@ class AusenciasController extends Controller {
         $this->historialausenciasMapper->EnviarAusencia((int) $id_tipo_ausencia, $empleado_ausencias[0]['id_ausencias'], $fecha_de, $fecha_hasta, (int) $prima_vacacional, $notas, $empleado_ausencias[0]['id_aniversario']);
 
         return new DataResponse(['success' => true, 'message' => $tipo_ausencia[0]['solicitar_prima_vacacional']]);
-    }    
+    }
+    /**
+    * Obtener ausencias del historial de ausencias por mes y año.
+    */
+    #[UseSession]
+    #[NoAdminRequired]
+    public function GetAusenciasHistorial(): DataResponse {
+        $user = $this->userSession->getUser();
+        $id_empleado = $this->empleadosMapper->GetMyEmployeeInfo($user->getUID());
+        $empleado_ausencias = $this->ausenciasMapper->GetAusenciasByUser($id_empleado[0]['Id_empleados']);
 
+        $desde = $this->request->getParam('desde'); // formato ISO
+        $hasta = $this->request->getParam('hasta');
+
+        $response = $this->historialausenciasMapper->GetAusenciasEnRango(
+            $desde,
+            $hasta,
+            $empleado_ausencias[0]['id_ausencias']
+        );
+
+        return new DataResponse(['success' => true, 'message' => $response]);
+    }
+    /**
+    * Obtener ausencias del historial de ausencias por mes y año.
+    */
+    #[UseSession]
+    #[NoAdminRequired]
+    public function GetAusenciasHistorialAll(): DataResponse {
+        $desde = $this->request->getParam('desde');
+        $hasta = $this->request->getParam('hasta');
+
+        $user = $this->userSession->getUser();
+        $id_empleado = $this->empleadosMapper->GetMyEmployeeInfo($user->getUID());
+        $equipo_empleado = $this->empleadosMapper->GetEmpleadosEquipo($id_empleado[0]['Id_equipo']);
+
+        $response = [];
+
+        foreach ($equipo_empleado as $empleado) {
+            $empleado_inf = $this->ausenciasMapper->GetAusenciasByUser($empleado['Id_empleados']);
+            $ausencias = $this->historialausenciasMapper->GetAusenciasEnRango(
+                $desde,
+                $hasta,
+                $empleado_inf[0]['id_ausencias']
+            );
+
+            // opcional: agrega nombre del empleado a cada evento
+            foreach ($ausencias as &$a) {
+                $a['nombre_empleado'] = $empleado['Id_user']; // si existe
+            }
+
+            $response = array_merge($response, $ausencias);
+        }
+
+        return new DataResponse(['success' => true, 'message' => $response]);
+    }
+
+     /**
+    * Obtener ausencias del historial de ausencias por mes y año.
+    */
+    #[UseSession]
+    #[NoAdminRequired]
+    public function GetAusenciasEmployeeHistorial(): DataResponse {
+        $id_employee = $this->request->getParam('id_employee');
+        $desde = $this->request->getParam('desde');
+        $hasta = $this->request->getParam('hasta');
+
+        $user = $this->userSession->getUser();
+        $id_empleado = $this->empleadosMapper->GetMyEmployeeInfo($user->getUID());
+        $equipo_empleado = $this->empleadosMapper->GetEmpleadosEquipo($id_empleado[0]['Id_equipo']);
+
+        // Validar si el id_employee está en el equipo
+        $es_del_equipo = false;
+        foreach ($equipo_empleado as $empleado) {
+            if ((int) $empleado['Id_empleados'] === (int) $id_employee) {
+                $es_del_equipo = true;
+                break;
+            }
+        }
+
+        if ($es_del_equipo) {
+            $empleado_ausencias = $this->ausenciasMapper->GetAusenciasByUser($id_employee);
+            $response = $this->historialausenciasMapper->GetAusenciasEnRango(
+                $desde,
+                $hasta,
+                $empleado_ausencias[0]['id_ausencias']
+            );
+            
+
+            return new DataResponse(['success' => true, 'message' => $response]);
+        } else {
+            return new DataResponse(['error' => true, 'message' => 'Empleado no pertenece a tu equipo']);
+        }
+    }
 }

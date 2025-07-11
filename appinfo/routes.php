@@ -63,6 +63,7 @@ return [
 		['name' => 'equipos#GuardarCambioEquipo', 'url' => '/GuardarCambioEquipo', 'verb' => 'POST'],
 		['name' => 'equipos#ImportListEquipo', 'url' => '/ImportListEquipo', 'verb' => 'POST'],
 		['name' => 'equipos#EliminarEquipo', 'url' => '/EliminarEquipo', 'verb' => 'POST'],
+		['name' => 'equipos#GetEquipoJefe', 'url' => '/GetEquipoJefe', 'verb' => 'POST'],
 		['name' => 'equipos#crearEquipo', 'url' => '/crearEquipo', 'verb' => 'POST'],
 		
 
@@ -88,6 +89,9 @@ return [
 
 		
 		/******************************* AUSENCIAS *****************************************/
+		['name' => 'ausencias#GetAusenciasEmployeeHistorial', 'url' => '/GetAusenciasEmployeeHistorial', 'verb' => 'POST'],
+		['name' => 'ausencias#GetAusenciasHistorialAll', 'url' => '/GetAusenciasHistorialAll', 'verb' => 'POST'],
+		['name' => 'ausencias#GetAusenciasHistorial', 'url' => '/GetAusenciasHistorial', 'verb' => 'POST'],
 		['name' => 'ausencias#GetAusenciasByUser', 'url' => '/GetAusenciasByUser', 'verb' => 'POST'],
 		['name' => 'ausencias#EnviarAusencia', 'url' => '/EnviarAusencia', 'verb' => 'POST'],
 		 
