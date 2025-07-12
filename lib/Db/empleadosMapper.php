@@ -11,7 +11,6 @@ use OCP\DB\Exception;
 use OCP\DB\QueryBuilder\IQueryBuilder;
 use OCP\IDBConnection;
 
-
 use OCP\AppFramework\Db\DoesNotExistException;
 
 
@@ -37,7 +36,7 @@ class empleadosMapper extends QBMapper {
     public function GetUserLists(): array {
 		$qb = $this->db->getQueryBuilder();
 
-		$qb->select('e.*', 'u.displayname', 'u.uid', 'a.*', 'i.*') // Solo traemos empleados sin duplicar
+		$qb->select('e.*', 'u.displayname', 'u.uid', 'a.*', 'i.*', 'e.Id_empleados') // Solo traemos empleados sin duplicar
 			->from('empleados', 'e')
 			->innerJoin('e', 'users', 'u', $qb->expr()->eq('u.uid', 'e.Id_user'))
 			->innerJoin('e', 'ausencias', 'a', $qb->expr()->eq('a.id_empleado', 'e.Id_empleados'))

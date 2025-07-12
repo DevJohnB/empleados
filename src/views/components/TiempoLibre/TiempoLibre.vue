@@ -54,42 +54,37 @@
 									@click="typePetition = 'all'; $refs.fullCalendar.getApi().refetchEvents()">
 									Mostrar todo mi equipo
 								</NcButton>
-								<div class="rst-title">
-									<div class="title_flex">
-										<div class="subtitle_flex">
-											<NcAvatar :user="Equipo.Id_jefe_equipo" :display-name="Equipo.Id_jefe_equipo" :size="20" />
-										</div>
-										<div>
-											<h1> {{ Equipo.Nombre }} </h1>
+								<div v-if="isAdmin()" class="btn-top">
+									<NcSelect v-bind="propsEmployees"
+										v-model="employees" />
+								</div>
+								<div>
+									<div class="rst-title">
+										<div class="title_flex">
+											<div class="subtitle_flex">
+												<NcAvatar :user="Equipo.Id_jefe_equipo" :display-name="Equipo.Id_jefe_equipo" :size="20" />
+											</div>
+											<div>
+												<h1> {{ Equipo.Nombre }} </h1>
+											</div>
 										</div>
 									</div>
-								</div>
-								<div class="rst">
-									<!--
-									<ul class="container flex">
-										<li v-for="(item) in peopleEquipo.equipo"
-											:key="item.Id_empleados"
-											class="item flex-item">
-											<NcAvatar :user="item.Id_user" :display-name="item.Id_user" style="margin-top: inherit;" />
-											<h3>{{ item.Id_user }}</h3>
-											<NcAvatar :user="item.Id_user" :display-name="item.Id_user" />
-											<h3>{{ item.Id_user }}</h3>
-										</li>
-									</ul-->
-									<ul>
-										<NcListItem
-											v-for="(item) in peopleEquipo.equipo"
-											:key="item.Id_empleados"
-											:name="item.displayname ? item.displayname : item.Id_user"
-											@click.prevent="typePetition = 'employee'; selected_user = item; $refs.fullCalendar.getApi().refetchEvents()">
-											<template #icon>
-												<NcAvatar disable-menu
-													:size="44"
-													:user="item.Id_user"
-													:display-name="item.Id_user" />
-											</template>
-										</NcListItem>
-									</ul>
+									<div class="rst">
+										<ul>
+											<NcListItem
+												v-for="(item) in peopleEquipo.equipo"
+												:key="item.Id_empleados"
+												:name="item.displayname ? item.displayname : item.Id_user"
+												@click.prevent="employees = []; typePetition = 'employee'; selected_user = item; $refs.fullCalendar.getApi().refetchEvents()">
+												<template #icon>
+													<NcAvatar disable-menu
+														:size="44"
+														:user="item.Id_user"
+														:display-name="item.Id_user" />
+												</template>
+											</NcListItem>
+										</ul>
+									</div>
 								</div>
 							</div>
 							<div class="footers">
@@ -200,6 +195,7 @@ import {
 	NcListItem,
 	NcAvatar,
 	NcButton,
+	NcSelect,
 } from '@nextcloud/vue'
 export default {
 	name: 'TiempoLibre',
@@ -218,9 +214,10 @@ export default {
 		NcListItem,
 		NcAvatar,
 		NcButton,
+		NcSelect,
 	},
 
-	inject: ['employee', 'configuraciones'],
+	inject: ['employee', 'configuraciones', 'groupuser'],
 
 	data() {
 		return {
@@ -251,6 +248,14 @@ export default {
 			Equipo: {},
 			typePetition: null,
 			selected_user: null, // Para almacenar el usuario seleccionado
+			propsEmployees: {
+				inputLabel: 'Seleccionar empleado historial ',
+				userSelect: true,
+				multiple: true,
+				closeOnSelect: false,
+				options: [], // Se llena con todos los usuarios (optionsGestor)
+			},
+			employees: [], // Para almacenar los empleados seleccionados
 		}
 	},
 
@@ -293,6 +298,16 @@ export default {
 		},
 	},
 
+	watch: {
+		employees(news) {
+			if (news !== null && news.length > 0) {
+				this.selected_user = news
+				this.typePetition = 'employee'
+				this.$refs.fullCalendar.getApi().refetchEvents()
+			}
+		},
+	},
+
 	mounted() {
 		this.$bus.on('close-solicitud', () => {
 			this.GetAusencias()
@@ -300,6 +315,9 @@ export default {
 			this.$refs.fullCalendar.getApi().refetchEvents()
 		})
 		this.GetAusencias()
+		if (this.isAdmin()) {
+			this.updateList()
+		}
 		this.getEquipos()
 		this.GetAllEquipo(this.employee[0].Id_equipo)
 	},
@@ -425,7 +443,7 @@ export default {
 
 						return {
 							id: item.id_historial_ausencias,
-							title: item.tipo_nombre,
+							title: item.nombre_empleado + ' - ' + item.tipo_nombre,
 							start: fechaInicio.toISOString(),
 							end: fechaHasta.toISOString(),
 							allDay: true,
@@ -448,32 +466,28 @@ export default {
 			console.log('🔄 Llamando fetchEvents para:', fetchInfo)
 
 			axios.post(generateUrl('/apps/empleados/GetAusenciasEmployeeHistorial'), {
-				id_employee: this.selected_user.Id_empleados,
+				id_employee: this.selected_user, // puede ser objeto o array
 				desde: fetchInfo.startStr,
 				hasta: fetchInfo.endStr,
 			})
 				.then(r => {
 					const data = r.data.message || []
-					// eslint-disable-next-line no-console
-					console.log('📦 Datos recibidos:', data)
 
 					const events = data.map(item => {
 						const fechaInicio = new Date(item.fecha_de)
 						const fechaHasta = new Date(item.fecha_hasta)
-						fechaHasta.setDate(fechaHasta.getDate() + 1)
+						fechaHasta.setDate(fechaHasta.getDate() + 1) // para que sea exclusivo
 
 						return {
 							id: item.id_historial_ausencias,
-							title: item.tipo_nombre,
+							title: `${item.nombre_empleado} - ${item.tipo_nombre}`,
 							start: fechaInicio.toISOString(),
 							end: fechaHasta.toISOString(),
 							allDay: true,
-							color: this.color(this.selected_user.Id_user), // Asignar color basado en el usuario
+							color: this.color?.(item.nombre_empleado) || '#3a87ad',
 						}
 					})
 
-					// eslint-disable-next-line no-console
-					console.log('✅ Eventos generados:', events)
 					success(events)
 				})
 				.catch(error => {
@@ -491,6 +505,36 @@ export default {
 		color(username) {
 			const { r, g, b } = usernameToColor(username)
 			return `rgb(${r}, ${g}, ${b})`
+		},
+
+		isAdmin() {
+			return 'admin' in this.groupuser || 'recursos_humanos' in this.groupuser
+		},
+
+		async updateList() {
+			try {
+				const response = await axios.get(generateUrl('/apps/empleados/GetEmpleadosList'))
+				const empleados = response.data.Empleados || []
+
+				// eslint-disable-next-line no-console
+				console.log('📦 Lista de usuarios actualizada:', empleados)
+
+				this.propsEmployees.options = empleados.map(user => ({
+					Id_empleados: user.Id_empleados, // <- importante: NcSelect usa el UID
+					displayName: user.Nombre || user.Id_user, // usa el nombre si existe
+					isNoUser: false,
+					icon: '',
+					user: user.Id_user,
+					preloadedUserStatus: {
+						icon: '',
+						status: user.Estatus === 'activo' ? 'online' : 'offline',
+						message: user.Estatus === 'activo' ? 'Activo' : 'Inactivo',
+					},
+				}))
+			} catch (err) {
+				showError('Se ha producido una excepción: ' + err)
+				console.error(err)
+			}
 		},
 
 		// Maneja la selección de un rango de fechas en el calendario

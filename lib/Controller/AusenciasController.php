@@ -28,6 +28,8 @@ use OCA\Empleados\Db\tipoausenciaMapper;
 use OCA\Empleados\Db\historialausenciasMapper;
 use OCA\Empleados\Db\ausencias;
 
+use OCP\IGroupManager;
+
 require_once 'SimpleXLSXGen.php';
 require_once 'SimpleXLSX.php';
 
@@ -61,8 +63,9 @@ class AusenciasController extends Controller {
         configuracionesMapper $configuracionesMapper,
         IRootFolder $rootFolder,
         IUserManager $userManager,
+        IGroupManager $groupManager,
     ) {
-        parent::__construct(Application::APP_ID, $request, $userSession, $configuracionesMapper);
+        parent::__construct(Application::APP_ID, $request, $userSession, $configuracionesMapper, $groupManager);
         
         $this->l10n = $l10n;
         $this->empleadosMapper = $empleadosMapper;
@@ -74,6 +77,7 @@ class AusenciasController extends Controller {
         $this->configuracionesMapper = $configuracionesMapper;
         $this->rootFolder = $rootFolder;
         $this->userManager = $userManager;
+        $this->groupManager = $groupManager;
     }
 
     /**
@@ -341,37 +345,62 @@ class AusenciasController extends Controller {
     * Obtener ausencias del historial de ausencias por mes y año.
     */
     #[UseSession]
-    #[NoAdminRequired]
-    public function GetAusenciasEmployeeHistorial(): DataResponse {
-        $id_employee = $this->request->getParam('id_employee');
-        $desde = $this->request->getParam('desde');
-        $hasta = $this->request->getParam('hasta');
+#[NoAdminRequired]
+public function GetAusenciasEmployeeHistorial(): DataResponse {
+	$usuariosInput = $this->request->getParam('id_employee');
+	$desde = $this->request->getParam('desde');
+	$hasta = $this->request->getParam('hasta');
 
-        $user = $this->userSession->getUser();
-        $id_empleado = $this->empleadosMapper->GetMyEmployeeInfo($user->getUID());
-        $equipo_empleado = $this->empleadosMapper->GetEmpleadosEquipo($id_empleado[0]['Id_equipo']);
+	$user = $this->userSession->getUser();
+	$uid = $user->getUID();
 
-        // Validar si el id_employee está en el equipo
-        $es_del_equipo = false;
-        foreach ($equipo_empleado as $empleado) {
-            if ((int) $empleado['Id_empleados'] === (int) $id_employee) {
-                $es_del_equipo = true;
-                break;
-            }
-        }
+	// Validar privilegios
+	$isPrivileged = $this->groupManager->isInGroup($uid, 'admin') ||
+					$this->groupManager->isInGroup($uid, 'recursos_humanos');
 
-        if ($es_del_equipo) {
-            $empleado_ausencias = $this->ausenciasMapper->GetAusenciasByUser($id_employee);
-            $response = $this->historialausenciasMapper->GetAusenciasEnRango(
-                $desde,
-                $hasta,
-                $empleado_ausencias[0]['id_ausencias']
-            );
-            
+	// Obtener IDs del equipo del usuario
+	$id_empleado = $this->empleadosMapper->GetMyEmployeeInfo($uid);
+	$equipo_empleado = $this->empleadosMapper->GetEmpleadosEquipo($id_empleado[0]['Id_equipo']);
+	$ids_equipo = array_map(fn($e) => (int) $e['Id_empleados'], $equipo_empleado);
 
-            return new DataResponse(['success' => true, 'message' => $response]);
-        } else {
-            return new DataResponse(['error' => true, 'message' => 'Empleado no pertenece a tu equipo']);
-        }
-    }
+	// 🛡️ Normalizar entrada
+	if (is_string($usuariosInput)) {
+		$usuariosInput = json_decode($usuariosInput, true);
+	}
+	$usuarios = is_array($usuariosInput) ? (array_keys($usuariosInput) === range(0, count($usuariosInput) - 1) ? $usuariosInput : [$usuariosInput]) : [];
+
+	$response = [];
+
+	foreach ($usuarios as $item) {
+		if (!is_array($item) || !isset($item['Id_empleados'])) {
+			continue;
+		}
+
+		$id_emp = (int) $item['Id_empleados'];
+
+		if ($isPrivileged || in_array($id_emp, $ids_equipo)) {
+			$empleado_ausencias = $this->ausenciasMapper->GetAusenciasByUser($id_emp);
+			if (empty($empleado_ausencias)) {
+				continue;
+			}
+
+			$ausencias = $this->historialausenciasMapper->GetAusenciasEnRango(
+				$desde,
+				$hasta,
+				$empleado_ausencias[0]['id_ausencias']
+			);
+
+			$nombre = $item['displayName'] ?? $item['Id_user'] ?? 'Empleado ' . $id_emp;
+
+			foreach ($ausencias as &$a) {
+				$a['nombre_empleado'] = $nombre;
+			}
+
+			$response = array_merge($response, $ausencias);
+		}
+	}
+
+	return new DataResponse(['success' => true, 'message' => $response]);
+}
+
 }
