@@ -66,7 +66,7 @@
 								class="flex-item">
 								<div class="card">
 									<div>
-										<NcAvatar :user="item.Id_user" :display-name="item.Id_user" size="60" />
+										<NcAvatar :user="item.Id_user" :display-name="item.Id_user" :size="60" />
 									</div>
 									<div class="right">
 										<div class="card-1">
