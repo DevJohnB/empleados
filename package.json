@@ -17,9 +17,10 @@
     "extends @nextcloud/browserslist-config"
   ],
   "dependencies": {
-    "@fullcalendar/core": "^6.1.17",
+    "@fullcalendar/core": "^6.1.18",
     "@fullcalendar/daygrid": "^6.1.17",
     "@fullcalendar/interaction": "^6.1.17",
+    "@fullcalendar/multimonth": "^6.1.18",
     "@fullcalendar/vue": "^6.1.17",
     "@nextcloud/axios": "^2.5.0",
     "@nextcloud/dialogs": "^3.1.4",

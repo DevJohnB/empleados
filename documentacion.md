@@ -24,3 +24,19 @@ data equivale a la informacion enviada por evento emitido
 
 
 ----------------------------------------------------------------------------------
+
+
+
+enviar correos
+solo agrega el helper para poder enviar notificaciones por correo (en casos muy puntuales solo usar esto, no en masivos)
+ $this->mailHelper->enviarCorreo(
+            'usuario@dominio.com',
+            'Nueva solicitud de ausencia',
+            [
+                'Hola Luis,',
+                'Se ha registrado una nueva ausencia.',
+                'Tipo: Falta injustificada.',
+                'Desde: 2025-07-28',
+                'Hasta: 2025-08-01'
+            ]
+        );

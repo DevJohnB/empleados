@@ -28,7 +28,11 @@ use OCA\Empleados\Db\tipoausenciaMapper;
 use OCA\Empleados\Db\historialausenciasMapper;
 use OCA\Empleados\Db\ausencias;
 
+use OCP\IURLGenerator;
 use OCP\IGroupManager;
+use OCP\Activity\IManager;
+
+use OCA\Empleados\Helper\MailHelper;
 
 require_once 'SimpleXLSXGen.php';
 require_once 'SimpleXLSX.php';
@@ -51,6 +55,10 @@ class AusenciasController extends Controller {
 
     protected IRootFolder $rootFolder;
 
+    private IManager $activityManager;
+	private IURLGenerator $urlGenerator;
+    private MailHelper $mailHelper;
+
     public function __construct(
         IRequest $request,
         IL10N $l10n,
@@ -64,6 +72,9 @@ class AusenciasController extends Controller {
         IRootFolder $rootFolder,
         IUserManager $userManager,
         IGroupManager $groupManager,
+        IManager $activityManager,
+		IURLGenerator $urlGenerator,
+        MailHelper $mailHelper
     ) {
         parent::__construct(Application::APP_ID, $request, $userSession, $configuracionesMapper, $groupManager);
         
@@ -78,7 +89,51 @@ class AusenciasController extends Controller {
         $this->rootFolder = $rootFolder;
         $this->userManager = $userManager;
         $this->groupManager = $groupManager;
+        $this->activityManager = $activityManager;
+		$this->urlGenerator = $urlGenerator;
+        $this->mailHelper = $mailHelper;
     }
+    /**
+     * Obtiene la lista de ausencias.
+     */
+    #[UseSession]
+    #[NoAdminRequired]
+    private function registrarActividadAusencia(string $tipoAusencia, string $fechaInicio, string $fechaFin, ?int $idHistorialAusencia): void {
+        $user = $this->userSession->getUser()->getUID();
+        $username = $this->userSession->getUser()->getDisplayName();
+
+        $event = $this->activityManager->generateEvent();
+        $event->setApp('empleados');
+        $event->setType('empleados');
+        $event->setObject('empleados', (int) $idHistorialAusencia, 'Solicitud de ausencia');
+        $event->setAffectedUser($user);
+
+        // ✅ Usa el subject ID y pasa los parámetros de forma estándar
+        $event->setSubject(
+            'ausencia_registrada',
+            [
+                'nombre' => (string) $user,
+                'tipo_ausencia' => (string) $tipoAusencia
+            ]
+        );
+
+        // ✅ Usa el message como resumen textual
+        $event->setMessage('Desde "' . $fechaInicio . '" hasta "' . $fechaFin . '"');
+
+        $this->mailHelper->enviarCorreo(
+            'servicios.torreon@crowe.mx',
+            'Nueva solicitud',
+            [
+                'Hola ' . $username . '',
+                'El usuario ' . $username . ' ha realizado una solicitu de "' . $tipoAusencia . '".',
+                'Fecha de inicio: ' . $fechaFin . '  - Fecha de finalización: ' . $fechaFin . '',
+                '',
+            ]
+        );
+
+        $this->activityManager->publish($event);
+    }
+
 
     /**
      * Obtiene la lista de ausencias.
@@ -220,8 +275,10 @@ class AusenciasController extends Controller {
     #[UseSession]
     #[NoAdminRequired]
     public function EnviarAusencia(): DataResponse {
-        $files = $_FILES['archivos'] ?? [];
-        $fileCount = is_array($files['name']) ? count($files['name']) : 0;
+    try {
+        $files = $_FILES['archivos'] ?? ['name' => [], 'tmp_name' => []];
+        $fileCount = count((array)($files['name'] ?? []));
+
     
         $user = $this->userSession->getUser();
         $gestor = $this->configuracionesMapper->GetGestor()[0]['Data'] ?? null;
@@ -282,9 +339,15 @@ class AusenciasController extends Controller {
         $fecha_hasta = DateTime::createFromFormat('d/m/Y', $this->request->getParam('fecha_hasta'))->format('Y-m-d');
 
         // Registro en el historial de ausencias 
-        $this->historialausenciasMapper->EnviarAusencia((int) $id_tipo_ausencia, $empleado_ausencias[0]['id_ausencias'], $fecha_de, $fecha_hasta, (int) $prima_vacacional, $notas, $empleado_ausencias[0]['id_aniversario']);
+        $idHistorialAusencia = $this->historialausenciasMapper->EnviarAusencia((int) $id_tipo_ausencia, $empleado_ausencias[0]['id_ausencias'], $fecha_de, $fecha_hasta, (int) $prima_vacacional, $notas, $empleado_ausencias[0]['id_aniversario']);
+
+        $this->registrarActividadAusencia($tipo_ausencia[0]['nombre'], $fecha_de, $fecha_hasta, $idHistorialAusencia);
 
         return new DataResponse(['success' => true, 'message' => $tipo_ausencia[0]['solicitar_prima_vacacional']]);
+    } catch (\Exception $e) {
+        // Manejo de errores
+        return new DataResponse(['success' => false, 'message' => $e->getMessage()]);
+    }
     }
     /**
     * Obtener ausencias del historial de ausencias por mes y año.
@@ -304,6 +367,10 @@ class AusenciasController extends Controller {
             $hasta,
             $empleado_ausencias[0]['id_ausencias']
         );
+        
+        foreach ($response as &$a) {
+                $a['nombre_empleado'] = $id_empleado[0]['Id_user']; // si existe
+        }
 
         return new DataResponse(['success' => true, 'message' => $response]);
     }

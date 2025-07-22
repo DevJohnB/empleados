@@ -12,7 +12,7 @@ class historialausenciasMapper extends QBMapper {
 		parent::__construct($db, 'historial_ausencias', historialausencias::class);
 	}
 
-		public function EnviarAusencia(int $id_tipo_ausencia, $id_ausencias, $fecha_de, $fecha_hasta, int $prima_vacacional, string $notas, $id_aniverario): void {
+		public function EnviarAusencia(int $id_tipo_ausencia, $id_ausencias, $fecha_de, $fecha_hasta, int $prima_vacacional, string $notas, $id_aniverario): int {
 			$insert = $this->db->getQueryBuilder();
 			$insert->insert($this->getTableName())
 				->values(
@@ -27,27 +27,29 @@ class historialausenciasMapper extends QBMapper {
 					]
 				);
 			$insert->executeStatement();
-	}
-public function GetAusenciasEnRango(string $desde, string $hasta, int $id): array {
-	$qb = $this->db->getQueryBuilder();
+			
+			return (int) $this->db->lastInsertId('historial_ausencias');
 
-	$qb->select('h.*', 't.nombre AS tipo_nombre')
-		->from($this->getTableName(), 'h')
-		->innerJoin('h', 'tipo_ausencia', 't', $qb->expr()->eq('h.id_tipo_ausencia', 't.id_tipo_ausencia'))
-		->where($qb->expr()->eq('h.id_ausencias', $qb->createNamedParameter($id)))
-		->andWhere(
-			$qb->expr()->andX(
-				$qb->expr()->lte('h.fecha_de', $qb->createNamedParameter($hasta)),
-				$qb->expr()->gte('h.fecha_hasta', $qb->createNamedParameter($desde))
-			)
-		);
+		}
 
-	$result = $qb->execute();
-	$ausencias = $result->fetchAll();
-	$result->closeCursor();
+		public function GetAusenciasEnRango(string $desde, string $hasta, int $id): array {
+			$qb = $this->db->getQueryBuilder();
 
-	return $ausencias;
-}
+			$qb->select('h.*', 't.nombre AS tipo_nombre')
+				->from($this->getTableName(), 'h')
+				->innerJoin('h', 'tipo_ausencia', 't', $qb->expr()->eq('h.id_tipo_ausencia', 't.id_tipo_ausencia'))
+				->where($qb->expr()->eq('h.id_ausencias', $qb->createNamedParameter($id)))
+				->andWhere(
+					$qb->expr()->andX(
+						$qb->expr()->lte('h.fecha_de', $qb->createNamedParameter($hasta)),
+						$qb->expr()->gte('h.fecha_hasta', $qb->createNamedParameter($desde))
+					)
+				);
 
+			$result = $qb->execute();
+			$ausencias = $result->fetchAll();
+			$result->closeCursor();
 
+			return $ausencias;
+		}
 }

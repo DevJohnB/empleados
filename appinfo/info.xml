@@ -25,8 +25,17 @@
     <screenshot>https://raw.githubusercontent.com/Destripador/employees/refs/heads/main/docs/screenshots/configuraciones.png</screenshot>
 
     <dependencies>
-        <nextcloud min-version="27" max-version="30"/>
+        <nextcloud min-version="27" max-version="31"/>
     </dependencies>
+
+    <activity>
+        <providers>
+            <provider>OCA\Empleados\Activity\ActivityProvider</provider>
+        </providers>
+        <extensions>
+            <extension>OCA\Empleados\Activity\ActivityExtension</extension>
+        </extensions>
+    </activity>
 
     <navigations>
         <navigation>

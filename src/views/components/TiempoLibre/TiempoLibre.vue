@@ -39,6 +39,11 @@
 								</div>
 							</div>
 							<div class="infos">
+								<div v-if="isAdmin()">
+									<NcSelect v-bind="propsEmployees"
+										v-model="employees" />
+								</div>
+								<br>
 								<NcButton
 									text="center (default)"
 									variant="secondary"
@@ -54,10 +59,6 @@
 									@click="typePetition = 'all'; $refs.fullCalendar.getApi().refetchEvents()">
 									Mostrar todo mi equipo
 								</NcButton>
-								<div v-if="isAdmin()" class="btn-top">
-									<NcSelect v-bind="propsEmployees"
-										v-model="employees" />
-								</div>
 								<div>
 									<div class="rst-title">
 										<div class="title_flex">
@@ -100,6 +101,21 @@
 				</section>
 			</div>
 		</div>
+		<!-- INICIO MODAL DETALLES EVENTO -->
+		<NcModal
+			v-if="modalEvento"
+			ref="modalRef"
+			size="large"
+			name="Detalles ausencia"
+			@close="closeModalEvento">
+			<div class="modal__content">
+				<div class="form-group">
+					{{ infoSelected }}
+				</div>
+			</div>
+		</NcModal>
+		<!-- FINAL MODAL DETALLES EVENTO -->
+
 		<!-- INICIO MODAL SOLICITUD DE VACACIONES -->
 		<NcModal
 			v-if="modal"
@@ -175,6 +191,7 @@ import NuevaSolicitud from './Modal/NuevaSolicitud.vue'
 import FullCalendar from '@fullcalendar/vue'
 import dayGridPlugin from '@fullcalendar/daygrid'
 import interactionPlugin from '@fullcalendar/interaction'
+import multiMonthPlugin from '@fullcalendar/multimonth'
 
 import { ref } from 'vue'
 
@@ -226,6 +243,7 @@ export default {
 			FechaInitial: null,
 			FechaMaxima: null,
 			modal: false,
+			modalEvento: false,
 			ModalAniversario: false,
 			Ausencias: [],
 			Aniversarios: [],
@@ -236,26 +254,57 @@ export default {
 			}),
 			range: null,
 			calendarOptions: {
-				plugins: [dayGridPlugin, interactionPlugin],
+				headerToolbar: {
+					left: 'prev,next today',
+					center: 'title',
+					right: 'dayGridMonth,multiMonthYear',
+				},
+				dayMaxEventRows: true,
+				views: {
+					multiMonthYear: { type: 'multiMonth', duration: { months: 12 }, buttonText: 'Año' },
+					timeGrid: {
+						dayMaxEventRows: 5,
+					},
+				},
+				plugins: [dayGridPlugin, interactionPlugin, multiMonthPlugin],
 				initialView: 'dayGridMonth',
 				locale: 'es',
 				events: this.fetchEvents, // esto es suficiente
 				dateClick: this.onDateClick,
+				eventClick: this.OnClickEvent,
 				select: this.onDateRangeSelect,
 				selectable: true,
+				eventContent(arg) {
+					const nombreEmpleado = arg.event.extendedProps.nombre_empleado || 'Empleado Desconocido'
+					const imgUrl = `/avatar/${nombreEmpleado}/64` // Ejemplo dinámico
+
+					// eslint-disable-next-line no-console
+					console.log('eventContent', arg.event)
+
+					return {
+						html: `
+							<div style="display: flex; align-items: center;">
+								<img src="${imgUrl}" style="width: 16px; height: 16px; border-radius: 50%; margin-right: 4px;">
+								<span>${arg.event.title}</span>
+							</div>
+						`,
+					}
+				},
+
 			},
 			peopleEquipo: {},
 			Equipo: {},
 			typePetition: null,
 			selected_user: null, // Para almacenar el usuario seleccionado
 			propsEmployees: {
-				inputLabel: 'Seleccionar empleado historial ',
+				inputLabel: 'Vista administrativa',
 				userSelect: true,
 				multiple: true,
 				closeOnSelect: false,
 				options: [], // Se llena con todos los usuarios (optionsGestor)
 			},
 			employees: [], // Para almacenar los empleados seleccionados
+			infoSelected: null, // Para almacenar la información del empleado seleccionado
 		}
 	},
 
@@ -334,6 +383,9 @@ export default {
 		closeModalAniversario() {
 			this.ModalAniversario = false
 		},
+		closeModalEvento() {
+			this.modalEvento = false
+		},
 		// Obtiene los datos de ausencias del usuario actual
 		async GetAusencias() {
 			try {
@@ -410,6 +462,7 @@ export default {
 							end: fechaHasta.toISOString(),
 							allDay: true,
 							color: this.color(this.employee[0].Id_user), // Asignar color basado en el usuario
+							nombre_empleado: item.nombre_empleado, // Agregar nombre del empleado
 						}
 					})
 
@@ -448,6 +501,7 @@ export default {
 							end: fechaHasta.toISOString(),
 							allDay: true,
 							color: this.color(item.nombre_empleado), // Asignar color basado en el usuario
+							nombre_empleado: item.nombre_empleado, // Agregar nombre del empleado
 						}
 					})
 
@@ -485,6 +539,7 @@ export default {
 							end: fechaHasta.toISOString(),
 							allDay: true,
 							color: this.color?.(item.nombre_empleado) || '#3a87ad',
+							nombre_empleado: item.nombre_empleado, // Agregar nombre del empleado
 						}
 					})
 
@@ -499,7 +554,15 @@ export default {
 
 		// Acción al hacer clic en una fecha (puedes implementar si se requiere)
 		onDateClick(arg) {
-			// console.log('Fecha clickeada:', arg.dateStr)
+			// eslint-disable-next-line no-console
+			console.log('Fecha clickeada:', arg.dateStr)
+		},
+
+		OnClickEvent(info) {
+			// eslint-disable-next-line no-console
+			console.log('Fecha clickeada:', info.event)
+			this.infoSelected = info.event
+			this.modalEvento = true
 		},
 
 		color(username) {
