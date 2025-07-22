@@ -5,7 +5,11 @@
 **License:** MIT
 
 ---
+**Before use this module, visit our wiki**
 
+![https://github.com/Destripador/empleados/wiki](https://github.com/Destripador/empleados/wiki)
+
+---
 ## 📄 Overview
 
 This ERP module for Nextcloud enables companies to fully manage employee information, departments, positions, teams, and benefits, natively integrated into the Nextcloud ecosystem.
