@@ -164,6 +164,8 @@ class Version1Date20240627154849 extends SimpleMigrationStep {
 			
 			  $table->setPrimaryKey(['Id_empleados']);
 			  $table->addIndex(['Id_empleados'], 'Id_empleados');
+			  $table->addIndex(['Id_gerente'], 'idx_id_gerente');
+			  $table->addIndex(['Id_socio'], 'idx_id_socio');
 		  }
 
 		// Tabla de puestos
