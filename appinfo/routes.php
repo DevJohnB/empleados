@@ -19,6 +19,7 @@ return [
 		['name' => 'empleados#GetEmpleadosEquipo', 'url' => '/GetEmpleadosEquipo/{id_equipo}', 'verb' => 'GET'],
 		['name' => 'empleados#GetEmpleadosListFix', 'url' => '/GetEmpleadosListFix', 'verb' => 'GET'],
 		['name' => 'empleados#ExportListEmpleados', 'url' => '/ExportListEmpleados', 'verb' => 'GET'],
+		['name' => 'empleados#GetMyEquipo', 'url' => '/GetMyEquipo', 'verb' => 'GET'],
 		
 		['name' => 'empleados#uploadAvatar', 'url' => '/uploadAvatar', 'verb' => 'POST'],
 		

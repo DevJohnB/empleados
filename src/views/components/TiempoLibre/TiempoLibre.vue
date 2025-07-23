@@ -368,7 +368,7 @@ export default {
 			this.updateList()
 		}
 		this.getEquipos()
-		this.GetAllEquipo(this.employee[0].Id_equipo)
+		this.GetAllEquipo()
 	},
 	methods: {
 		// Abre el modal de aniversarios y carga los datos
@@ -645,9 +645,9 @@ export default {
 			}
 			this.modal = true
 		},
-		async GetAllEquipo(equipo) {
+		async GetAllEquipo() {
 			try {
-				await axios.get(generateUrl('/apps/empleados/GetEmpleadosEquipo/' + equipo))
+				await axios.get(generateUrl('/apps/empleados/GetMyEquipo'))
 					.then(
 						(response) => {
 							this.peopleEquipo = response.data

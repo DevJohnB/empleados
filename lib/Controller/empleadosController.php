@@ -87,6 +87,7 @@ class EmpleadosController extends BaseController {
         $this->avatarManager = $avatarManager;
 
         $this->rootFolder = $rootFolder;
+        
         $this->AdminCheckAccess(); // 🔥 Validar accesos automáticamente
     }
 
@@ -159,6 +160,19 @@ class EmpleadosController extends BaseController {
     #[NoAdminRequired]
     public function GetEmpleadosEquipo(string $id_equipo): array {
         return ['equipo' => $this->empleadosMapper->GetEmpleadosEquipo($id_equipo)];
+    }
+
+    /**
+     * Obtiene empleados de un equipo específico.
+     */
+    #[UseSession]
+    #[NoAdminRequired]
+    public function GetMyEquipo(): array {
+        $this->AdminCheckAccess(true);
+        $empleado = $this->empleadosMapper->GetMyEmployeeInfo($this->userSession->getUser()->getUID());
+        $people = $this->empleadosMapper->GetMyEquipo($empleado[0]['Id_equipo']);
+
+        return ['equipo' => $people];
     }
 
     /**

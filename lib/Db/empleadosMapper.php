@@ -19,6 +19,29 @@ class empleadosMapper extends QBMapper {
 		parent::__construct($db, 'empleados', empleados::class);
 	}
 
+	public function GetSubordinates($id): array {
+		$qb = $this->db->getQueryBuilder();
+
+		$qb->select('e.Id_empleados', 'e.Id_user')
+			->from('empleados', 'e')
+			->where(
+				$qb->expr()->orX(
+					$qb->expr()->eq('e.Id_gerente', $qb->createNamedParameter($id)),
+					$qb->expr()->eq('e.Id_socio', $qb->createNamedParameter($id))
+				)
+			)
+			->andWhere(
+				$qb->expr()->neq('e.Id_user', $qb->createNamedParameter($id))
+			);
+
+
+		$result = $qb->execute();
+		$users = $result->fetchAll();
+		$result->closeCursor();
+
+		return $users;
+	}
+
     public function GetMyEmployeeInfo($id): array {
 		$qb = $this->db->getQueryBuilder();
 
@@ -258,6 +281,21 @@ class empleadosMapper extends QBMapper {
 		$qb = $this->db->getQueryBuilder();
 
 		$qb->select('*')
+			->from($this->getTableName(), 'e')
+			->innerJoin('e', 'users', 'u', $qb->expr()->eq('u.uid', 'e.Id_user'))
+			->where($qb->expr()->eq('Id_equipo', $qb->createNamedParameter($id_equipo)));
+		
+		$result = $qb->execute();
+		$users = $result->fetchAll();
+		$result->closeCursor();
+	
+		return $users;
+	}
+
+	public function GetMyEquipo(string $id_equipo): array {
+		$qb = $this->db->getQueryBuilder();
+
+		$qb->select('Id_empleados', 'Id_user')
 			->from($this->getTableName(), 'e')
 			->innerJoin('e', 'users', 'u', $qb->expr()->eq('u.uid', 'e.Id_user'))
 			->where($qb->expr()->eq('Id_equipo', $qb->createNamedParameter($id_equipo)));

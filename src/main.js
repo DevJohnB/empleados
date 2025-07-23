@@ -23,6 +23,9 @@ const groups = groupElement ? JSON.parse(groupElement.getAttribute('data-paramet
 const employeeElement = document.getElementById('employee')
 const employee = employeeElement ? JSON.parse(employeeElement.getAttribute('data-parameters') || '{}') : {}
 
+const subordinatesElement = document.getElementById('subordinates')
+const subordinates = subordinatesElement ? JSON.parse(subordinatesElement.getAttribute('data-parameters') || '{}') : {}
+
 const emitter = mitt()
 
 Vue.prototype.$bus = emitter // ✅ Esto hace que $bus esté disponible globalmente
@@ -36,5 +39,6 @@ new View({
 		parameters: configuraciones,
 		groupsUser: groups,
 		employee,
+		subordinates,
 	},
 }).$mount('#content')

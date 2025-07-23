@@ -62,27 +62,29 @@ abstract class BaseController extends Controller {
     }
 
 
-    public function AdminCheckAccess(): void {
-        $allowedGroups = ['admin', 'recursos_humanos'];
-        $user = $this->userSession->getUser();
+    public function AdminCheckAccess($flag = true): void {
+        if (!$flag) {
+            $allowedGroups = ['admin', 'recursos_humanos'];
+            $user = $this->userSession->getUser();
 
-        if (!$user) {
-            throw new OCSForbiddenException("❌ Debes estar autenticado para acceder a este módulo.");
-        }
-
-        $userGroups = $this->groupManager->getUserGroups($user);
-        if (!$userGroups || count($userGroups) === 0) {
-            throw new OCSForbiddenException("⚠️ No perteneces a ningún grupo permitido para acceder.");
-        }
-
-        foreach ($userGroups as $group) {
-            $groupId = $group->getGID();
-            if ($groupId && in_array($groupId, $allowedGroups)) {
-                return; // ✅ Acceso permitido
+            if (!$user) {
+                throw new OCSForbiddenException("❌ Debes estar autenticado para acceder a este módulo.");
             }
-        }
 
-        throw new OCSForbiddenException("🚫 No tienes permiso para acceder a este módulo. Contacta al administrador.");
+            $userGroups = $this->groupManager->getUserGroups($user);
+            if (!$userGroups || count($userGroups) === 0) {
+                throw new OCSForbiddenException("⚠️ No perteneces a ningún grupo permitido para acceder.");
+            }
+
+            foreach ($userGroups as $group) {
+                $groupId = $group->getGID();
+                if ($groupId && in_array($groupId, $allowedGroups)) {
+                    return; // ✅ Acceso permitido
+                }
+            }
+
+            throw new OCSForbiddenException("🚫 No tienes permiso para acceder a este módulo. Contacta al administrador.");
+        }
     }
 
     
@@ -113,12 +115,19 @@ abstract class BaseController extends Controller {
         return $this->configParams;
     }
 
-    
     /**
      * 📌 Permite que los controladores accedan los datos del empleado actual.
      */
     public function getEmployeeInfo(): array {
         $user = $this->userSession->getUser();
         return $this->empleadosMapper->GetMyEmployeeInfo($user->getUID());
+    }
+
+    /**
+     * 📌 Permite busacr si el empleado actual cuenta tiene subordinados
+     */
+    public function GetSubordinates(): array {
+        $user = $this->userSession->getUser();
+        return $this->empleadosMapper->GetSubordinates($user->getUID());
     }
 }

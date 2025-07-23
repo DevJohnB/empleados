@@ -22,6 +22,7 @@ export default {
 			configuraciones: this.configuraciones,
 			groupuser: this.groupsuser,
 			employee: this.employee,
+			subordinates: this.subordinates,
 		}
 	},
 
@@ -36,6 +37,10 @@ export default {
 			required: true,
 		},
 		employee: {
+			type: Array,
+			required: true,
+		},
+		subordinates: {
 			type: Array,
 			required: true,
 		},

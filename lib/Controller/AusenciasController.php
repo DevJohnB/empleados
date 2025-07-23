@@ -101,6 +101,7 @@ class AusenciasController extends Controller {
     private function registrarActividadAusencia(string $tipoAusencia, string $fechaInicio, string $fechaFin, ?int $idHistorialAusencia): void {
         $user = $this->userSession->getUser()->getUID();
         $username = $this->userSession->getUser()->getDisplayName();
+        $employe_info = $this->empleadosMapper->GetMyEmployeeInfo($user);
 
         $event = $this->activityManager->generateEvent();
         $event->setApp('empleados');
@@ -119,19 +120,44 @@ class AusenciasController extends Controller {
 
         // ✅ Usa el message como resumen textual
         $event->setMessage('Desde "' . $fechaInicio . '" hasta "' . $fechaFin . '"');
-
-        $this->mailHelper->enviarCorreo(
-            'servicios.torreon@crowe.mx',
-            'Nueva solicitud',
-            [
-                'Hola ' . $username . '',
-                'El usuario ' . $username . ' ha realizado una solicitu de "' . $tipoAusencia . '".',
-                'Fecha de inicio: ' . $fechaFin . '  - Fecha de finalización: ' . $fechaFin . '',
-                '',
-            ]
-        );
-
         $this->activityManager->publish($event);
+ 
+        foreach ([$employe_info[0]['Id_gerente'], $employe_info[0]['Id_socio']] as $usuario) {
+            $userM = $this->userManager->get($usuario);
+            $mail = $userM->getEMailAddress();
+            
+            $dependent = $this->empleadosMapper->GetMyEmployeeInfo($user);
+
+            $event = $this->activityManager->generateEvent();
+            $event->setApp('empleados');
+            $event->setType('empleados');
+            $event->setObject('empleados', (int) $idHistorialAusencia, 'Solicitud de ausencia');
+            $event->setAffectedUser($usuario);
+
+            // ✅ Usa el subject ID y pasa los parámetros de forma estándar
+            $event->setSubject(
+                'ausencia_registrada',
+                [
+                    'nombre' => (string) $user,
+                    'tipo_ausencia' => (string) $tipoAusencia
+                ]
+            );
+
+            // ✅ Usa el message como resumen textual
+            $event->setMessage('Desde "' . $fechaInicio . '" hasta "' . $fechaFin . '"');
+            $this->activityManager->publish($event);
+
+            $this->mailHelper->enviarCorreo(
+                $mail,
+                'Nueva solicitud',
+                [
+                    'Hola ' . $userM->getDisplayName() . '',
+                    'El usuario ' . $username . ' ha realizado una solicitud de "' . $tipoAusencia . '".',
+                    'Fecha de inicio: ' . $fechaFin . '  - Fecha de finalización: ' . $fechaFin . '',
+                    '',
+                ]
+            );
+        }
     }
 
 
@@ -412,62 +438,61 @@ class AusenciasController extends Controller {
     * Obtener ausencias del historial de ausencias por mes y año.
     */
     #[UseSession]
-#[NoAdminRequired]
-public function GetAusenciasEmployeeHistorial(): DataResponse {
-	$usuariosInput = $this->request->getParam('id_employee');
-	$desde = $this->request->getParam('desde');
-	$hasta = $this->request->getParam('hasta');
+    #[NoAdminRequired]
+    public function GetAusenciasEmployeeHistorial(): DataResponse {
+        $usuariosInput = $this->request->getParam('id_employee');
+        $desde = $this->request->getParam('desde');
+        $hasta = $this->request->getParam('hasta');
 
-	$user = $this->userSession->getUser();
-	$uid = $user->getUID();
+        $user = $this->userSession->getUser();
+        $uid = $user->getUID();
 
-	// Validar privilegios
-	$isPrivileged = $this->groupManager->isInGroup($uid, 'admin') ||
-					$this->groupManager->isInGroup($uid, 'recursos_humanos');
+        // Validar privilegios
+        $isPrivileged = $this->groupManager->isInGroup($uid, 'admin') ||
+                        $this->groupManager->isInGroup($uid, 'recursos_humanos');
 
-	// Obtener IDs del equipo del usuario
-	$id_empleado = $this->empleadosMapper->GetMyEmployeeInfo($uid);
-	$equipo_empleado = $this->empleadosMapper->GetEmpleadosEquipo($id_empleado[0]['Id_equipo']);
-	$ids_equipo = array_map(fn($e) => (int) $e['Id_empleados'], $equipo_empleado);
+        // Obtener IDs del equipo del usuario
+        $id_empleado = $this->empleadosMapper->GetMyEmployeeInfo($uid);
+        $equipo_empleado = $this->empleadosMapper->GetEmpleadosEquipo($id_empleado[0]['Id_equipo']);
+        $ids_equipo = array_map(fn($e) => (int) $e['Id_empleados'], $equipo_empleado);
 
-	// 🛡️ Normalizar entrada
-	if (is_string($usuariosInput)) {
-		$usuariosInput = json_decode($usuariosInput, true);
-	}
-	$usuarios = is_array($usuariosInput) ? (array_keys($usuariosInput) === range(0, count($usuariosInput) - 1) ? $usuariosInput : [$usuariosInput]) : [];
+        // 🛡️ Normalizar entrada
+        if (is_string($usuariosInput)) {
+            $usuariosInput = json_decode($usuariosInput, true);
+        }
+        $usuarios = is_array($usuariosInput) ? (array_keys($usuariosInput) === range(0, count($usuariosInput) - 1) ? $usuariosInput : [$usuariosInput]) : [];
 
-	$response = [];
+        $response = [];
 
-	foreach ($usuarios as $item) {
-		if (!is_array($item) || !isset($item['Id_empleados'])) {
-			continue;
-		}
+        foreach ($usuarios as $item) {
+            if (!is_array($item) || !isset($item['Id_empleados'])) {
+                continue;
+            }
 
-		$id_emp = (int) $item['Id_empleados'];
+            $id_emp = (int) $item['Id_empleados'];
 
-		if ($isPrivileged || in_array($id_emp, $ids_equipo)) {
-			$empleado_ausencias = $this->ausenciasMapper->GetAusenciasByUser($id_emp);
-			if (empty($empleado_ausencias)) {
-				continue;
-			}
+            if ($isPrivileged || in_array($id_emp, $ids_equipo)) {
+                $empleado_ausencias = $this->ausenciasMapper->GetAusenciasByUser($id_emp);
+                if (empty($empleado_ausencias)) {
+                    continue;
+                }
 
-			$ausencias = $this->historialausenciasMapper->GetAusenciasEnRango(
-				$desde,
-				$hasta,
-				$empleado_ausencias[0]['id_ausencias']
-			);
+                $ausencias = $this->historialausenciasMapper->GetAusenciasEnRango(
+                    $desde,
+                    $hasta,
+                    $empleado_ausencias[0]['id_ausencias']
+                );
 
-			$nombre = $item['displayName'] ?? $item['Id_user'] ?? 'Empleado ' . $id_emp;
+                $nombre = $item['displayName'] ?? $item['Id_user'] ?? 'Empleado ' . $id_emp;
 
-			foreach ($ausencias as &$a) {
-				$a['nombre_empleado'] = $nombre;
-			}
+                foreach ($ausencias as &$a) {
+                    $a['nombre_empleado'] = $nombre;
+                }
 
-			$response = array_merge($response, $ausencias);
-		}
-	}
+                $response = array_merge($response, $ausencias);
+            }
+        }
 
-	return new DataResponse(['success' => true, 'message' => $response]);
-}
-
+        return new DataResponse(['success' => true, 'message' => $response]);
+    }
 }

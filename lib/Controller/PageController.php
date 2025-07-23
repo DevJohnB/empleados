@@ -45,7 +45,13 @@ class PageController extends BaseController {
 		$params = $this->getConfigParams();
 		$group = $this->GroupCheckAccess();
 		$employee = $this->getEmployeeInfo();
+		$subordinates = $this->GetSubordinates();
 
-		return new TemplateResponse(Application::APP_ID, 'index', ['config' => $params, 'group' => $group, 'employee' => $employee]);
+		return new TemplateResponse(Application::APP_ID, 'index', [
+				'config' => $params,
+				'group' => $group, 
+				'employee' => $employee,
+				'subordinates' => $subordinates,
+			]);
 	}
 }
