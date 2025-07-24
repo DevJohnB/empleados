@@ -39,58 +39,88 @@
 								</div>
 							</div>
 							<div class="infos">
-								<div v-if="isAdmin()">
-									<NcSelect v-bind="propsEmployees"
-										v-model="employees" />
+								<!-- Acordeón notificaciones -->
+								<div v-if="notificaciones" class="acordeon-item">
+									<button class="acordeon-titulo" @click="toggle(0)">
+										<div>
+											Pendientes
+										</div>
+										<div class="flex-to-right">
+											<span>{{ accordeon[0].abierto ? '-' : '+' }}</span>
+										</div>
+									</button>
+									<div v-show="accordeon[0].abierto" class="acordeon-contenido">
+										<div>contenido</div>
+									</div>
 								</div>
-								<br>
+
+								<!-- Mostrar solo mis ausencias -->
 								<NcButton
+									class="btn-top"
 									text="center (default)"
 									variant="secondary"
 									wide
 									@click="typePetition = null; $refs.fullCalendar.getApi().refetchEvents()">
-									Solo mis ausencias
+									Mostras mis ausencias
 								</NcButton>
-								<NcButton
-									text="center (default)"
-									variant="secondary"
-									wide
-									class="btn-top"
-									@click="typePetition = 'all'; $refs.fullCalendar.getApi().refetchEvents()">
-									Mostrar todo mi equipo
-								</NcButton>
-								<div>
-									<div class="rst-title">
-										<div class="title_flex">
-											<div class="subtitle_flex">
-												<NcAvatar :user="Equipo.Id_jefe_equipo" :display-name="Equipo.Id_jefe_equipo" :size="20" />
+
+								<!-- Acordeón vista equipo -->
+								<div class="acordeon-item btn-top">
+									<button class="acordeon-titulo" @click="toggle(1)">
+										Filtrar por equipo
+										<span>{{ accordeon[1].abierto ? '-' : '+' }}</span>
+									</button>
+									<div :class="['acordeon-contenido', { abierto: accordeon[1].abierto }]">
+										<div>
+											<div class="rst-title">
+												<div class="title_flex">
+													<div class="subtitle_flex">
+														<NcAvatar :user="Equipo.Id_jefe_equipo" :display-name="Equipo.Id_jefe_equipo" :size="20" />
+													</div>
+													<div class="btn-top-subtitle">
+														{{ Equipo.Nombre }}
+													</div>
+													<div class="flex-to-right">
+														<AccountGroup class="pointer" @click="typePetition = 'all'; $refs.fullCalendar.getApi().refetchEvents()" />
+													</div>
+												</div>
 											</div>
-											<div>
-												<h1> {{ Equipo.Nombre }} </h1>
+											<div class="rst">
+												<ul>
+													<NcListItem
+														v-for="(item) in peopleEquipo.equipo"
+														:key="item.Id_empleados"
+														:name="item.displayname ? item.displayname : item.Id_user"
+														@click.prevent="employees = []; typePetition = 'employee'; selected_user = item; $refs.fullCalendar.getApi().refetchEvents()">
+														<template #icon>
+															<NcAvatar disable-menu
+																:size="44"
+																:user="item.Id_user"
+																:display-name="item.Id_user" />
+														</template>
+													</NcListItem>
+												</ul>
 											</div>
 										</div>
 									</div>
-									<div class="rst">
-										<ul>
-											<NcListItem
-												v-for="(item) in peopleEquipo.equipo"
-												:key="item.Id_empleados"
-												:name="item.displayname ? item.displayname : item.Id_user"
-												@click.prevent="employees = []; typePetition = 'employee'; selected_user = item; $refs.fullCalendar.getApi().refetchEvents()">
-												<template #icon>
-													<NcAvatar disable-menu
-														:size="44"
-														:user="item.Id_user"
-														:display-name="item.Id_user" />
-												</template>
-											</NcListItem>
-										</ul>
+								</div>
+
+								<!-- Acordeón vista administrativa -->
+								<div v-if="isAdmin()" class="acordeon-item btn-top">
+									<button class="acordeon-titulo" @click="toggle(2)">
+										Administrativo
+										<span>{{ accordeon[2].abierto ? '-' : '+' }}</span>
+									</button>
+									<div :class="['acordeon-contenido', { abierto: accordeon[2].abierto }]">
+										<div class="btn-top">
+											<NcSelect v-bind="propsEmployees" v-model="employees" />
+										</div>
 									</div>
 								</div>
 							</div>
 							<div class="footers">
-								<p class="tags">
-									#HTML
+								<p>
+									🔎 {{ vista_actual }}
 								</p>
 								<!-- button type="button" class="action">
 									Get started
@@ -202,6 +232,7 @@ import axios from '@nextcloud/axios'
 
 // icons
 import Airplane from 'vue-material-design-icons/Airplane.vue'
+import AccountGroup from 'vue-material-design-icons/AccountGroup.vue'
 import CalendarQuestionOutline from 'vue-material-design-icons/CalendarQuestionOutline.vue'
 
 import {
@@ -226,6 +257,7 @@ export default {
 		NcActions,
 		NcActionButton,
 		Airplane,
+		AccountGroup,
 		CalendarQuestionOutline,
 		FullCalendar,
 		NcListItem,
@@ -297,7 +329,7 @@ export default {
 			typePetition: null,
 			selected_user: null, // Para almacenar el usuario seleccionado
 			propsEmployees: {
-				inputLabel: 'Vista administrativa',
+				inputLabel: 'Todos los empleados',
 				userSelect: true,
 				multiple: true,
 				closeOnSelect: false,
@@ -305,6 +337,14 @@ export default {
 			},
 			employees: [], // Para almacenar los empleados seleccionados
 			infoSelected: null, // Para almacenar la información del empleado seleccionado
+			vista_actual: 'Mis ausencias',
+			accordeon: [
+				{ abierto: false },
+				{ abierto: false },
+				{ abierto: false },
+				{ abierto: false },
+			], // Acordeón para preguntas frecuentes
+			notificaciones: false, // Para mostrar de notificaciones
 		}
 	},
 
@@ -371,6 +411,10 @@ export default {
 		this.GetAllEquipo()
 	},
 	methods: {
+		// Alterna el estado abierto/cerrado de las preguntas frecuentes
+		toggle(index) {
+			this.accordeon[index].abierto = !this.accordeon[index].abierto
+		},
 		// Abre el modal de aniversarios y carga los datos
 		showAniversarioModal() {
 			this.getAniversarios()
@@ -428,12 +472,15 @@ export default {
 			switch (this.typePetition) {
 			case 'all':
 				this.getAllAusencias(fetchInfo, success, failure)
+				this.vista_actual = 'Todo mi equipo'
 				break
 			case 'employee':
 				this.getEmployeeAusencias(fetchInfo, success, failure)
+				this.vista_actual = 'Empleado seleccionado'
 				break
 			default:
 				this.getMyAusencias(fetchInfo, success, failure)
+				this.vista_actual = 'Mis ausencias'
 			}
 		},
 
@@ -731,11 +778,6 @@ export default {
   background-color: rgba(0, 140, 255, 0.082);
 }
 
-.tags {
-  font-weight: 300;
-  font-size: .75rem;
-}
-
 .h2-white {
   color: white;
 }
@@ -805,5 +847,43 @@ export default {
 .my-calendar {
 	--color-background-dark: transparent !important;
 }
+.acordeon-item {
+	margin-bottom: 10px;
+	border-radius: 5px;
+	overflow: hidden;
+}
 
+.acordeon-titulo {
+	width: 100%;
+	text-align: center;
+	border: none;
+	justify-content: space-between;
+	align-items: center;
+}
+
+.acordeon-contenido {
+	max-height: 0;
+	opacity: 0;
+	overflow: hidden;
+	transition: all 0.3s ease-in-out;
+}
+
+.acordeon-contenido.abierto {
+	max-height: 500px; /* suficiente para cubrir el contenido */
+	opacity: 1;
+}
+.flex-to-right {
+	margin-left: auto;
+	margin-right: 5%;
+	cursor: pointer;
+}
+.subtitle_flex{
+	margin-left: 4%;
+}
+.btn-top-subtitle {
+	margin-top: 3px;
+}
+.pointer {
+	cursor: pointer;
+}
 </style>
