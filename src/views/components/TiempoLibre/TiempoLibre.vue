@@ -117,6 +117,43 @@
 										</div>
 									</div>
 								</div>
+
+								<!-- Acordeón mis empleados -->
+								<div v-if="subordinates.length > 0" class="acordeon-item">
+									<button class="acordeon-titulo" @click="toggle(3)">
+										Mis empleados <span>{{ accordeon[3].abierto ? '-' : '+' }}</span>
+									</button>
+									<div :class="['acordeon-contenido', { abierto: accordeon[3].abierto }]">
+										<div>
+											<div class="rst-title">
+												<div class="title_flex">
+													<div class="subtitle_flex">
+														Mis empleados
+													</div>
+													<div class="flex-to-right">
+														<AccountGroup class="pointer" @click="typePetition = 'all-employees'; $refs.fullCalendar.getApi().refetchEvents()" />
+													</div>
+												</div>
+											</div>
+											<div class="rst">
+												<ul>
+													<NcListItem
+														v-for="(item) in subordinates"
+														:key="item.Id_empleados"
+														:name="item.displayname ? item.displayname : item.Id_user"
+														@click.prevent="employees = []; typePetition = 'employee'; selected_user = item; $refs.fullCalendar.getApi().refetchEvents()">
+														<template #icon>
+															<NcAvatar disable-menu
+																:size="44"
+																:user="item.Id_user"
+																:display-name="item.Id_user" />
+														</template>
+													</NcListItem>
+												</ul>
+											</div>
+										</div>
+									</div>
+								</div>
 							</div>
 							<div class="footers">
 								<p>
@@ -266,7 +303,7 @@ export default {
 		NcSelect,
 	},
 
-	inject: ['employee', 'configuraciones', 'groupuser'],
+	inject: ['employee', 'configuraciones', 'groupuser', 'subordinates'],
 
 	data() {
 		return {
@@ -345,6 +382,7 @@ export default {
 				{ abierto: false },
 			], // Acordeón para preguntas frecuentes
 			notificaciones: false, // Para mostrar de notificaciones
+			boss: false,
 		}
 	},
 
@@ -409,11 +447,20 @@ export default {
 		}
 		this.getEquipos()
 		this.GetAllEquipo()
+		// this.checkSubordinates()
 	},
 	methods: {
+		// Verificar si el empleado actual cuenta con subordinados
+		/*
+		checkSubordinates(index) {
+		},
+		*/
 		// Alterna el estado abierto/cerrado de las preguntas frecuentes
 		toggle(index) {
-			this.accordeon[index].abierto = !this.accordeon[index].abierto
+			this.accordeon = this.accordeon.map((item, i) => ({
+				...item,
+				abierto: i === index ? !item.abierto : false,
+			}))
 		},
 		// Abre el modal de aniversarios y carga los datos
 		showAniversarioModal() {
@@ -478,7 +525,16 @@ export default {
 				this.getEmployeeAusencias(fetchInfo, success, failure)
 				this.vista_actual = 'Empleado seleccionado'
 				break
+			case 'all-employees':
+				this.getEmployeeAusencias(fetchInfo, success, failure)
+				this.vista_actual = 'Empleado seleccionado'
+				break
 			default:
+				this.accordeon = this.accordeon.map(item => ({
+					...item,
+					abierto: false,
+				}))
+				this.employees = []
 				this.getMyAusencias(fetchInfo, success, failure)
 				this.vista_actual = 'Mis ausencias'
 			}
