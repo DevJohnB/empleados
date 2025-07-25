@@ -526,8 +526,8 @@ export default {
 				this.vista_actual = 'Empleado seleccionado'
 				break
 			case 'all-employees':
-				this.getEmployeeAusencias(fetchInfo, success, failure)
-				this.vista_actual = 'Empleado seleccionado'
+				this.GetAusenciasMyWorkers(fetchInfo, success, failure)
+				this.vista_actual = 'Todos mis empleados'
 				break
 			default:
 				this.accordeon = this.accordeon.map(item => ({
@@ -565,6 +565,45 @@ export default {
 							end: fechaHasta.toISOString(),
 							allDay: true,
 							color: this.color(this.employee[0].Id_user), // Asignar color basado en el usuario
+							nombre_empleado: item.nombre_empleado, // Agregar nombre del empleado
+						}
+					})
+
+					// eslint-disable-next-line no-console
+					console.log('✅ Eventos generados:', events)
+					success(events)
+				})
+				.catch(error => {
+					console.error('❌ Error al obtener eventos:', error)
+					failure(error)
+				})
+		},
+
+		GetAusenciasMyWorkers(fetchInfo, success, failure) {
+			// eslint-disable-next-line no-console
+			console.log('🔄 Llamando fetchEvents para:', fetchInfo)
+
+			axios.post(generateUrl('/apps/empleados/GetAusenciasMyWorkers'), {
+				desde: fetchInfo.startStr,
+				hasta: fetchInfo.endStr,
+			})
+				.then(r => {
+					const data = r.data.message || []
+					// eslint-disable-next-line no-console
+					console.log('📦 Datos recibidos:', data)
+
+					const events = data.map(item => {
+						const fechaInicio = new Date(item.fecha_de)
+						const fechaHasta = new Date(item.fecha_hasta)
+						fechaHasta.setDate(fechaHasta.getDate() + 1)
+
+						return {
+							id: item.id_historial_ausencias,
+							title: item.nombre_empleado + ' - ' + item.tipo_nombre,
+							start: fechaInicio.toISOString(),
+							end: fechaHasta.toISOString(),
+							allDay: true,
+							color: this.color(item.nombre_empleado), // Asignar color basado en el usuario
 							nombre_empleado: item.nombre_empleado, // Agregar nombre del empleado
 						}
 					})

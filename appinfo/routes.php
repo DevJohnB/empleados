@@ -93,6 +93,7 @@ return [
 		['name' => 'ausencias#GetAusenciasEmployeeHistorial', 'url' => '/GetAusenciasEmployeeHistorial', 'verb' => 'POST'],
 		['name' => 'ausencias#GetAusenciasHistorialAll', 'url' => '/GetAusenciasHistorialAll', 'verb' => 'POST'],
 		['name' => 'ausencias#GetAusenciasHistorial', 'url' => '/GetAusenciasHistorial', 'verb' => 'POST'],
+		['name' => 'ausencias#GetAusenciasMyWorkers', 'url' => '/GetAusenciasMyWorkers', 'verb' => 'POST'],
 		['name' => 'ausencias#GetAusenciasByUser', 'url' => '/GetAusenciasByUser', 'verb' => 'POST'],
 		['name' => 'ausencias#EnviarAusencia', 'url' => '/EnviarAusencia', 'verb' => 'POST'],
 		 

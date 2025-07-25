@@ -434,6 +434,39 @@ class AusenciasController extends Controller {
         return new DataResponse(['success' => true, 'message' => $response]);
     }
 
+    /**
+    * Obtener ausencias de mis empleados.
+    */
+    #[UseSession]
+    #[NoAdminRequired]
+    public function GetAusenciasMyWorkers(): DataResponse {
+        $desde = $this->request->getParam('desde');
+        $hasta = $this->request->getParam('hasta');
+
+        $user = $this->userSession->getUser();
+        $equipo_empleado = $this->empleadosMapper->GetSubordinates($user->getUID());
+
+        $response = [];
+
+        foreach ($equipo_empleado as $empleado) {
+            $empleado_inf = $this->ausenciasMapper->GetAusenciasByUser($empleado['Id_empleados']);
+            $ausencias = $this->historialausenciasMapper->GetAusenciasEnRango(
+                $desde,
+                $hasta,
+                $empleado_inf[0]['id_ausencias']
+            );
+
+            // opcional: agrega nombre del empleado a cada evento
+            foreach ($ausencias as &$a) {
+                $a['nombre_empleado'] = $empleado['Id_user']; // si existe
+            }
+
+            $response = array_merge($response, $ausencias);
+        }
+
+        return new DataResponse(['success' => true, 'message' => $response]);
+    }
+
      /**
     * Obtener ausencias del historial de ausencias por mes y año.
     */
