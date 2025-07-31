@@ -65,7 +65,22 @@ class ConfiguracionesController extends Controller {
 		$this->rootFolder = $rootFolder;
 
 	}
-
+    
+    /**
+     * Obtiene las configuraciones actuales del módulo, incluyendo:
+     * - El listado de usuarios disponibles en Nextcloud para selección.
+     * - El usuario gestor de datos actual, si existe.
+     * - Configuraciones adicionales como guardado de notas, acumulación de vacaciones,
+     *   módulo de ahorro y módulo de ausencias.
+     *
+     * @return array Arreglo asociativo con las siguientes claves:
+     *               - 'Gestor_actual': Información del usuario gestor actual o null.
+     *               - 'Users': Listado de usuarios disponibles.
+     *               - 'Guardado_notas': Configuración de guardado de notas.
+     *               - 'Acumular_vacaciones': Configuración de acumulación de vacaciones.
+     *               - 'modulo_ahorro': Configuración del módulo de ahorro.
+     *               - 'modulo_ausencias': Configuración del módulo de ausencias.
+     */
 	#[NoCSRFRequired]
 	#[NoAdminRequired]    
 	public function GetConfigurations(): array {
@@ -151,7 +166,6 @@ class ConfiguracionesController extends Controller {
                 }
             }
         }
-       
 	}
 
     public function ActualizarConfiguracion($id_configuracion, $data){

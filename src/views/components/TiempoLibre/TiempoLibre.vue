@@ -41,15 +41,15 @@
 							<div class="infos">
 								<!-- Acordeón notificaciones -->
 								<div v-if="notificaciones" class="acordeon-item">
-									<button class="acordeon-titulo" @click="toggle(0)">
-										<div>
-											Pendientes
+									<button class="acordeon-notification" @click="toggle(0)">
+										<div class="noti-wrapper">
+											<BellOutline class="bell-icon" />
+											<NcCounterBubble :count="notifications_counter" class="noti-badge" />
 										</div>
-										<div class="flex-to-right">
-											<span>{{ accordeon[0].abierto ? '-' : '+' }}</span>
-										</div>
+										<span class="noti-text">Pendientes</span>
+										<span class="arrow">{{ accordeon[0].abierto ? '-' : '+' }}</span>
 									</button>
-									<div v-show="accordeon[0].abierto" class="acordeon-contenido">
+									<div :class="['acordeon-contenido', { abierto: accordeon[0].abierto }]">
 										<div>contenido</div>
 									</div>
 								</div>
@@ -269,6 +269,7 @@ import axios from '@nextcloud/axios'
 
 // icons
 import Airplane from 'vue-material-design-icons/Airplane.vue'
+import BellOutline from 'vue-material-design-icons/BellOutline.vue'
 import AccountGroup from 'vue-material-design-icons/AccountGroup.vue'
 import CalendarQuestionOutline from 'vue-material-design-icons/CalendarQuestionOutline.vue'
 
@@ -281,6 +282,7 @@ import {
 	NcAvatar,
 	NcButton,
 	NcSelect,
+	NcCounterBubble,
 } from '@nextcloud/vue'
 export default {
 	name: 'TiempoLibre',
@@ -301,6 +303,8 @@ export default {
 		NcAvatar,
 		NcButton,
 		NcSelect,
+		NcCounterBubble,
+		BellOutline,
 	},
 
 	inject: ['employee', 'configuraciones', 'groupuser', 'subordinates'],
@@ -382,7 +386,8 @@ export default {
 				{ abierto: false },
 			], // Acordeón para preguntas frecuentes
 			notificaciones: false, // Para mostrar de notificaciones
-			boss: false,
+			notifications_counter: 0, // Contador de notificaciones
+			loading: false, // Para mostrar el loading
 		}
 	},
 
@@ -447,14 +452,32 @@ export default {
 		}
 		this.getEquipos()
 		this.GetAllEquipo()
-		// this.checkSubordinates()
+		this.checkNotifications()
 	},
 	methods: {
 		// Verificar si el empleado actual cuenta con subordinados
-		/*
-		checkSubordinates(index) {
+		async checkNotifications() {
+			if (this.subordinates.length > 0) {
+				try {
+					await axios.get(generateUrl('/apps/empleados/GetNotificationsSubordinates'))
+						.then(
+							(response) => {
+								// eslint-disable-next-line no-console
+								console.log('🔔 Notificaciones de subordinados:', response.data)
+								if (response.data.length > 0) {
+									this.notificaciones = true
+									this.notifications_counter = response.data.length // Actualizar el contador de notificaciones
+								} else {
+									this.notificaciones = false
+								}
+							},
+						)
+				} catch (err) {
+					showError(t('empleados', 'Se ha producido una excepción [01] [' + err + ']'))
+				}
+			}
 		},
-		*/
+
 		// Alterna el estado abierto/cerrado de las preguntas frecuentes
 		toggle(index) {
 			this.accordeon = this.accordeon.map((item, i) => ({
@@ -981,4 +1004,38 @@ export default {
 .pointer {
 	cursor: pointer;
 }
+
+.acordeon-notification {
+	width: 100%;
+	border: none;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	position: relative;
+}
+
+.noti-wrapper {
+	position: initial;
+	width: 24px;
+	height: 24px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.noti-badge {
+	position: absolute;
+	top: -5px;
+	right: -5px;
+}
+
+.noti-text {
+	text-align: left;
+}
+
+.arrow {
+	font-weight: bold;
+	color: #666;
+}
+
 </style>

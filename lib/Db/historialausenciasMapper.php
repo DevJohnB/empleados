@@ -52,4 +52,44 @@ class historialausenciasMapper extends QBMapper {
 
 			return $ausencias;
 		}
+
+		public function GetAusenciasHistorialGerente(int $id): array {
+			$qb = $this->db->getQueryBuilder();
+
+			$qb->select('h.*', 't.nombre AS tipo_nombre')
+				->from($this->getTableName(), 'h')
+				->innerJoin('h', 'tipo_ausencia', 't', $qb->expr()->eq('h.id_tipo_ausencia', 't.id_tipo_ausencia'))
+				->where($qb->expr()->eq('h.id_ausencias', $qb->createNamedParameter($id)))
+				->andWhere(
+					$qb->expr()->andX(
+						$qb->expr()->lte('h.a_gerente', $qb->createNamedParameter(0))
+					)
+				);
+
+			$result = $qb->execute();
+			$ausencias = $result->fetchAll();
+			$result->closeCursor();
+
+			return $ausencias;
+		}
+		
+		public function GetAusenciasHistorialSocio(int $id): array {
+			$qb = $this->db->getQueryBuilder();
+
+			$qb->select('h.*', 't.nombre AS tipo_nombre')
+				->from($this->getTableName(), 'h')
+				->innerJoin('h', 'tipo_ausencia', 't', $qb->expr()->eq('h.id_tipo_ausencia', 't.id_tipo_ausencia'))
+				->where($qb->expr()->eq('h.id_ausencias', $qb->createNamedParameter($id)))
+				->andWhere(
+					$qb->expr()->andX(
+						$qb->expr()->lte('h.a_socio', $qb->createNamedParameter(0))
+					)
+				);
+
+			$result = $qb->execute();
+			$ausencias = $result->fetchAll();
+			$result->closeCursor();
+
+			return $ausencias;
+		}
 }

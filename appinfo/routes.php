@@ -90,6 +90,8 @@ return [
 
 		
 		/******************************* AUSENCIAS *****************************************/
+		['name' => 'ausencias#GetNotificationsSubordinates', 'url' => '/GetNotificationsSubordinates', 'verb' => 'GET'],
+
 		['name' => 'ausencias#GetAusenciasEmployeeHistorial', 'url' => '/GetAusenciasEmployeeHistorial', 'verb' => 'POST'],
 		['name' => 'ausencias#GetAusenciasHistorialAll', 'url' => '/GetAusenciasHistorialAll', 'verb' => 'POST'],
 		['name' => 'ausencias#GetAusenciasHistorial', 'url' => '/GetAusenciasHistorial', 'verb' => 'POST'],

@@ -165,7 +165,10 @@
 									helper-text="Comenta tu solicitud (OPCIONAL)" />
 							</div>
 						</div>
-						<div class="top">
+						<div v-if="loading">
+							<NcLoadingIcon :size="64" />
+						</div>
+						<div v-else class="top">
 							<NcButton variant="secondary" wide @click="EnviarAusencia()">
 								<template #icon>
 									<Airplane :size="20" />
@@ -199,6 +202,7 @@ import {
 	NcTextArea,
 	NcCheckboxRadioSwitch,
 	NcNoteCard,
+	NcLoadingIcon,
 } from '@nextcloud/vue'
 export default {
 	name: 'NuevaSolicitud',
@@ -214,6 +218,7 @@ export default {
 		// NcActionButton,
 		Airplane,
 		// CalendarQuestionOutline,
+		NcLoadingIcon,
 	},
 
 	inject: ['employee'],
@@ -251,6 +256,7 @@ export default {
 			comentarios: '',
 			SolicitarPrima: false,
 			selectedFiles: [],
+			loading: false, // Para mostrar el loading
 		}
 	},
 
@@ -293,6 +299,7 @@ export default {
 			this.selectedFiles = Array.from(files) // convierte FileList a Array
 		},
 		async EnviarAusencia() {
+			this.loading = true // Inicia el loading
 			try {
 				const formData = new FormData()
 
@@ -325,8 +332,10 @@ export default {
 				console.log(response.data)
 
 				this.$bus.emit('close-solicitud')
+				this.loading = false // Inicia el loading
 
 			} catch (err) {
+				this.loading = false // Inicia el loading
 				showError(t('empleados', 'Error al enviar la solicitud de ausencia: ' + err))
 			}
 		},

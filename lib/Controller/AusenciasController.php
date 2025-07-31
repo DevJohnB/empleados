@@ -122,7 +122,7 @@ class AusenciasController extends Controller {
         $event->setMessage('Desde "' . $fechaInicio . '" hasta "' . $fechaFin . '"');
         $this->activityManager->publish($event);
  
-        foreach ([$employe_info[0]['Id_gerente'], $employe_info[0]['Id_socio']] as $usuario) {
+        foreach ([$employe_info[0]['Id_gerente'], $employe_info[0]['Id_socio'], $this->configuracionesMapper->GetGestor()[0]['Data']] as $usuario) {
             $userM = $this->userManager->get($usuario);
             $mail = $userM->getEMailAddress();
             
@@ -159,7 +159,42 @@ class AusenciasController extends Controller {
             );
         }
     }
+    
+    
+    #[UseSession]
+    #[NoAdminRequired]
+    public function GetNotificationsSubordinates(): array {
+        $user = $this->userSession->getUser();
+        $equipo_empleado = $this->empleadosMapper->GetSubordinates($user->getUID());
 
+        $empleados_data = [];
+        foreach($equipo_empleado as $empleado) {
+            $id_empleado = $this->empleadosMapper->GetMyEmployeeInfo($empleado['Id_user']);
+            $ausencias = $this->ausenciasMapper->GetAusenciasByUser($id_empleado[0]['Id_empleados']);
+            
+            if ($id_empleado[0]['Id_gerente'] == $user->getUID()){
+                $ausencias_historial_gerente = $this->historialausenciasMapper->GetAusenciasHistorialGerente($ausencias[0]['id_ausencias']);
+            }
+            else if ($id_empleado[0]['Id_socio'] == $user->getUID()){
+                $ausencias_historial_socio = $this->historialausenciasMapper->GetAusenciasHistorialSocio($ausencias[0]['id_ausencias']);
+            }
+
+            if (isset($ausencias_historial_gerente)) {
+                foreach ($ausencias_historial_gerente as $item) {
+                    $empleados_data[] = $item;
+                }
+                unset($ausencias_historial_gerente);
+            }
+            if (isset($ausencias_historial_socio)) {
+                foreach ($ausencias_historial_socio as $item) {
+                    $empleados_data[] = $item;
+                }
+                unset($ausencias_historial_socio);
+            }
+        }
+        
+        return $empleados_data;
+    }
 
     /**
      * Obtiene la lista de ausencias.
@@ -295,86 +330,88 @@ class AusenciasController extends Controller {
         return $this->ausenciasMapper->GetAniversarioByDate($diferencia->y);
 
     }
+
     /**
     * Generar solicitud de ausencia con sus respectivos archivos adjuntos.
     */
     #[UseSession]
     #[NoAdminRequired]
     public function EnviarAusencia(): DataResponse {
-    try {
-        $files = $_FILES['archivos'] ?? ['name' => [], 'tmp_name' => []];
-        $fileCount = count((array)($files['name'] ?? []));
+        try {
+            $files = $_FILES['archivos'] ?? ['name' => [], 'tmp_name' => []];
+            $fileCount = count((array)($files['name'] ?? []));
 
-    
-        $user = $this->userSession->getUser();
-        $gestor = $this->configuracionesMapper->GetGestor()[0]['Data'] ?? null;
-    
-        if (!$gestor) {
-            throw new \Exception('No se encontró la carpeta del gestor de información.');
-        }
-    
-        $userFolder = $this->rootFolder->getUserFolder($gestor);
-        $folderPath = "EMPLEADOS/" . $user->getUID() . " - " . strtoupper($user->getDisplayName()) . "/JUSTIFICANTES";
-    
-        if (!$userFolder->nodeExists($folderPath)) {
-            $userFolder->newFolder($folderPath);
-        }
-    
-        $carpetaDestino = $userFolder->get($folderPath);
-        $fechaActual = (new \DateTime())->format('Y-m-d');
-    
-        for ($i = 0; $i < $fileCount; $i++) {
-            $tmpName = $files['tmp_name'][$i];
-            $originalName = $files['name'][$i];
-    
-            if (is_uploaded_file($tmpName)) {
-                $content = file_get_contents($tmpName);
-    
-                // Separar extensión
-                $extension = pathinfo($originalName, PATHINFO_EXTENSION);
-                $baseName = pathinfo($originalName, PATHINFO_FILENAME);
-    
-                // Construir nuevo nombre
-                $newName = $fechaActual . '-' . $baseName . '.' . $extension;
-    
-                if ($carpetaDestino->nodeExists($newName)) {
-                    $carpetaDestino->get($newName)->putContent($content);
-                } else {
-                    $carpetaDestino->newFile($newName)->putContent($content);
+        
+            $user = $this->userSession->getUser();
+            $gestor = $this->configuracionesMapper->GetGestor()[0]['Data'] ?? null;
+        
+            if (!$gestor) {
+                throw new \Exception('No se encontró la carpeta del gestor de información.');
+            }
+        
+            $userFolder = $this->rootFolder->getUserFolder($gestor);
+            $folderPath = "EMPLEADOS/" . $user->getUID() . " - " . strtoupper($user->getDisplayName()) . "/JUSTIFICANTES";
+        
+            if (!$userFolder->nodeExists($folderPath)) {
+                $userFolder->newFolder($folderPath);
+            }
+        
+            $carpetaDestino = $userFolder->get($folderPath);
+            $fechaActual = (new \DateTime())->format('Y-m-d');
+        
+            for ($i = 0; $i < $fileCount; $i++) {
+                $tmpName = $files['tmp_name'][$i];
+                $originalName = $files['name'][$i];
+        
+                if (is_uploaded_file($tmpName)) {
+                    $content = file_get_contents($tmpName);
+        
+                    // Separar extensión
+                    $extension = pathinfo($originalName, PATHINFO_EXTENSION);
+                    $baseName = pathinfo($originalName, PATHINFO_FILENAME);
+        
+                    // Construir nuevo nombre
+                    $newName = $fechaActual . '-' . $baseName . '.' . $extension;
+        
+                    if ($carpetaDestino->nodeExists($newName)) {
+                        $carpetaDestino->get($newName)->putContent($content);
+                    } else {
+                        $carpetaDestino->newFile($newName)->putContent($content);
+                    }
                 }
             }
+            
+            $id_tipo_ausencia = $this->request->getParam('id_tipo_ausencia');
+            $dias_solicitados = $this->request->getParam('dias_solicitados');
+            $fecha_de = $this->request->getParam('fecha_de');
+            $fecha_hasta = $this->request->getParam('fecha_hasta');
+            $prima_vacacional = $this->request->getParam('prima_vacacional');
+            $notas = $this->request->getParam('notas');
+
+            // aqui se disminuyen los dias de la ausencia
+            $tipo_ausencia = $this->tipoausenciaMapper->getTipoById($id_tipo_ausencia);
+            $id_empleado = $this->empleadosMapper->GetMyEmployeeInfo($user->getUID());
+            $empleado_ausencias = $this->ausenciasMapper->GetAusenciasByUser($id_empleado[0]['Id_empleados']);
+            if (!empty($tipo_ausencia) && $tipo_ausencia[0]['solicitar_prima_vacacional'] == 1) {
+                $dias_disponibles = $empleado_ausencias[0]['dias_disponibles'] - $dias_solicitados;
+                $this->ausenciasMapper->updateAusenciasEmpleado($empleado_ausencias[0]['id_ausencias'], $dias_disponibles);
+            }
+            
+            $fecha_de = DateTime::createFromFormat('d/m/Y', $this->request->getParam('fecha_de'))->format('Y-m-d');
+            $fecha_hasta = DateTime::createFromFormat('d/m/Y', $this->request->getParam('fecha_hasta'))->format('Y-m-d');
+
+            // Registro en el historial de ausencias 
+            $idHistorialAusencia = $this->historialausenciasMapper->EnviarAusencia((int) $id_tipo_ausencia, $empleado_ausencias[0]['id_ausencias'], $fecha_de, $fecha_hasta, (int) $prima_vacacional, $notas, $empleado_ausencias[0]['id_aniversario']);
+
+            $this->registrarActividadAusencia($tipo_ausencia[0]['nombre'], $fecha_de, $fecha_hasta, $idHistorialAusencia);
+
+            return new DataResponse(['success' => true, 'message' => $tipo_ausencia[0]['solicitar_prima_vacacional']]);
+        } catch (\Exception $e) {
+            // Manejo de errores
+            return new DataResponse(['success' => false, 'message' => $e->getMessage()]);
         }
-        
-        $id_tipo_ausencia = $this->request->getParam('id_tipo_ausencia');
-        $dias_solicitados = $this->request->getParam('dias_solicitados');
-        $fecha_de = $this->request->getParam('fecha_de');
-        $fecha_hasta = $this->request->getParam('fecha_hasta');
-        $prima_vacacional = $this->request->getParam('prima_vacacional');
-        $notas = $this->request->getParam('notas');
-
-        // aqui se disminuyen los dias de la ausencia
-        $tipo_ausencia = $this->tipoausenciaMapper->getTipoById($id_tipo_ausencia);
-        $id_empleado = $this->empleadosMapper->GetMyEmployeeInfo($user->getUID());
-        $empleado_ausencias = $this->ausenciasMapper->GetAusenciasByUser($id_empleado[0]['Id_empleados']);
-        if (!empty($tipo_ausencia) && $tipo_ausencia[0]['solicitar_prima_vacacional'] == 1) {
-            $dias_disponibles = $empleado_ausencias[0]['dias_disponibles'] - $dias_solicitados;
-            $this->ausenciasMapper->updateAusenciasEmpleado($empleado_ausencias[0]['id_ausencias'], $dias_disponibles);
-        }
-        
-        $fecha_de = DateTime::createFromFormat('d/m/Y', $this->request->getParam('fecha_de'))->format('Y-m-d');
-        $fecha_hasta = DateTime::createFromFormat('d/m/Y', $this->request->getParam('fecha_hasta'))->format('Y-m-d');
-
-        // Registro en el historial de ausencias 
-        $idHistorialAusencia = $this->historialausenciasMapper->EnviarAusencia((int) $id_tipo_ausencia, $empleado_ausencias[0]['id_ausencias'], $fecha_de, $fecha_hasta, (int) $prima_vacacional, $notas, $empleado_ausencias[0]['id_aniversario']);
-
-        $this->registrarActividadAusencia($tipo_ausencia[0]['nombre'], $fecha_de, $fecha_hasta, $idHistorialAusencia);
-
-        return new DataResponse(['success' => true, 'message' => $tipo_ausencia[0]['solicitar_prima_vacacional']]);
-    } catch (\Exception $e) {
-        // Manejo de errores
-        return new DataResponse(['success' => false, 'message' => $e->getMessage()]);
     }
-    }
+
     /**
     * Obtener ausencias del historial de ausencias por mes y año.
     */
@@ -400,6 +437,7 @@ class AusenciasController extends Controller {
 
         return new DataResponse(['success' => true, 'message' => $response]);
     }
+
     /**
     * Obtener ausencias del historial de ausencias por mes y año.
     */
@@ -467,7 +505,7 @@ class AusenciasController extends Controller {
         return new DataResponse(['success' => true, 'message' => $response]);
     }
 
-     /**
+    /**
     * Obtener ausencias del historial de ausencias por mes y año.
     */
     #[UseSession]
