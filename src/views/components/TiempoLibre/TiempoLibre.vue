@@ -2,6 +2,13 @@
 	<NcAppContent name="Loading">
 		<div class="">
 			<div class="text-center section">
+				<div v-if="configuraciones.modulo_ausencias_readonly === 'true'">
+					<br>
+					<NcNoteCard type="error"
+						heading="Atención!!!"
+						text="El modulo se encuentra en modo solo lectura" />
+					<br>
+				</div>
 				<section class="layout">
 					<div class="grow2">
 						<div class="text-center sectionPicker">
@@ -288,7 +295,7 @@ import multiMonthPlugin from '@fullcalendar/multimonth'
 import { ref } from 'vue'
 
 import usernameToColor from '@nextcloud/vue/functions/usernameToColor'
-import { showError /* showSuccess */ } from '@nextcloud/dialogs'
+import { showError, /* showSuccess */ showInfo } from '@nextcloud/dialogs'
 import { generateUrl } from '@nextcloud/router'
 import axios from '@nextcloud/axios'
 
@@ -308,6 +315,7 @@ import {
 	NcSelect,
 	NcCounterBubble,
 	NcLoadingIcon,
+	NcNoteCard,
 } from '@nextcloud/vue'
 export default {
 	name: 'TiempoLibre',
@@ -330,6 +338,7 @@ export default {
 		NcCounterBubble,
 		BellOutline,
 		NcLoadingIcon,
+		NcNoteCard,
 	},
 
 	inject: ['employee', 'configuraciones', 'groupuser', 'subordinates'],
@@ -758,12 +767,15 @@ export default {
 		// Acción al hacer clic en una fecha (puedes implementar si se requiere)
 		onDateClick(arg) {
 			// eslint-disable-next-line no-console
-			console.log('Fecha clickeada:', arg.dateStr)
+			console.log('Fecha clickeada 1:', arg.dateStr)
+			if (this.configuraciones.modulo_ausencias_readonly === 'true') {
+				showInfo('Este modulo se encuentra en modo solo lectura')
+			}
 		},
 
 		OnClickEvent(info) {
 			// eslint-disable-next-line no-console
-			console.log('Fecha clickeada:', info.event)
+			console.log('Fecha clickeada 2:', info.event)
 			this.infoSelected = info.event
 			this.modalEvento = true
 		},
@@ -805,6 +817,9 @@ export default {
 
 		// Maneja la selección de un rango de fechas en el calendario
 		onDateRangeSelect(selection) {
+			if (this.configuraciones.modulo_ausencias_readonly === 'true') {
+				return
+			}
 			const nDate = new Date()
 			this.range = selection
 			if (!this.range || !this.range.start || !this.range.end) return

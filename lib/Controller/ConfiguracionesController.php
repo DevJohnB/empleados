@@ -134,6 +134,7 @@ class ConfiguracionesController extends Controller {
             'Acumular_vacaciones' => $configuraciones[2]['Data'],
             'modulo_ahorro' => $configuraciones[3]['Data'],
             'modulo_ausencias' => $configuraciones[4]['Data'],
+            'modulo_ausencias_readonly' => $configuraciones[5]['Data'],
         );
 
 

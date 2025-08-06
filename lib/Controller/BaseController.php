@@ -105,6 +105,7 @@ abstract class BaseController extends Controller {
             "acumular_vacaciones" => $configMap['acumular_vacaciones'] ?? null,
             "modulo_ahorro" => $configMap['modulo_ahorro'] ?? null,
             "modulo_ausencias" => $configMap['modulo_ausencias'] ?? null,
+            "modulo_ausencias_readonly" => $configMap['ausencias_readonly'] ?? null,
         ];
     }
 

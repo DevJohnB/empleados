@@ -75,6 +75,13 @@
 						@update:checked="onChangemodulo_ausencias">
 						Activar módulo de ausencias
 					</NcCheckboxRadioSwitch>
+
+					<NcCheckboxRadioSwitch
+						:checked="modulo_ausencias_readonly"
+						type="switch"
+						@update:checked="onChangemodulo_ausencias_readonly">
+						Solo lectura (nadie podra solicitar ausencias)
+					</NcCheckboxRadioSwitch>
 				</NcNoteCard>
 			</div>
 
@@ -170,6 +177,7 @@ export default {
 			acumular_vacaciones: false,
 			modulo_ahorro: false,
 			modulo_ausencias: false,
+			modulo_ausencias_readonly: false,
 
 			/**
 			 * SELECTOR MÚLTIPLE - Capital Humano
@@ -234,6 +242,9 @@ export default {
 
 				// modulo ausencias
 				this.modulo_ausencias = (response.data.modulo_ausencias === 'true')
+
+				// modulo ausencias solo lectura
+				this.modulo_ausencias_readonly = (response.data.modulo_ausencias_readonly === 'true')
 
 				this.loading = false
 			} catch (err) {
@@ -341,6 +352,23 @@ export default {
 				await axios.post(generateUrl('/apps/empleados/ActualizarConfiguracion'), {
 					id_configuracion: 'modulo_ausencias',
 					data: this.modulo_ausencias.toString(),
+				})
+				showSuccess('Configuración actualizada')
+			} catch (err) {
+				showError('Excepción [ActualizarConfiguracion]: ' + err)
+				console.error(err)
+			}
+		},
+
+		/**
+		 * Activar o desactivar modulo de ahorro solo lectura
+		 */
+		 async onChangemodulo_ausencias_readonly() {
+			this.modulo_ausencias_readonly = !this.modulo_ausencias_readonly
+			try {
+				await axios.post(generateUrl('/apps/empleados/ActualizarConfiguracion'), {
+					id_configuracion: 'ausencias_readonly',
+					data: this.modulo_ausencias_readonly.toString(),
 				})
 				showSuccess('Configuración actualizada')
 			} catch (err) {
