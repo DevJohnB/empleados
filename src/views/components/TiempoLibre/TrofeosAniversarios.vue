@@ -154,7 +154,7 @@
 						Dias trabajados
 					</p>
 					<p class="gradesBoxNum">
-						{{ info.id_aniversario * 260 }}
+						{{ (info.id_aniversario * 260) + calcularDiasLaborales() }}
 					</p>
 				</div>
 			</div>
@@ -205,7 +205,20 @@ export default {
 	},
 
 	methods: {
+		calcularDiasLaborales() {
+			const hoy = new Date()
+			const inicio = new Date(hoy.getFullYear(), 0, 1)
+			let count = 0
 
+			// eslint-disable-next-line no-unmodified-loop-condition
+			for (let d = new Date(inicio); d <= hoy; d.setDate(d.getDate() + 1)) {
+				const day = d.getDay()
+				if (day !== 0 && day !== 6) {
+					count++
+				}
+			}
+			return count
+		},
 	},
 }
 </script>

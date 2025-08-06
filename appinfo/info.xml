@@ -47,6 +47,10 @@
         </navigation>
     </navigations>
 
+    <background-jobs>
+        <job>OCA\Empleados\Cron\ActualizarAniversarios</job>
+    </background-jobs>
+
     <settings>
         <admin>OCA\Empleados\Settings\settingsAdmin</admin>
         <admin-section>OCA\Empleados\Sections\settingsAdmin</admin-section>
