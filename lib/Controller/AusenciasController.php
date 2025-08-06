@@ -168,33 +168,35 @@ class AusenciasController extends Controller {
         $equipo_empleado = $this->empleadosMapper->GetSubordinates($user->getUID());
 
         $empleados_data = [];
-        foreach($equipo_empleado as $empleado) {
+
+        foreach ($equipo_empleado as $empleado) {
             $id_empleado = $this->empleadosMapper->GetMyEmployeeInfo($empleado['Id_user']);
             $ausencias = $this->ausenciasMapper->GetAusenciasByUser($id_empleado[0]['Id_empleados']);
-            
-            if ($id_empleado[0]['Id_gerente'] == $user->getUID()){
-                $ausencias_historial_gerente = $this->historialausenciasMapper->GetAusenciasHistorialGerente($ausencias[0]['id_ausencias']);
-            }
-            else if ($id_empleado[0]['Id_socio'] == $user->getUID()){
-                $ausencias_historial_socio = $this->historialausenciasMapper->GetAusenciasHistorialSocio($ausencias[0]['id_ausencias']);
+
+            if (empty($ausencias)) {
+                continue; // Si no hay ausencias, no seguimos con este empleado
             }
 
-            if (isset($ausencias_historial_gerente)) {
-                foreach ($ausencias_historial_gerente as $item) {
-                    $empleados_data[] = $item;
-                }
-                unset($ausencias_historial_gerente);
+            if ($id_empleado[0]['Id_gerente'] == $user->getUID()) {
+                $ausencias_historial = $this->historialausenciasMapper
+                    ->GetAusenciasHistorialGerente($ausencias[0]['id_ausencias']);
+            } elseif ($id_empleado[0]['Id_socio'] == $user->getUID()) {
+                $ausencias_historial = $this->historialausenciasMapper
+                    ->GetAusenciasHistorialSocio($ausencias[0]['id_ausencias']);
+            } else {
+                continue; // Si no es ni socio ni gerente, lo ignoramos
             }
-            if (isset($ausencias_historial_socio)) {
-                foreach ($ausencias_historial_socio as $item) {
-                    $empleados_data[] = $item;
+
+            if (!empty($ausencias_historial)) {
+                foreach ($ausencias_historial as $item) {
+                    $empleados_data[] = array_merge($empleado, $item); // Fusiona empleado + historial
                 }
-                unset($ausencias_historial_socio);
             }
         }
-        
+
         return $empleados_data;
     }
+
 
     /**
      * Obtiene la lista de ausencias.

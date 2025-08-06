@@ -1,6 +1,6 @@
 <template id="content">
 	<NcAppContent name="Loading">
-		<div class="container">
+		<div class="">
 			<div class="text-center section">
 				<section class="layout">
 					<div class="grow2">
@@ -31,10 +31,12 @@
 								</div>
 								<div class="vacations">
 									<div class="gl">
-										<Airplane />
-									</div>
-									<div class="gl">
-										{{ formatearDias(Ausencias.dias_disponibles) }}
+										<div v-if="Ausencias.dias_disponibles">
+											{{ formatearDias(Ausencias.dias_disponibles) }}
+										</div>
+										<div v-else>
+											<NcLoadingIcon />
+										</div>
 									</div>
 								</div>
 							</div>
@@ -43,14 +45,36 @@
 								<div v-if="notificaciones" class="acordeon-item">
 									<button class="acordeon-notification" @click="toggle(0)">
 										<div class="noti-wrapper">
-											<BellOutline class="bell-icon" />
+											<BellOutline class="bell-icon" :class="{ 'bell-shake': isShaking }" />
 											<NcCounterBubble :count="notifications_counter" class="noti-badge" />
 										</div>
 										<span class="noti-text">Pendientes</span>
 										<span class="arrow">{{ accordeon[0].abierto ? '-' : '+' }}</span>
 									</button>
 									<div :class="['acordeon-contenido', { abierto: accordeon[0].abierto }]">
-										<div>contenido</div>
+										<div>
+											<div class="rst">
+												<div style="max-height: 300px; overflow-y: auto;">
+													<ul>
+														<NcListItem
+															v-for="(item) in notifications_result"
+															:key="item.id_historial_ausencias"
+															:name="item.displayname ? item.displayname : item.Id_user"
+															@click.prevent="employees = []; typePetition = 'employee'; selected_user = item; $refs.fullCalendar.getApi().gotoDate(item.fecha_de); $refs.fullCalendar.getApi().refetchEvents();">
+															<template #icon>
+																<NcAvatar disable-menu
+																	:size="44"
+																	:user="item.Id_user"
+																	:display-name="item.Id_user" />
+															</template>
+															<template #subname>
+																{{ new Date(item.fecha_de).toLocaleDateString('es-MX', { day: 'numeric', month: 'short', year: 'numeric' }) }}
+															</template>
+														</NcListItem>
+													</ul>
+												</div>
+											</div>
+										</div>
 									</div>
 								</div>
 
@@ -86,20 +110,22 @@
 												</div>
 											</div>
 											<div class="rst">
-												<ul>
-													<NcListItem
-														v-for="(item) in peopleEquipo.equipo"
-														:key="item.Id_empleados"
-														:name="item.displayname ? item.displayname : item.Id_user"
-														@click.prevent="employees = []; typePetition = 'employee'; selected_user = item; $refs.fullCalendar.getApi().refetchEvents()">
-														<template #icon>
-															<NcAvatar disable-menu
-																:size="44"
-																:user="item.Id_user"
-																:display-name="item.Id_user" />
-														</template>
-													</NcListItem>
-												</ul>
+												<div style="max-height: 300px; overflow-y: auto;">
+													<ul>
+														<NcListItem
+															v-for="(item) in peopleEquipo.equipo"
+															:key="item.Id_empleados"
+															:name="item.displayname ? item.displayname : item.Id_user"
+															@click.prevent="employees = []; typePetition = 'employee'; selected_user = item; $refs.fullCalendar.getApi().refetchEvents()">
+															<template #icon>
+																<NcAvatar disable-menu
+																	:size="44"
+																	:user="item.Id_user"
+																	:display-name="item.Id_user" />
+															</template>
+														</NcListItem>
+													</ul>
+												</div>
 											</div>
 										</div>
 									</div>
@@ -136,20 +162,22 @@
 												</div>
 											</div>
 											<div class="rst">
-												<ul>
-													<NcListItem
-														v-for="(item) in subordinates"
-														:key="item.Id_empleados"
-														:name="item.displayname ? item.displayname : item.Id_user"
-														@click.prevent="employees = []; typePetition = 'employee'; selected_user = item; $refs.fullCalendar.getApi().refetchEvents()">
-														<template #icon>
-															<NcAvatar disable-menu
-																:size="44"
-																:user="item.Id_user"
-																:display-name="item.Id_user" />
-														</template>
-													</NcListItem>
-												</ul>
+												<div style="max-height: 300px; overflow-y: auto;">
+													<ul>
+														<NcListItem
+															v-for="(item) in subordinates"
+															:key="item.Id_empleados"
+															:name="item.displayname ? item.displayname : item.Id_user"
+															@click.prevent="employees = []; typePetition = 'employee'; selected_user = item; $refs.fullCalendar.getApi().refetchEvents()">
+															<template #icon>
+																<NcAvatar disable-menu
+																	:size="44"
+																	:user="item.Id_user"
+																	:display-name="item.Id_user" />
+															</template>
+														</NcListItem>
+													</ul>
+												</div>
 											</div>
 										</div>
 									</div>
@@ -159,9 +187,6 @@
 								<p>
 									🔎 {{ vista_actual }}
 								</p>
-								<!-- button type="button" class="action">
-									Get started
-								</button -->
 							</div>
 						</div>
 					</div>
@@ -268,7 +293,6 @@ import { generateUrl } from '@nextcloud/router'
 import axios from '@nextcloud/axios'
 
 // icons
-import Airplane from 'vue-material-design-icons/Airplane.vue'
 import BellOutline from 'vue-material-design-icons/BellOutline.vue'
 import AccountGroup from 'vue-material-design-icons/AccountGroup.vue'
 import CalendarQuestionOutline from 'vue-material-design-icons/CalendarQuestionOutline.vue'
@@ -283,6 +307,7 @@ import {
 	NcButton,
 	NcSelect,
 	NcCounterBubble,
+	NcLoadingIcon,
 } from '@nextcloud/vue'
 export default {
 	name: 'TiempoLibre',
@@ -295,7 +320,6 @@ export default {
 		NcModal,
 		NcActions,
 		NcActionButton,
-		Airplane,
 		AccountGroup,
 		CalendarQuestionOutline,
 		FullCalendar,
@@ -305,6 +329,7 @@ export default {
 		NcSelect,
 		NcCounterBubble,
 		BellOutline,
+		NcLoadingIcon,
 	},
 
 	inject: ['employee', 'configuraciones', 'groupuser', 'subordinates'],
@@ -388,6 +413,8 @@ export default {
 			notificaciones: false, // Para mostrar de notificaciones
 			notifications_counter: 0, // Contador de notificaciones
 			loading: false, // Para mostrar el loading
+			notifications_result: [], // Para almacenar las notificaciones
+			isShaking: false, // Para animar el icono de notificaciones
 		}
 	},
 
@@ -467,6 +494,8 @@ export default {
 								if (response.data.length > 0) {
 									this.notificaciones = true
 									this.notifications_counter = response.data.length // Actualizar el contador de notificaciones
+									this.notifications_result = response.data // Guardar las notificaciones para usarlas en el acordeón
+									this.startShaking()
 								} else {
 									this.notificaciones = false
 								}
@@ -476,6 +505,15 @@ export default {
 					showError(t('empleados', 'Se ha producido una excepción [01] [' + err + ']'))
 				}
 			}
+		},
+
+		startShaking() {
+			setInterval(() => {
+				this.isShaking = true
+				setTimeout(() => {
+					this.isShaking = false
+				}, 900) // Duración de la animación (igual que en CSS)
+			}, 2000) // Cada 2 segundos
 		},
 
 		// Alterna el estado abierto/cerrado de las preguntas frecuentes
@@ -1036,6 +1074,21 @@ export default {
 .arrow {
 	font-weight: bold;
 	color: #666;
+}
+
+@keyframes shake {
+  0% { transform: rotate(0deg); }
+  15% { transform: rotate(-15deg); }
+  30% { transform: rotate(15deg); }
+  45% { transform: rotate(-10deg); }
+  60% { transform: rotate(10deg); }
+  75% { transform: rotate(-5deg); }
+  90% { transform: rotate(5deg); }
+  100% { transform: rotate(0deg); }
+}
+
+.bell-shake {
+  animation: shake 0.8s ease;
 }
 
 </style>
