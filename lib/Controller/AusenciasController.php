@@ -342,9 +342,18 @@ class AusenciasController extends Controller {
         try {
             $files = $_FILES['archivos'] ?? ['name' => [], 'tmp_name' => []];
             $fileCount = count((array)($files['name'] ?? []));
-
         
             $user = $this->userSession->getUser();
+
+            $uid = $user->getUID();
+            // Verificamos privilegios
+            $isPrivileged = $this->groupManager->isInGroup($uid, 'admin') ||
+                            $this->groupManager->isInGroup($uid, 'recursos_humanos');
+
+            if ($isPrivileged) {
+                $user =  $this->userManager->get($this->request->getParam('id_usuario'));
+            }
+
             $gestor = $this->configuracionesMapper->GetGestor()[0]['Data'] ?? null;
         
             if (!$gestor) {
@@ -394,7 +403,25 @@ class AusenciasController extends Controller {
             $tipo_ausencia = $this->tipoausenciaMapper->getTipoById($id_tipo_ausencia);
             $id_empleado = $this->empleadosMapper->GetMyEmployeeInfo($user->getUID());
             $empleado_ausencias = $this->ausenciasMapper->GetAusenciasByUser($id_empleado[0]['Id_empleados']);
-            if (!empty($tipo_ausencia) && $tipo_ausencia[0]['solicitar_prima_vacacional'] == 1) {
+            
+            $fechaDeObj = DateTime::createFromFormat('d/m/Y', $this->request->getParam('fecha_de'));
+            $fechaHastaObj = DateTime::createFromFormat('d/m/Y', $this->request->getParam('fecha_hasta'));
+            $hoy = new \DateTime();
+
+            // Normalizamos horas
+            $fechaDeObj->setTime(0, 0);
+            $fechaHastaObj->setTime(0, 0);
+            $hoy->setTime(0, 0);
+
+            // Solo se descuentan días si al menos una de las fechas es hoy o futura
+            $ausenciaAbarcaPresenteOFuturo = ($fechaDeObj >= $hoy || $fechaHastaObj >= $hoy);
+
+            // Si es privilegiado, solo se descuentan días si la ausencia abarca hoy o el futuro
+            // Si no es privilegiado, también solo si la ausencia abarca hoy o el futuro
+            $puedeDescontarDias = $ausenciaAbarcaPresenteOFuturo;
+
+            // Aplicamos solo si se debe y el tipo de ausencia lo requiere
+            if ($puedeDescontarDias && !empty($tipo_ausencia) && $tipo_ausencia[0]['solicitar_prima_vacacional'] == 1) {
                 $dias_disponibles = $empleado_ausencias[0]['dias_disponibles'] - $dias_solicitados;
                 $this->ausenciasMapper->updateAusenciasEmpleado($empleado_ausencias[0]['id_ausencias'], $dias_disponibles);
             }
@@ -405,7 +432,9 @@ class AusenciasController extends Controller {
             // Registro en el historial de ausencias 
             $idHistorialAusencia = $this->historialausenciasMapper->EnviarAusencia((int) $id_tipo_ausencia, $empleado_ausencias[0]['id_ausencias'], $fecha_de, $fecha_hasta, (int) $prima_vacacional, $notas, $empleado_ausencias[0]['id_aniversario']);
 
-            $this->registrarActividadAusencia($tipo_ausencia[0]['nombre'], $fecha_de, $fecha_hasta, $idHistorialAusencia);
+            if (!$isPrivileged) {
+                $this->registrarActividadAusencia($tipo_ausencia[0]['nombre'], $fecha_de, $fecha_hasta, $idHistorialAusencia);
+            }
 
             return new DataResponse(['success' => true, 'message' => $tipo_ausencia[0]['solicitar_prima_vacacional']]);
         } catch (\Exception $e) {

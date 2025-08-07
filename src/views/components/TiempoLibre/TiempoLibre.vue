@@ -228,6 +228,8 @@
 				:dias-solicitados="diasSolicitados"
 				:dias-disponibles="Ausencias.dias_disponibles"
 				:prima="Ausencias.prima_vacacional"
+				:employees="propsEmployees.options"
+				:admin="isAdmin()"
 				@close="closeModal" />
 		</NcModal>
 		<!-- FINAL MODAL SOLICITUD DE VACACIONES -->
@@ -829,12 +831,14 @@ export default {
 			endDate.setDate(endDate.getDate() - 1)
 
 			// No permitir fechas pasadas
-			if (
-				new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate())
-				< new Date(nDate.getFullYear(), nDate.getMonth(), nDate.getDate())
-			) {
-				showError('No puedes solicitar ausencias en fechas pasadas')
-				return
+			if (!this.isAdmin()) {
+				if (
+					new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate())
+					< new Date(nDate.getFullYear(), nDate.getMonth(), nDate.getDate())
+				) {
+					showError('No puedes solicitar ausencias en fechas pasadas')
+					return
+				}
 			}
 
 			// No permitir iniciar o terminar en fin de semana

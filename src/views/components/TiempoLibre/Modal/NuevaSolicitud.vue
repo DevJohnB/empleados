@@ -7,6 +7,22 @@
 				<div class="table_component" role="region" tabindex="0">
 					<div>
 						<div class="table_component" role="region" tabindex="0">
+							<table v-if="admin">
+								<thead>
+									<tr>
+										<th>
+											Como administrado puedes solicitar o asigar una ausencia para el empleado seleccionado
+										</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td>
+											<NcSelect v-bind="propsEmployees" v-model="employees_list" />
+										</td>
+									</tr>
+								</tbody>
+							</table>
 							<table>
 								<thead>
 									<tr>
@@ -58,111 +74,120 @@
 							</NcNoteCard>
 						</div>
 						<div v-else>
-							<table class="top">
-								<caption>DATOS DEL PERIODO</caption>
-								<tbody>
-									<tr v-if="AusenciaSeleccionada && AusenciaSeleccionada.solicitar_prima_vacacional == 1">
-										<td>Dias Disponibles</td>
-										<td>
-											<span v-if="TotalDias">
-												{{ TotalDias }}
-											</span>
-										</td>
-									</tr>
-									<tr>
-										<td>Dias a tomar</td>
-										<td>
-											<span class="block text-gray-600 text-sm text-left font-bold mb-2">
-												{{ diasSolicitados }}
-											</span>
-										</td>
-									</tr>
-									<tr v-if="AusenciaSeleccionada && AusenciaSeleccionada.solicitar_prima_vacacional == 1">
-										<td>Dias restantes</td>
-										<td>
-											<span v-if="RestanteDias">
-												{{ RestanteDias }}
-											</span>
-										</td>
-									</tr>
-								</tbody>
-							</table>
-							<table class="top">
-								<thead>
-									<tr>
-										<th>
-											Periodo de ausencia
-										</th>
-									</tr>
-								</thead>
-								<tbody>
-									<tr>
-										<td>
-											<span v-if="date">
-												Desde: {{ date.start.toLocaleDateString() }}
-												-
-												Hasta: {{ date.end ? date.end.toLocaleDateString() : 'Indefinido' }}
-											</span>
-										</td>
-									</tr>
-								</tbody>
-							</table>
-							<div v-if="AusenciaSeleccionada && AusenciaSeleccionada.solicitar_archivo">
-								<div class="top">
-									<NcNoteCard type="info" text="Es necesario subir un archivo que justifique tu ausencia" />
-								</div>
-								<input ref="fileInput"
-									type="file"
-									class="file-input"
-									multiple
-									@change="uploadFile">
-								<div
-									class="drop-area top"
-									@dragover.prevent
-									@dragenter.prevent
-									@drop.prevent="handleDrop"
-									@click="$refs.fileInput.click()">
-									Suelta los archivos aquí o haz clic para seleccionar
-								</div>
-								<div v-if="selectedFiles.length > 0" class="top">
-									<div class="table_component" role="region" tabindex="0">
-										<table>
-											<caption>Archivos seleccionados:</caption>
-											<thead>
-												<tr>
-													<th>Nombre archivo</th>
-													<th>Peso</th>
-												</tr>
-											</thead>
-											<tbody>
-												<tr v-for="(file, index) in selectedFiles" :key="index">
-													<td>
-														{{ file.name }}
-													</td>
-													<td>
-														{{ file.size < 1024 * 1024 ? (file.size / 1024).toFixed(2) + ' KB' : (file.size / (1024 * 1024)).toFixed(2) + ' MB' }}
-													</td>
-												</tr>
-											</tbody>
-										</table>
+							<div v-if="admin">
+								<br>
+								<NcNoteCard type="warning"
+									heading="Atención!!!"
+									text="Estás registrando una ausencia en modo administrador. Las notificaciones y mensajes automáticos seguirán activos, y los días correspondientes serán descontados del empleado seleccionado." />
+								<br>
+							</div>
+							<div v-else>
+								<table class="top">
+									<caption>DATOS DEL PERIODO</caption>
+									<tbody>
+										<tr v-if="AusenciaSeleccionada && AusenciaSeleccionada.solicitar_prima_vacacional == 1">
+											<td>Dias Disponibles</td>
+											<td>
+												<span v-if="TotalDias">
+													{{ TotalDias }}
+												</span>
+											</td>
+										</tr>
+										<tr>
+											<td>Dias a tomar</td>
+											<td>
+												<span class="block text-gray-600 text-sm text-left font-bold mb-2">
+													{{ diasSolicitados }}
+												</span>
+											</td>
+										</tr>
+										<tr v-if="AusenciaSeleccionada && AusenciaSeleccionada.solicitar_prima_vacacional == 1">
+											<td>Dias restantes</td>
+											<td>
+												<span v-if="RestanteDias">
+													{{ RestanteDias }}
+												</span>
+											</td>
+										</tr>
+									</tbody>
+								</table>
+								<table class="top">
+									<thead>
+										<tr>
+											<th>
+												Periodo de ausencia
+											</th>
+										</tr>
+									</thead>
+									<tbody>
+										<tr>
+											<td>
+												<span v-if="date">
+													Desde: {{ date.start.toLocaleDateString() }}
+													-
+													Hasta: {{ date.end ? date.end.toLocaleDateString() : 'Indefinido' }}
+												</span>
+											</td>
+										</tr>
+									</tbody>
+								</table>
+								<div v-if="AusenciaSeleccionada && AusenciaSeleccionada.solicitar_archivo">
+									<div class="top">
+										<NcNoteCard type="info" text="Es necesario subir un archivo que justifique tu ausencia" />
+									</div>
+									<input ref="fileInput"
+										type="file"
+										class="file-input"
+										multiple
+										@change="uploadFile">
+									<div
+										class="drop-area top"
+										@dragover.prevent
+										@dragenter.prevent
+										@drop.prevent="handleDrop"
+										@click="$refs.fileInput.click()">
+										Suelta los archivos aquí o haz clic para seleccionar
+									</div>
+									<div v-if="selectedFiles.length > 0" class="top">
+										<div class="table_component" role="region" tabindex="0">
+											<table>
+												<caption>Archivos seleccionados:</caption>
+												<thead>
+													<tr>
+														<th>Nombre archivo</th>
+														<th>Peso</th>
+													</tr>
+												</thead>
+												<tbody>
+													<tr v-for="(file, index) in selectedFiles" :key="index">
+														<td>
+															{{ file.name }}
+														</td>
+														<td>
+															{{ file.size < 1024 * 1024 ? (file.size / 1024).toFixed(2) + ' KB' : (file.size / (1024 * 1024)).toFixed(2) + ' MB' }}
+														</td>
+													</tr>
+												</tbody>
+											</table>
+										</div>
 									</div>
 								</div>
-							</div>
-							<div class="top">
-								<NcCheckboxRadioSwitch
-									v-if="AusenciaSeleccionada &&
-										AusenciaSeleccionada.solicitar_prima_vacacional == 1 &&
-										prima == 1"
-									v-model="SolicitarPrima">
-									Solicitar prima vacacional
-								</NcCheckboxRadioSwitch>
-							</div>
-							<div class="top">
-								<NcTextArea v-model="comentarios"
-									resize="vertical"
-									label="Comentarios"
-									placeholder="Comenta tu solicitud (OPCIONAL)"
-									helper-text="Comenta tu solicitud (OPCIONAL)" />
+								<div class="top">
+									<NcCheckboxRadioSwitch
+										v-if="AusenciaSeleccionada &&
+											AusenciaSeleccionada.solicitar_prima_vacacional == 1 &&
+											prima == 1"
+										v-model="SolicitarPrima">
+										Solicitar prima vacacional
+									</NcCheckboxRadioSwitch>
+								</div>
+								<div class="top">
+									<NcTextArea v-model="comentarios"
+										resize="vertical"
+										label="Comentarios"
+										placeholder="Comenta tu solicitud (OPCIONAL)"
+										helper-text="Comenta tu solicitud (OPCIONAL)" />
+								</div>
 							</div>
 						</div>
 						<div v-if="loading">
@@ -245,6 +270,14 @@ export default {
 			type: Number,
 			default: 0,
 		},
+		employees: {
+			type: Array,
+			default: () => [],
+		},
+		admin: {
+			type: Boolean,
+			default: false,
+		},
 	},
 
 	data() {
@@ -257,6 +290,13 @@ export default {
 			SolicitarPrima: false,
 			selectedFiles: [],
 			loading: false, // Para mostrar el loading
+			propsEmployees: {
+				inputLabel: 'Todos los empleados',
+				userSelect: true,
+				closeOnSelect: true,
+				options: this.employees, // Se llena con todos los usuarios (optionsGestor)
+			},
+			employees_list: [], // Para almacenar los empleados seleccionados
 		}
 	},
 
@@ -303,6 +343,7 @@ export default {
 			try {
 				const formData = new FormData()
 
+				formData.append('id_usuario', this.employees_list.user)
 				formData.append('id_tipo_ausencia', this.AusenciaSeleccionada.id)
 				formData.append('dias_solicitados', this.diasSolicitados)
 				formData.append('fecha_de', this.date.start.toLocaleDateString())
