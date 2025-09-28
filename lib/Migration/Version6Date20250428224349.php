@@ -14,9 +14,6 @@ use OCP\DB\ISchemaWrapper;
 use OCP\Migration\IOutput;
 use OCP\Migration\SimpleMigrationStep;
 
-/**
- * FIXME Auto-generated migration step: Please modify to your needs!
- */
 class Version6Date20250428224349 extends SimpleMigrationStep {
 
 	/**
@@ -25,6 +22,7 @@ class Version6Date20250428224349 extends SimpleMigrationStep {
 	 * @param array $options
 	 */
 	public function preSchemaChange(IOutput $output, Closure $schemaClosure, array $options): void {
+		// sin preacciones
 	}
 
 	/**
@@ -34,12 +32,12 @@ class Version6Date20250428224349 extends SimpleMigrationStep {
 	 * @return null|ISchemaWrapper
 	 */
 	public function changeSchema(IOutput $output, Closure $schemaClosure, array $options): ?ISchemaWrapper {
-		
-  		/** @var ISchemaWrapper $schema */
-  		$schema = $schemaClosure();
-  
+		/** @var ISchemaWrapper $schema */
+		$schema = $schemaClosure();
+
 		if (!$schema->hasTable('user_ahorro')) {
 			$table = $schema->createTable('user_ahorro');
+
 			$table->addColumn('id_ahorro', 'integer', [
 				'autoincrement' => true,
 				'notnull' => true,
@@ -56,10 +54,15 @@ class Version6Date20250428224349 extends SimpleMigrationStep {
 			$table->addColumn('last_modified', 'string', [
 				'notnull' => true,
 			]);
+
 			$table->setPrimaryKey(['id_ahorro']);
+
+			// Índices útiles (no se cambian tipos)
 			$table->addIndex(['id_user'], 'user_ahorro_uid');
+			$table->addIndex(['id_permision'], 'user_ahorro_perm');
+			$table->addIndex(['state'], 'user_ahorro_state');
 		}
-  
+
 		return $schema;
 	}
 
@@ -69,5 +72,6 @@ class Version6Date20250428224349 extends SimpleMigrationStep {
 	 * @param array $options
 	 */
 	public function postSchemaChange(IOutput $output, Closure $schemaClosure, array $options): void {
+		// sin seeds
 	}
 }

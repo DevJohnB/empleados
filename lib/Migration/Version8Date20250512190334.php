@@ -14,9 +14,6 @@ use OCP\DB\ISchemaWrapper;
 use OCP\Migration\IOutput;
 use OCP\Migration\SimpleMigrationStep;
 
-/**
- * FIXME Auto-generated migration step: Please modify to your needs!
- */
 class Version8Date20250512190334 extends SimpleMigrationStep {
 
 	/**
@@ -25,6 +22,7 @@ class Version8Date20250512190334 extends SimpleMigrationStep {
 	 * @param array $options
 	 */
 	public function preSchemaChange(IOutput $output, Closure $schemaClosure, array $options): void {
+		// sin preacciones
 	}
 
 	/**
@@ -37,19 +35,25 @@ class Version8Date20250512190334 extends SimpleMigrationStep {
 		/** @var ISchemaWrapper $schema */
 		$schema = $schemaClosure();
 
+		// tipo_ausencia: agregar solicitar_prima_vacacional si falta
 		if ($schema->hasTable('tipo_ausencia')) {
 			$table = $schema->getTable('tipo_ausencia');
-
 			if (!$table->hasColumn('solicitar_prima_vacacional')) {
-				$table->addColumn('solicitar_prima_vacacional', 'integer', ['notnull' => true, 'default' => 0]);
+				$table->addColumn('solicitar_prima_vacacional', 'integer', [
+					'notnull' => true,
+					'default' => 0,
+				]);
 			}
 		}
 
+		// historial_ausencias: agregar notas si falta
 		if ($schema->hasTable('historial_ausencias')) {
 			$table = $schema->getTable('historial_ausencias');
-
 			if (!$table->hasColumn('notas')) {
-				$table->addColumn('notas', 'string', ['notnull' => false, 'length' => 255]);
+				$table->addColumn('notas', 'string', [
+					'notnull' => false,
+					'length' => 255,
+				]);
 			}
 		}
 
@@ -62,5 +66,6 @@ class Version8Date20250512190334 extends SimpleMigrationStep {
 	 * @param array $options
 	 */
 	public function postSchemaChange(IOutput $output, Closure $schemaClosure, array $options): void {
+		// sin seeds
 	}
 }

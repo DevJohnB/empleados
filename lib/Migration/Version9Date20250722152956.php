@@ -12,6 +12,7 @@ use OCP\Migration\SimpleMigrationStep;
 class Version9Date20250722152956 extends SimpleMigrationStep {
 
     public function preSchemaChange(IOutput $output, Closure $schemaClosure, array $options): void {
+        // sin acciones previas
     }
 
     public function changeSchema(IOutput $output, Closure $schemaClosure, array $options): ?ISchemaWrapper {
@@ -36,5 +37,6 @@ class Version9Date20250722152956 extends SimpleMigrationStep {
     }
 
     public function postSchemaChange(IOutput $output, Closure $schemaClosure, array $options): void {
+        // sin acciones posteriores
     }
 }

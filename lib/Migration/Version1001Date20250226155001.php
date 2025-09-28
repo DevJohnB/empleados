@@ -14,9 +14,6 @@ use OCP\DB\ISchemaWrapper;
 use OCP\Migration\IOutput;
 use OCP\Migration\SimpleMigrationStep;
 
-/**
- * FIXME Auto-generated migration step: Please modify to your needs!
- */
 class Version1001Date20250226155001 extends SimpleMigrationStep {
 
 	/**
@@ -25,6 +22,7 @@ class Version1001Date20250226155001 extends SimpleMigrationStep {
 	 * @param array $options
 	 */
 	public function preSchemaChange(IOutput $output, Closure $schemaClosure, array $options): void {
+		// sin acciones previas
 	}
 
 	/**
@@ -36,8 +34,10 @@ class Version1001Date20250226155001 extends SimpleMigrationStep {
 	public function changeSchema(IOutput $output, Closure $schemaClosure, array $options): ?ISchemaWrapper {
 		/** @var ISchemaWrapper $schema */
 		$schema = $schemaClosure();
+
 		if (!$schema->hasTable('CapitalHumano')) {
 			$table = $schema->createTable('CapitalHumano');
+
 			$table->addColumn('Id_ch', 'integer', [
 				'autoincrement' => true,
 				'notnull' => true,
@@ -46,17 +46,22 @@ class Version1001Date20250226155001 extends SimpleMigrationStep {
 			$table->addColumn('Id_empleado', 'string', [
 				'notnull' => false,
 			]);
+
 			$table->addColumn('created_at', 'string', [
 				'notnull' => true,
 			]);
+
 			$table->addColumn('updated_at', 'string', [
-			'notnull' => true,
+				'notnull' => true,
 			]);
 
 			$table->setPrimaryKey(['Id_ch']);
+
+			// Índices útiles (no cambia tipos)
 			$table->addIndex(['Id_ch'], 'Id_ch');
+			$table->addIndex(['Id_empleado'], 'CapitalHumano_Id_empleado');
 		}
-		
+
 		return $schema;
 	}
 
@@ -66,5 +71,6 @@ class Version1001Date20250226155001 extends SimpleMigrationStep {
 	 * @param array $options
 	 */
 	public function postSchemaChange(IOutput $output, Closure $schemaClosure, array $options): void {
+		// sin seeds
 	}
 }

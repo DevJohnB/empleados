@@ -5,19 +5,6 @@ declare(strict_types=1);
 /**
  * @copyright Copyright (c) 2024
  * @license GNU AGPL version 3 or any later version
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License as
- * published by the Free Software Foundation, either version 3 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU Affero General Public License for more details.
- *
- * You should have received a copy of the GNU Affero General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
 namespace OCA\Empleados\Migration;
@@ -62,15 +49,15 @@ class Version2Date20240724190637 extends SimpleMigrationStep {
 				'autoincrement' => true,
 				'notnull' => true,
 			]);
-			
+
 			$table->addColumn('Nombre', 'string', [
 				'notnull' => false,
 			]);
-	
+
 			$table->addColumn('Data', 'string', [
 				'notnull' => false,
 			]);
-			
+
 			$table->setPrimaryKey(['Id_conf']);
 			$table->addIndex(['Id_conf'], 'Id_conf');
 		}
@@ -84,15 +71,30 @@ class Version2Date20240724190637 extends SimpleMigrationStep {
 	 * @param array $options
 	 */
 	public function postSchemaChange(IOutput $output, Closure $schemaClosure, array $options): void {
-		$qb = $this->db->getQueryBuilder();
-		$nombres = ['usuario_almacenamiento', 'automatic_save_note', 'acumular_vacaciones', 'modulo_ahorro'];
-		  
-		foreach ($nombres as $nombre) {
-			$qb->insert('empleados_conf')
+		$defaults = ['usuario_almacenamiento', 'automatic_save_note', 'acumular_vacaciones', 'modulo_ahorro'];
+
+		foreach ($defaults as $nombre) {
+			// 1) Verificar si ya existe
+			$check = $this->db->getQueryBuilder();
+			$check->select('Id_conf')
+				->from('empleados_conf')
+				->where(
+					$check->expr()->eq('Nombre', $check->createNamedParameter($nombre))
+				);
+
+			$exists = $check->executeQuery()->fetchOne();
+			if ($exists !== false) {
+				continue; // ya insertado
+			}
+
+			// 2) Insertar
+			$ins = $this->db->getQueryBuilder();
+			$ins->insert('empleados_conf')
 				->values([
-					'Nombre' => $qb->createNamedParameter($nombre)
+					'Nombre' => $ins->createNamedParameter($nombre),
+					// 'Data' => $ins->createNamedParameter(null), // si necesitas setearlo explícitamente
 				])
-				->execute();
+				->executeStatement();
 		}
 	}
 }

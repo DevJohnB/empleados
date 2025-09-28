@@ -3,25 +3,8 @@
 declare(strict_types=1);
 
 /**
- * @copyright Copyright (c) 2024 Luis Angel Alvarado Hernandez <luis.alvarado@crowe.mx>
- *
- * @author Luis Angel Alvarado Hernandez <luis.alvarado@crowe.mx>
- *
+ * @copyright Copyright (c) 2024 Luis Angel Alvarado Hernandez
  * @license GNU AGPL version 3 or any later version
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License as
- * published by the Free Software Foundation, either version 3 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU Affero General Public License for more details.
- *
- * You should have received a copy of the GNU Affero General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
- *
  */
 
 namespace OCA\Empleados\Migration;
@@ -39,6 +22,7 @@ class Version1Date20240627154849 extends SimpleMigrationStep {
 	 * @param array $options
 	 */
 	public function preSchemaChange(IOutput $output, Closure $schemaClosure, array $options): void {
+		// sin pre cambios
 	}
 
 	/**
@@ -51,68 +35,90 @@ class Version1Date20240627154849 extends SimpleMigrationStep {
 		/** @var ISchemaWrapper $schema */
 		$schema = $schemaClosure();
 
+		/**
+		 * Tabla: empleados
+		 */
 		if (!$schema->hasTable('empleados')) {
 			$table = $schema->createTable('empleados');
+
 			$table->addColumn('Id_empleados', 'integer', [
 				'autoincrement' => true,
+				'unsigned' => true,
 				'notnull' => true,
 			]);
-			
+
+			// uid de Nextcloud suele ser <= 64
 			$table->addColumn('Id_user', 'string', [
 				'notnull' => true,
+				'length' => 64,
 			]);
 
 			$table->addColumn('Numero_empleado', 'string', [
 				'notnull' => false,
+				'length' => 64,
 			]);
-			
+
+			// fechas como string (mantengo tu decisión); idealmente datetime/integer en una migración futura
 			$table->addColumn('Ingreso', 'string', [
 				'notnull' => false,
+				'length' => 64,
 			]);
-			
+
 			$table->addColumn('Correo_contacto', 'string', [
 				'notnull' => false,
+				'length' => 190, // seguro para índice
 			]);
-			
+
+			// NOTA: aparentan ser FKs lógicas; las dejas como string
 			$table->addColumn('Id_departamento', 'string', [
 				'notnull' => false,
+				'length' => 64,
 			]);
-			
+
 			$table->addColumn('Id_puesto', 'string', [
 				'notnull' => false,
+				'length' => 64,
 			]);
 
 			$table->addColumn('Id_equipo', 'string', [
 				'notnull' => false,
+				'length' => 64,
 			]);
 
 			$table->addColumn('Id_gerente', 'string', [
 				'notnull' => false,
+				'length' => 64,
 			]);
 
 			$table->addColumn('Id_socio', 'string', [
 				'notnull' => false,
+				'length' => 64,
 			]);
 
 			$table->addColumn('Fondo_clave', 'string', [
 				'notnull' => false,
+				'length' => 64,
 			]);
 
-			
 			$table->addColumn('Fondo_ahorro', 'string', [
 				'notnull' => false,
+				'length' => 64,
 			]);
 
 			$table->addColumn('Numero_cuenta', 'string', [
 				'notnull' => false,
+				'length' => 64,
 			]);
 
 			$table->addColumn('Equipo_asignado', 'string', [
 				'notnull' => false,
+				'length' => 190,
 			]);
 
 			$table->addColumn('Sueldo', 'decimal', [
 				'notnull' => false,
+				'precision' => 12,
+				'scale' => 2,
 			]);
 
 			$table->addColumn('Notas', 'text', [
@@ -121,107 +127,154 @@ class Version1Date20240627154849 extends SimpleMigrationStep {
 
 			$table->addColumn('Fecha_nacimiento', 'string', [
 				'notnull' => false,
+				'length' => 64,
 			]);
-			
+
 			$table->addColumn('Estado', 'string', [
 				'notnull' => false,
+				'length' => 64,
 			]);
 
 			$table->addColumn('Direccion', 'string', [
 				'notnull' => false,
+				'length' => 190,
 			]);
+
 			$table->addColumn('Estado_civil', 'string', [
 				'notnull' => false,
+				'length' => 64,
 			]);
+
 			$table->addColumn('Telefono_contacto', 'string', [
 				'notnull' => false,
+				'length' => 64,
 			]);
+
 			$table->addColumn('Curp', 'string', [
 				'notnull' => false,
+				'length' => 64,
 			]);
+
 			$table->addColumn('Rfc', 'string', [
 				'notnull' => false,
+				'length' => 64,
 			]);
+
 			$table->addColumn('Imss', 'string', [
 				'notnull' => false,
+				'length' => 64,
 			]);
+
 			$table->addColumn('Genero', 'string', [
 				'notnull' => false,
+				'length' => 32,
 			]);
+
 			$table->addColumn('Contacto_emergencia', 'string', [
 				'notnull' => false,
+				'length' => 190,
 			]);
+
 			$table->addColumn('Numero_emergencia', 'string', [
 				'notnull' => false,
+				'length' => 64,
 			]);
+
 			$table->addColumn('created_at', 'string', [
 				'notnull' => true,
+				'length' => 32,
 			]);
-	
+
 			$table->addColumn('updated_at', 'string', [
 				'notnull' => true,
+				'length' => 32,
 			]);
-			
-			  $table->setPrimaryKey(['Id_empleados']);
-			  $table->addIndex(['Id_empleados'], 'Id_empleados');
-			  $table->addIndex(['Id_gerente'], 'idx_id_gerente');
-			  $table->addIndex(['Id_socio'], 'idx_id_socio');
-		  }
 
-		// Tabla de puestos
-		  if (!$schema->hasTable('puestos')) {
+			$table->setPrimaryKey(['Id_empleados']);
+
+			// Índices útiles
+			$table->addIndex(['Id_empleados'], 'Id_empleados'); // redundante pero lo mantengo
+			$table->addIndex(['Id_user'], 'idx_id_user');
+			$table->addIndex(['Numero_empleado'], 'idx_numero_empleado');
+			$table->addIndex(['Correo_contacto'], 'idx_correo_contacto');
+			$table->addIndex(['Id_departamento'], 'idx_id_departamento');
+			$table->addIndex(['Id_puesto'], 'idx_id_puesto');
+			$table->addIndex(['Id_equipo'], 'idx_id_equipo');
+			$table->addIndex(['Id_gerente'], 'idx_id_gerente');
+			$table->addIndex(['Id_socio'], 'idx_id_socio');
+		}
+
+		/**
+		 * Tabla: puestos
+		 */
+		if (!$schema->hasTable('puestos')) {
 			$table = $schema->createTable('puestos');
+
 			$table->addColumn('Id_puestos', 'integer', [
 				'autoincrement' => true,
+				'unsigned' => true,
 				'notnull' => true,
 			]);
-			
+
 			$table->addColumn('Nombre', 'string', [
 				'notnull' => false,
+				'length' => 190,
 			]);
 
 			$table->addColumn('created_at', 'string', [
 				'notnull' => true,
+				'length' => 32,
 			]);
-	
+
 			$table->addColumn('updated_at', 'string', [
 				'notnull' => true,
+				'length' => 32,
 			]);
-			
-			
-			  $table->setPrimaryKey(['Id_puestos']);
-			  $table->addIndex(['Id_puestos'], 'Id_puestos');
-		  }
 
-			// Tabla de departamento
-			if (!$schema->hasTable('departamentos')) {
-				$table = $schema->createTable('departamentos');
-				$table->addColumn('Id_departamento', 'integer', [
-					'autoincrement' => true,
-					'notnull' => true,
-				]);
+			$table->setPrimaryKey(['Id_puestos']);
+			$table->addIndex(['Id_puestos'], 'Id_puestos');
+			$table->addIndex(['Nombre'], 'idx_puestos_nombre');
+		}
 
-				$table->addColumn('Id_padre', 'string', [
-					'notnull' => false,
-				]);
+		/**
+		 * Tabla: departamentos
+		 */
+		if (!$schema->hasTable('departamentos')) {
+			$table = $schema->createTable('departamentos');
 
-				$table->addColumn('Nombre', 'string', [
-					'notnull' => false,
-				]);
-	
-				$table->addColumn('created_at', 'string', [
+			$table->addColumn('Id_departamento', 'integer', [
+				'autoincrement' => true,
+				'unsigned' => true,
 				'notnull' => true,
-				]);
-		
-				$table->addColumn('updated_at', 'string', [
+			]);
+
+			$table->addColumn('Id_padre', 'string', [
+				'notnull' => false,
+				'length' => 64,
+			]);
+
+			$table->addColumn('Nombre', 'string', [
+				'notnull' => false,
+				'length' => 190,
+			]);
+
+			$table->addColumn('created_at', 'string', [
 				'notnull' => true,
-				]);
-				
-				$table->setPrimaryKey(['Id_departamento']);
-				$table->addIndex(['Id_departamento'], 'Id_departamento');
-			}
-	
-		  return $schema;
+				'length' => 32,
+			]);
+
+			$table->addColumn('updated_at', 'string', [
+				'notnull' => true,
+				'length' => 32,
+			]);
+
+			$table->setPrimaryKey(['Id_departamento']);
+			$table->addIndex(['Id_departamento'], 'Id_departamento');
+			$table->addIndex(['Nombre'], 'idx_departamentos_nombre');
+			$table->addIndex(['Id_padre'], 'idx_departamentos_padre');
+		}
+
+		return $schema;
 	}
 
 	/**
@@ -230,5 +283,6 @@ class Version1Date20240627154849 extends SimpleMigrationStep {
 	 * @param array $options
 	 */
 	public function postSchemaChange(IOutput $output, Closure $schemaClosure, array $options): void {
+		// sin seeds en esta versión
 	}
 }

@@ -14,9 +14,6 @@ use OCP\DB\ISchemaWrapper;
 use OCP\Migration\IOutput;
 use OCP\Migration\SimpleMigrationStep;
 
-/**
- * FIXME Auto-generated migration step: Please modify to your needs!
- */
 class Version5Date20250325183650 extends SimpleMigrationStep {
 
 	/**
@@ -25,6 +22,7 @@ class Version5Date20250325183650 extends SimpleMigrationStep {
 	 * @param array $options
 	 */
 	public function preSchemaChange(IOutput $output, Closure $schemaClosure, array $options): void {
+		// sin preacciones
 	}
 
 	/**
@@ -34,38 +32,43 @@ class Version5Date20250325183650 extends SimpleMigrationStep {
 	 * @return null|ISchemaWrapper
 	 */
 	public function changeSchema(IOutput $output, Closure $schemaClosure, array $options): ?ISchemaWrapper {
+		/** @var ISchemaWrapper $schema */
+		$schema = $schemaClosure();
 
-				/** @var ISchemaWrapper $schema */
-				$schema = $schemaClosure();
-					// Tabla de equipo
-					if (!$schema->hasTable('equipos')) {
-						$table = $schema->createTable('equipos');
-						$table->addColumn('Id_equipo', 'integer', [
-							'autoincrement' => true,
-							'notnull' => true,
-						]);
-		
-						$table->addColumn('Id_jefe_equipo', 'string', [
-							'notnull' => false,
-						]);
-		
-						$table->addColumn('Nombre', 'string', [
-							'notnull' => false,
-						]);
-			
-						$table->addColumn('created_at', 'string', [
-						'notnull' => true,
-						]);
-				
-						$table->addColumn('updated_at', 'string', [
-						'notnull' => true,
-						]);
-						
-						$table->setPrimaryKey(['Id_equipo']);
-						$table->addIndex(['Id_equipo'], 'Id_equipo');
-					}
+		// Tabla: equipos
+		if (!$schema->hasTable('equipos')) {
+			$table = $schema->createTable('equipos');
 
-					return $schema;
+			$table->addColumn('Id_equipo', 'integer', [
+				'autoincrement' => true,
+				'notnull' => true,
+			]);
+
+			$table->addColumn('Id_jefe_equipo', 'string', [
+				'notnull' => false,
+			]);
+
+			$table->addColumn('Nombre', 'string', [
+				'notnull' => false,
+			]);
+
+			$table->addColumn('created_at', 'string', [
+				'notnull' => true,
+			]);
+
+			$table->addColumn('updated_at', 'string', [
+				'notnull' => true,
+			]);
+
+			$table->setPrimaryKey(['Id_equipo']);
+
+			// Índices útiles (no cambian tipos)
+			$table->addIndex(['Id_equipo'], 'Id_equipo');
+			$table->addIndex(['Id_jefe_equipo'], 'idx_id_jefe_equipo');
+			$table->addIndex(['Nombre'], 'idx_nombre_equipo');
+		}
+
+		return $schema;
 	}
 
 	/**
@@ -74,5 +77,6 @@ class Version5Date20250325183650 extends SimpleMigrationStep {
 	 * @param array $options
 	 */
 	public function postSchemaChange(IOutput $output, Closure $schemaClosure, array $options): void {
+		// sin seeds
 	}
 }
