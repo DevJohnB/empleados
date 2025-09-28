@@ -368,38 +368,40 @@ export default {
 					center: 'title',
 					right: 'dayGridMonth,multiMonthYear',
 				},
-				dayMaxEventRows: true,
-				views: {
-					multiMonthYear: { type: 'multiMonth', duration: { months: 12 }, buttonText: 'Año' },
-					timeGrid: {
-						dayMaxEventRows: 5,
-					},
-				},
-				plugins: [dayGridPlugin, interactionPlugin, multiMonthPlugin],
 				initialView: 'dayGridMonth',
 				locale: 'es',
-				events: this.fetchEvents, // esto es suficiente
+				plugins: [dayGridPlugin, interactionPlugin, multiMonthPlugin],
+				events: this.fetchEvents,
 				dateClick: this.onDateClick,
 				eventClick: this.OnClickEvent,
 				select: this.onDateRangeSelect,
 				selectable: true,
+
+				// 🔧 CLAVES para que NO se haga larguísimo
+				fixedWeekCount: false,
+				height: 'auto',
+				contentHeight: 'auto',
+				expandRows: false,
+				aspectRatio: 1.2,
+
+				// 🔧 Limita eventos visibles por día
+				dayMaxEvents: true,
+				dayMaxEventRows: 2,
+				moreLinkClick: 'popover',
+
+				// —— tu HTML con avatar se queda igual ——
 				eventContent(arg) {
 					const nombreEmpleado = arg.event.extendedProps.nombre_empleado || 'Empleado Desconocido'
-					const imgUrl = `/avatar/${nombreEmpleado}/64` // Ejemplo dinámico
-
-					// eslint-disable-next-line no-console
-					console.log('eventContent', arg.event)
-
+					const imgUrl = `/avatar/${nombreEmpleado}/64`
 					return {
 						html: `
-							<div style="display: flex; align-items: center;">
-								<img src="${imgUrl}" style="width: 16px; height: 16px; border-radius: 50%; margin-right: 4px;">
-								<span>${arg.event.title}</span>
+							<div style="display:flex;align-items:center;">
+							<img src="${imgUrl}" style="width:16px;height:16px;border-radius:50%;margin-right:4px;">
+							<span>${arg.event.title}</span>
 							</div>
 						`,
 					}
 				},
-
 			},
 			peopleEquipo: {},
 			Equipo: {},
@@ -819,8 +821,10 @@ export default {
 
 		// Maneja la selección de un rango de fechas en el calendario
 		onDateRangeSelect(selection) {
-			if (this.configuraciones.modulo_ausencias_readonly === 'true') {
-				return
+			if (!this.isAdmin()) {
+				if (this.configuraciones.modulo_ausencias_readonly === 'true') {
+					return
+				}
 			}
 			const nDate = new Date()
 			this.range = selection
@@ -1016,12 +1020,15 @@ export default {
 }
 
 .sectionPicker {
-	padding: 2px 10px 0 22px;
+  height: clamp(520px, 70vh, 780px);
+  /* opcional: bordes para ver el contenedor mientras pruebas */
+  /* outline: 1px dashed rgba(0,0,0,.1); */
 }
 
-.my-calendar {
-	--color-background-dark: transparent !important;
-}
+/* el componente debe ocupar el 100% del alto del contenedor */
+.my-calendar { height: 100%;
+--color-background-dark: transparent !important;}
+
 .acordeon-item {
 	margin-bottom: 10px;
 	border-radius: 5px;
