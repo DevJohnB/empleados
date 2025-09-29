@@ -14,6 +14,7 @@ use OCP\DB\ISchemaWrapper;
 use OCP\Migration\IOutput;
 use OCP\Migration\SimpleMigrationStep;
 use OCP\IDBConnection;
+use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 
 class Version2Date20240724190637 extends SimpleMigrationStep {
 
@@ -24,77 +25,75 @@ class Version2Date20240724190637 extends SimpleMigrationStep {
 		$this->db = $db;
 	}
 
-	/**
-	 * @param IOutput $output
-	 * @param Closure(): ISchemaWrapper $schemaClosure
-	 * @param array $options
-	 */
 	public function preSchemaChange(IOutput $output, Closure $schemaClosure, array $options): void {
-		// No pre-schema changes needed
+		// sin acciones previas
 	}
 
-	/**
-	 * @param IOutput $output
-	 * @param Closure(): ISchemaWrapper $schemaClosure
-	 * @param array $options
-	 * @return null|ISchemaWrapper
-	 */
 	public function changeSchema(IOutput $output, Closure $schemaClosure, array $options): ?ISchemaWrapper {
 		/** @var ISchemaWrapper $schema */
 		$schema = $schemaClosure();
 
 		if (!$schema->hasTable('empleados_conf')) {
 			$table = $schema->createTable('empleados_conf');
+
 			$table->addColumn('Id_conf', 'integer', [
 				'autoincrement' => true,
+				'unsigned' => true,
 				'notnull' => true,
 			]);
 
 			$table->addColumn('Nombre', 'string', [
-				'notnull' => false,
+				'length' => 190,   // seguro para índices en utf8mb4
+				'notnull' => true,
 			]);
 
 			$table->addColumn('Data', 'string', [
+				'length' => 255,
 				'notnull' => false,
 			]);
 
 			$table->setPrimaryKey(['Id_conf']);
-			$table->addIndex(['Id_conf'], 'Id_conf');
+			// Único para poder hacer upsert limpio
+			$table->addUniqueIndex(['Nombre'], 'uq_empleados_conf_nombre');
 		}
 
 		return $schema;
 	}
 
-	/**
-	 * @param IOutput $output
-	 * @param Closure(): ISchemaWrapper $schemaClosure
-	 * @param array $options
-	 */
 	public function postSchemaChange(IOutput $output, Closure $schemaClosure, array $options): void {
-		$defaults = ['usuario_almacenamiento', 'automatic_save_note', 'acumular_vacaciones', 'modulo_ahorro'];
+		// Por si el orden de ejecución varía, confirmamos que la tabla exista ya en DB
+		$schema = $schemaClosure();
+		if (!$schema->hasTable('empleados_conf')) {
+			$output->warning('empleados_conf aún no existe en postSchemaChange; omitiendo seeds.');
+			return;
+		}
+
+		// Claves por defecto (extiéndelo si necesitas más)
+		$defaults = [
+			'usuario_almacenamiento',
+			'automatic_save_note',
+			'acumular_vacaciones',
+			'modulo_ahorro',
+			'modulo_ausencias',
+			'ausencias_readonly',
+		];
 
 		foreach ($defaults as $nombre) {
-			// 1) Verificar si ya existe
-			$check = $this->db->getQueryBuilder();
-			$check->select('Id_conf')
-				->from('empleados_conf')
-				->where(
-					$check->expr()->eq('Nombre', $check->createNamedParameter($nombre))
-				);
+			// Intenta insert directo; si ya existe por UNIQUE, ignora
+			try {
+				$qb = $this->db->getQueryBuilder();
+				$qb->insert('empleados_conf')
+					->values([
+						'Nombre' => $qb->createNamedParameter($nombre),
+						'Data'   => $qb->createNamedParameter(null),
+					])
+					->executeStatement();
 
-			$exists = $check->executeQuery()->fetchOne();
-			if ($exists !== false) {
-				continue; // ya insertado
+				$output->info("Seed empleados_conf.Nombre='$nombre' insertado.");
+			} catch (UniqueConstraintViolationException $e) {
+				// Ya existe, no pasa nada
+				$output->info("Seed empleados_conf.Nombre='$nombre' ya existía; omitido.");
 			}
-
-			// 2) Insertar
-			$ins = $this->db->getQueryBuilder();
-			$ins->insert('empleados_conf')
-				->values([
-					'Nombre' => $ins->createNamedParameter($nombre),
-					// 'Data' => $ins->createNamedParameter(null), // si necesitas setearlo explícitamente
-				])
-				->executeStatement();
 		}
 	}
 }

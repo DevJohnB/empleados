@@ -426,7 +426,7 @@ final class RepairEmpleadosTables implements IRepairStep {
  `fecha_de` DATETIME NULL,
  `fecha_hasta` DATETIME NULL,
  `dias` DECIMAL(5,2) NOT NULL,
- `timestamp` DATETIME NOT NULL,
+ `timestamp` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
  PRIMARY KEY(`id_aniversario`)
 )"
                 );
@@ -570,7 +570,7 @@ final class RepairEmpleadosTables implements IRepairStep {
  `fecha_hasta` DATETIME NOT NULL,
  `prima_vacacional` TINYINT(1) NULL DEFAULT 0,
  `archivo` VARCHAR(255) NULL,
- `timestamp` DATETIME NOT NULL,
+ `timestamp` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
  `a_socio` TINYINT(1) NULL DEFAULT 0,
  `a_gerente` TINYINT(1) NULL DEFAULT 0,
  `a_capital_humano` TINYINT(1) NULL DEFAULT 0,

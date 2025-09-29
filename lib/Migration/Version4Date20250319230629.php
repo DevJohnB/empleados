@@ -15,7 +15,8 @@ use OCP\Migration\IOutput;
 use OCP\Migration\SimpleMigrationStep;
 
 /**
- * Migration estable (idempotente) — sin cambios de tipos/columnas.
+ * Migración estable e idempotente (sin defaults no portables en Schema).
+ * Los DEFAULT de timestamp se aplican vía reparador específico por motor.
  */
 class Version4Date20250319230629 extends SimpleMigrationStep {
 
@@ -43,13 +44,36 @@ class Version4Date20250319230629 extends SimpleMigrationStep {
 		 */
 		if (!$schema->hasTable('aniversarios')) {
 			$table = $schema->createTable('aniversarios');
-			$table->addColumn('id_aniversario', 'integer', ['autoincrement' => true, 'unsigned' => true, 'notnull' => true]);
-			$table->addColumn('numero_aniversario', 'integer', ['notnull' => true]);
-			$table->addColumn('fecha_de', 'datetime', ['notnull' => false]);
-			$table->addColumn('fecha_hasta', 'datetime', ['notnull' => false]);
-			$table->addColumn('dias', 'decimal', ['precision' => 5, 'scale' => 2, 'notnull' => true]);
-			// NOTA: No se usa default CURRENT_TIMESTAMP por portabilidad
-			$table->addColumn('timestamp', 'datetime', ['notnull' => true]);
+
+			$table->addColumn('id_aniversario', 'integer', [
+				'autoincrement' => true,
+				'unsigned' => true,
+				'notnull' => true,
+			]);
+
+			$table->addColumn('numero_aniversario', 'integer', [
+				'notnull' => true,
+			]);
+
+			$table->addColumn('fecha_de', 'datetime', [
+				'notnull' => false,
+			]);
+
+			$table->addColumn('fecha_hasta', 'datetime', [
+				'notnull' => false,
+			]);
+
+			$table->addColumn('dias', 'decimal', [
+				'precision' => 5,
+				'scale' => 2,
+				'notnull' => true,
+			]);
+
+			// Sin DEFAULT aquí; se asegura vía reparador por motor
+			$table->addColumn('timestamp', 'datetime', [
+				'notnull' => true,
+			]);
+
 			$table->setPrimaryKey(['id_aniversario']);
 			$table->addIndex(['numero_aniversario'], 'aniv_idx_numero');
 		}
@@ -59,11 +83,30 @@ class Version4Date20250319230629 extends SimpleMigrationStep {
 		 */
 		if (!$schema->hasTable('tipo_ausencia')) {
 			$table = $schema->createTable('tipo_ausencia');
-			$table->addColumn('id_tipo_ausencia', 'integer', ['autoincrement' => true, 'unsigned' => true, 'notnull' => true]);
-			$table->addColumn('nombre', 'string', ['length' => 255, 'notnull' => true]);
-			$table->addColumn('descripcion', 'text', ['notnull' => false]);
-			$table->addColumn('solicitar_archivo', 'integer', ['notnull' => true]);
-			$table->addColumn('solicitar_prima_vacacional', 'integer', ['notnull' => true]);
+
+			$table->addColumn('id_tipo_ausencia', 'integer', [
+				'autoincrement' => true,
+				'unsigned' => true,
+				'notnull' => true,
+			]);
+
+			$table->addColumn('nombre', 'string', [
+				'length' => 255,
+				'notnull' => true,
+			]);
+
+			$table->addColumn('descripcion', 'text', [
+				'notnull' => false,
+			]);
+
+			$table->addColumn('solicitar_archivo', 'integer', [
+				'notnull' => true,
+			]);
+
+			$table->addColumn('solicitar_prima_vacacional', 'integer', [
+				'notnull' => true,
+			]);
+
 			$table->setPrimaryKey(['id_tipo_ausencia']);
 			$table->addIndex(['nombre'], 'tipo_idx_nombre');
 		}
@@ -73,30 +116,43 @@ class Version4Date20250319230629 extends SimpleMigrationStep {
 		 */
 		if (!$schema->hasTable('ausencias')) {
 			$table = $schema->createTable('ausencias');
-			$table->addColumn('id_ausencias', 'integer', ['autoincrement' => true, 'unsigned' => true, 'notnull' => true]);
-			$table->addColumn('id_empleado', 'integer', ['unsigned' => true, 'notnull' => true]);
-			$table->addColumn('id_aniversario', 'integer', ['unsigned' => true, 'notnull' => false]);
-			$table->addColumn('dias_disponibles', 'decimal', ['precision' => 5, 'scale' => 2, 'notnull' => false, 'default' => 0.00]); // medio día
-			$table->addColumn('prima_vacacional', 'boolean', ['notnull' => false, 'default' => 0]);
-			
-			if ($platform === 'mysql') {
-				$table->addColumn('timestamp', 'datetime', [
-					'notnull' => true,
-					'columnDefinition' => 'DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP',
-				]);
-			} elseif ($platform === 'postgresql') {
-				$table->addColumn('timestamp', 'datetime', [
-					'notnull' => true,
-					'columnDefinition' => 'TIMESTAMP NOT NULL DEFAULT NOW()',
-				]);
-			} else { // sqlite
-				$table->addColumn('timestamp', 'datetime', [
-					'notnull' => true,
-					'columnDefinition' => "TEXT NOT NULL DEFAULT (datetime('now'))",
-				]);
-			}
+
+			$table->addColumn('id_ausencias', 'integer', [
+				'autoincrement' => true,
+				'unsigned' => true,
+				'notnull' => true,
+			]);
+
+			$table->addColumn('id_empleado', 'integer', [
+				'unsigned' => true,
+				'notnull' => true,
+			]);
+
+			$table->addColumn('id_aniversario', 'integer', [
+				'unsigned' => true,
+				'notnull' => false,
+			]);
+
+			$table->addColumn('dias_disponibles', 'decimal', [
+				'precision' => 5,
+				'scale' => 2,
+				'notnull' => false,
+				'default' => 0.00,
+			]);
+
+			$table->addColumn('prima_vacacional', 'boolean', [
+				'notnull' => false,
+				'default' => false,
+			]);
+
+			// Sin DEFAULT aquí; se asegura vía reparador por motor
+			$table->addColumn('timestamp', 'datetime', [
+				'notnull' => true,
+			]);
+
 			$table->setPrimaryKey(['id_ausencias']);
-			$table->addUniqueIndex(['id_empleado'], 'aus_uq_empleado');
+			// Nombre consistente con tu reparador
+			$table->addUniqueIndex(['id_empleado'], 'uniq_aus_empleado');
 			$table->addIndex(['id_aniversario'], 'aus_idx_aniv');
 		}
 
@@ -105,18 +161,66 @@ class Version4Date20250319230629 extends SimpleMigrationStep {
 		 */
 		if (!$schema->hasTable('historial_ausencias')) {
 			$table = $schema->createTable('historial_ausencias');
-			$table->addColumn('id_historial_ausencias', 'integer', ['autoincrement' => true, 'unsigned' => true, 'notnull' => true]);
-			$table->addColumn('id_ausencias', 'integer', ['unsigned' => true, 'notnull' => true]);
-			$table->addColumn('id_aniversario', 'integer', ['unsigned' => true, 'notnull' => false]);
-			$table->addColumn('id_tipo_ausencia', 'integer', ['unsigned' => true, 'notnull' => true]);
-			$table->addColumn('fecha_de', 'datetime', ['notnull' => true]);
-			$table->addColumn('fecha_hasta', 'datetime', ['notnull' => true]);
-			$table->addColumn('prima_vacacional', 'boolean', ['notnull' => false, 'default' => 0]);
-			$table->addColumn('archivo', 'string', ['length' => 255, 'notnull' => false]);
-			$table->addColumn('timestamp', 'datetime', ['notnull' => true]);
-			$table->addColumn('a_socio', 'boolean', ['notnull' => false, 'default' => 0]);
-			$table->addColumn('a_gerente', 'boolean', ['notnull' => false, 'default' => 0]);
-			$table->addColumn('a_capital_humano', 'boolean', ['notnull' => false, 'default' => 0]);
+
+			$table->addColumn('id_historial_ausencias', 'integer', [
+				'autoincrement' => true,
+				'unsigned' => true,
+				'notnull' => true,
+			]);
+
+			$table->addColumn('id_ausencias', 'integer', [
+				'unsigned' => true,
+				'notnull' => true,
+			]);
+
+			$table->addColumn('id_aniversario', 'integer', [
+				'unsigned' => true,
+				'notnull' => false,
+			]);
+
+			$table->addColumn('id_tipo_ausencia', 'integer', [
+				'unsigned' => true,
+				'notnull' => true,
+			]);
+
+			$table->addColumn('fecha_de', 'datetime', [
+				'notnull' => true,
+			]);
+
+			$table->addColumn('fecha_hasta', 'datetime', [
+				'notnull' => true,
+			]);
+
+			$table->addColumn('prima_vacacional', 'boolean', [
+				'notnull' => false,
+				'default' => false,
+			]);
+
+			$table->addColumn('archivo', 'string', [
+				'length' => 255,
+				'notnull' => false,
+			]);
+
+			// Sin DEFAULT aquí; se asegura vía reparador por motor
+			$table->addColumn('timestamp', 'datetime', [
+				'notnull' => true,
+			]);
+
+			$table->addColumn('a_socio', 'boolean', [
+				'notnull' => false,
+				'default' => false,
+			]);
+
+			$table->addColumn('a_gerente', 'boolean', [
+				'notnull' => false,
+				'default' => false,
+			]);
+
+			$table->addColumn('a_capital_humano', 'boolean', [
+				'notnull' => false,
+				'default' => false,
+			]);
+
 			$table->setPrimaryKey(['id_historial_ausencias']);
 			$table->addIndex(['id_ausencias'], 'hist_idx_aus');
 			$table->addIndex(['id_tipo_ausencia'], 'hist_idx_tipo');
