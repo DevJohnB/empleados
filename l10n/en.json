@@ -1,0 +1,32 @@
+{
+  "translations": {
+    "Tabla de aniversarios": "Anniversaries table",
+    "Crear nuevo aniversario": "Create new anniversary",
+    "Importar listado": "Import list",
+    "Exportar listado / plantilla": "Export list / template",
+    "Vaciar tabla aniversarios": "Empty anniversaries table",
+    "Numero Aniversario": "Anniversary number",
+    "Dias libres": "Days off",
+    "Tipos de ausencias": "Leave types",
+    "Crear nuevo tipo de ausencia": "Create new leave type",
+    "Vaciar tabla tipo de ausencias": "Empty leave types table",
+    "nombre": "name",
+    "descripcion": "description",
+    "solicitar_archivo": "require_file",
+    "sí": "yes",
+    "no": "no",
+    "Agregue informacion del nuevo aniversario": "Add information for the new anniversary",
+    "numero de aniversario": "anniversary number",
+    "Dias": "Days",
+    "Enviar": "Submit",
+    "Agregue informacion del nuevo tipo de ausencia": "Add information for the new leave type",
+    "Solicitar archivo": "Require file",
+    "Nota ha sido actualizada": "Note has been updated",
+    "Se ha producido una excepcion [01] [{error}]": "An exception occurred [01] [{error}]",
+    "Se ha producido una excepcion [03] [{error}]": "An exception occurred [03] [{error}]",
+    "Se ha producido un error {error}, reporte al administrador": "An error occurred {error}, report to the administrator",
+    "Tabla de aniversarios vaciada": "Anniversaries table emptied",
+    "Se actualizo la base de datos exitosamente": "Database updated successfully"
+  },
+  "pluralForm": "nplurals=2; plural=(n != 1);"
+}

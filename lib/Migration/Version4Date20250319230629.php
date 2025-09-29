@@ -78,7 +78,23 @@ class Version4Date20250319230629 extends SimpleMigrationStep {
 			$table->addColumn('id_aniversario', 'integer', ['unsigned' => true, 'notnull' => false]);
 			$table->addColumn('dias_disponibles', 'decimal', ['precision' => 5, 'scale' => 2, 'notnull' => false, 'default' => 0.00]); // medio día
 			$table->addColumn('prima_vacacional', 'boolean', ['notnull' => false, 'default' => 0]);
-			$table->addColumn('timestamp', 'datetime', ['notnull' => true]);
+			
+			if ($platform === 'mysql') {
+				$table->addColumn('timestamp', 'datetime', [
+					'notnull' => true,
+					'columnDefinition' => 'DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP',
+				]);
+			} elseif ($platform === 'postgresql') {
+				$table->addColumn('timestamp', 'datetime', [
+					'notnull' => true,
+					'columnDefinition' => 'TIMESTAMP NOT NULL DEFAULT NOW()',
+				]);
+			} else { // sqlite
+				$table->addColumn('timestamp', 'datetime', [
+					'notnull' => true,
+					'columnDefinition' => "TEXT NOT NULL DEFAULT (datetime('now'))",
+				]);
+			}
 			$table->setPrimaryKey(['id_ausencias']);
 			$table->addUniqueIndex(['id_empleado'], 'aus_uq_empleado');
 			$table->addIndex(['id_aniversario'], 'aus_idx_aniv');

@@ -8,51 +8,46 @@
 						<div class="table_component" role="region" tabindex="0">
 							<table>
 								<caption>
-									<span class="caption-title">Tabla de aniversarios</span>
+									<span class="caption-title">{{ t('empleados', 'Tabla de aniversarios') }}</span>
 									<span class="caption-buttons">
 										<NcActions>
 											<NcActionButton :close-after-click="true" @click="showAddAniversario">
 												<template #icon>
 													<Plus :size="20" />
 												</template>
-												Crear nuevo aniversario
+												{{ t('empleados', 'Crear nuevo aniversario') }}
 											</NcActionButton>
 											<NcActionButton :close-after-click="true" @click="$refs.file.click()">
 												<template #icon>
 													<Import :size="20" />
 												</template>
-												Importar listado
+												{{ t('empleados', 'Importar listado') }}
 											</NcActionButton>
 											<NcActionButton :close-after-click="true" @click="Exportar()">
 												<template #icon>
 													<Export :size="20" />
 												</template>
-												Exportar listado / plantilla
+												{{ t('empleados', 'Exportar listado / plantilla') }}
 											</NcActionButton>
 											<NcActionButton :close-after-click="true" @click="vaciar()">
 												<template #icon>
 													<Delete :size="20" />
 												</template>
-												Vaciar tabla aniversarios
+												{{ t('empleados', 'Vaciar tabla aniversarios') }}
 											</NcActionButton>
 										</NcActions>
 									</span>
 								</caption>
 								<thead>
 									<tr>
-										<th>Numero Aniversario</th>
-										<th>Dias libres</th>
-										<!--th>opciones</th-->
+										<th>{{ t('empleados', 'Numero Aniversario') }}</th>
+										<th>{{ t('empleados', 'Dias libres') }}</th>
 									</tr>
 								</thead>
 								<tbody>
 									<tr v-for="(item) in Aniversarios" v-bind="$attrs">
-										<td>
-											{{ item.numero_aniversario }}
-										</td>
-										<td>
-											{{ item.dias }}
-										</td>
+										<td>{{ item.numero_aniversario }}</td>
+										<td>{{ item.dias }}</td>
 									</tr>
 								</tbody>
 							</table>
@@ -64,55 +59,48 @@
 						<div class="table_component" role="region" tabindex="0">
 							<table>
 								<caption>
-									<span class="caption-title">Tipos de ausencias</span>
+									<span class="caption-title">{{ t('empleados', 'Tipos de ausencias') }}</span>
 									<span class="caption-buttons">
 										<NcActions>
 											<NcActionButton :close-after-click="true" @click="showAddTipo">
 												<template #icon>
 													<Plus :size="20" />
 												</template>
-												Crear nuevo tipo de ausencia
+												{{ t('empleados', 'Crear nuevo tipo de ausencia') }}
 											</NcActionButton>
 											<NcActionButton :close-after-click="true" @click="$refs.fileTipo.click()">
 												<template #icon>
 													<Import :size="20" />
 												</template>
-												Importar listado
+												{{ t('empleados', 'Importar listado') }}
 											</NcActionButton>
 											<NcActionButton :close-after-click="true" @click="ExportarTipo()">
 												<template #icon>
 													<Export :size="20" />
 												</template>
-												Exportar listado / plantilla
+												{{ t('empleados', 'Exportar listado / plantilla') }}
 											</NcActionButton>
 											<NcActionButton :close-after-click="true" @click="vaciarTipo()">
 												<template #icon>
 													<Delete :size="20" />
 												</template>
-												Vaciar tabla tipo de ausencias
+												{{ t('empleados', 'Vaciar tabla tipo de ausencias') }}
 											</NcActionButton>
 										</NcActions>
 									</span>
 								</caption>
 								<thead>
 									<tr>
-										<th>nombre</th>
-										<th>descripcion</th>
-										<th>solicitar_archivo</th>
-										<!--th>opciones</th-->
+										<th>{{ t('empleados', 'nombre') }}</th>
+										<th>{{ t('empleados', 'descripcion') }}</th>
+										<th>{{ t('empleados', 'solicitar_archivo') }}</th>
 									</tr>
 								</thead>
 								<tbody>
 									<tr v-for="(item) in TipoAusencias" v-bind="$attrs">
-										<td>
-											{{ item.nombre }}
-										</td>
-										<td>
-											{{ item.descripcion }}
-										</td>
-										<td>
-											{{ item.solicitar_archivo == 1 ? 'sí' : 'no' }}
-										</td>
+										<td>{{ item.nombre }}</td>
+										<td>{{ item.descripcion }}</td>
+										<td>{{ item.solicitar_archivo == 1 ? t('empleados', 'sí') : t('empleados', 'no') }}</td>
 									</tr>
 								</tbody>
 							</table>
@@ -121,53 +109,56 @@
 				</div>
 			</div>
 		</div>
+
 		<NcModal
 			v-if="modalAddAniversario"
 			ref="modalRef"
 			name="agregar"
 			@close="closeModalAniversario">
 			<div class="modal__content">
-				<h2>Agregue informacion del nuevo aniversario</h2>
+				<h2>{{ t('empleados', 'Agregue informacion del nuevo aniversario') }}</h2>
 				<div class="form-group">
-					<NcTextField label="numero de aniversario" :value.sync="NumeroAniversario" />
+					<NcTextField :label="t('empleados', 'numero de aniversario')" :value.sync="NumeroAniversario" />
 				</div>
 				<div class="form-group">
-					<NcTextField label="Dias" :value.sync="DiasAniversario" />
+					<NcTextField :label="t('empleados', 'Dias')" :value.sync="DiasAniversario" />
 				</div>
 
 				<NcButton
 					:disabled="!NumeroAniversario || !DiasAniversario"
 					@click="AgregarNuevoAniversario">
-					Submit
+					{{ t('empleados', 'Enviar') }}
 				</NcButton>
 			</div>
 		</NcModal>
+
 		<NcModal
 			v-if="modalAddTipo"
 			ref="modalRef"
 			name="agregar"
 			@close="closeModalTipo">
 			<div class="modal__content">
-				<h2>Agregue informacion del nuevo tipo de ausencia</h2>
+				<h2>{{ t('empleados', 'Agregue informacion del nuevo tipo de ausencia') }}</h2>
 				<div class="form-group">
-					<NcTextField label="nombre" :value.sync="NombreTipo" />
+					<NcTextField :label="t('empleados', 'nombre')" :value.sync="NombreTipo" />
 				</div>
 				<div class="form-group">
-					<NcTextField label="descripcion" :value.sync="DescripcionTipo" />
+					<NcTextField :label="t('empleados', 'descripcion')" :value.sync="DescripcionTipo" />
 				</div>
 				<div class="form-group">
 					<NcCheckboxRadioSwitch v-model="SolicitarArchivoTipo">
-						Solicitar archivo
+						{{ t('empleados', 'Solicitar archivo') }}
 					</NcCheckboxRadioSwitch>
 				</div>
 
 				<NcButton
 					:disabled="!NombreTipo || !DescripcionTipo"
 					@click="AgregarNuevoTipo">
-					Submit
+					{{ t('empleados', 'Enviar') }}
 				</NcButton>
 			</div>
 		</NcModal>
+
 		<input
 			ref="file"
 			type="file"
@@ -184,19 +175,11 @@
 </template>
 
 <script>
-// global registration
-// import { VueTabs, VTab } from 'vue-nav-tabs/dist/vue-tabs.js'
-// import 'vue-nav-tabs/themes/vue-tabs.css'
-
 // iconos
-// import AccountGroup from 'vue-material-design-icons/AccountGroup.vue'
 import Delete from 'vue-material-design-icons/Delete.vue'
 import Plus from 'vue-material-design-icons/Plus.vue'
 import Import from 'vue-material-design-icons/Import.vue'
 import Export from 'vue-material-design-icons/Export.vue'
-// import WalletPlus from 'vue-material-design-icons/WalletPlus'
-// import Cog from 'vue-material-design-icons/Cog.vue'
-// import Check from 'vue-material-design-icons/Check'
 
 // imports
 import {
@@ -211,6 +194,7 @@ import { ref } from 'vue'
 import { showError, showSuccess } from '@nextcloud/dialogs'
 import { generateUrl } from '@nextcloud/router'
 import axios from '@nextcloud/axios'
+import { translate as t } from '@nextcloud/l10n'
 
 export default {
 	name: 'TiempoLaboralSettings',
@@ -251,6 +235,8 @@ export default {
 	},
 
 	methods: {
+		// Exponer t en plantilla
+		t,
 
 		showAddAniversario() {
 			this.modalAddAniversario = true
@@ -264,8 +250,8 @@ export default {
 		closeModalTipo() {
 			this.modalAddTipo = false
 		},
+
 		async getAniversarios() {
-			// this.loading = true
 			this.closeModalAniversario()
 			this.DiasAniversario = null
 			this.NumeroAniversario = null
@@ -274,20 +260,17 @@ export default {
 					.then(
 						(response) => {
 							this.Aniversarios = response.data
-							// eslint-disable-next-line no-console
-							console.log(this.Aniversarios)
-							// this.loading = false
 						},
 						(err) => {
 							showError(err)
 						},
 					)
 			} catch (err) {
-				showError(t('empleados', 'Se ha producido una excepcion [01] [' + err + ']'))
+				showError(t('empleados', 'Se ha producido una excepcion [01] [{error}]', { error: String(err) }))
 			}
 		},
+
 		async getTipo() {
-			// this.loading = true
 			this.closeModalTipo()
 			this.NombreTipo = null
 			this.DescripcionTipo = null
@@ -297,16 +280,16 @@ export default {
 					.then(
 						(response) => {
 							this.TipoAusencias = response.data
-							// this.loading = false
 						},
 						(err) => {
 							showError(err)
 						},
 					)
 			} catch (err) {
-				showError(t('empleados', 'Se ha producido una excepcion [01] [' + err + ']'))
+				showError(t('empleados', 'Se ha producido una excepcion [01] [{error}]', { error: String(err) }))
 			}
 		},
+
 		async AgregarNuevoAniversario() {
 			try {
 				await axios.post(generateUrl('/apps/empleados/AgregarNuevoAniversario'), {
@@ -315,12 +298,13 @@ export default {
 					fecha_hasta: '',
 					dias: this.DiasAniversario,
 				})
-				showSuccess('Nota ha sido actualizada')
+				showSuccess(t('empleados', 'Nota ha sido actualizada'))
 				this.getAniversarios()
 			} catch (err) {
-				showError(t('empleados', 'Se ha producido una excepcion [03] [' + err + ']'))
+				showError(t('empleados', 'Se ha producido una excepcion [03] [{error}]', { error: String(err) }))
 			}
 		},
+
 		async AgregarNuevoTipo() {
 			try {
 				await axios.post(generateUrl('/apps/empleados/AgregarNuevoTipo'), {
@@ -328,144 +312,108 @@ export default {
 					descripcion: this.DescripcionTipo,
 					solicitar_archivo: this.SolicitarArchivoTipo,
 				})
-				showSuccess('Nota ha sido actualizada')
+				showSuccess(t('empleados', 'Nota ha sido actualizada'))
 				this.getTipo()
 			} catch (err) {
-				showError(t('empleados', 'Se ha producido una excepcion [03] [' + err + ']'))
+				showError(t('empleados', 'Se ha producido una excepcion [03] [{error}]', { error: String(err) }))
 			}
 		},
+
 		async vaciar() {
-			// this.loading = true
 			this.closeModalAniversario()
 			try {
 				await axios.get(generateUrl('/apps/empleados/VaciarAniversarios'))
 					.then(
-						(response) => {
+						() => {
 							this.getAniversarios()
-							showSuccess('Tabla de aniversarios vaciada')
+							showSuccess(t('empleados', 'Tabla de aniversarios vaciada'))
 						},
 						(err) => {
 							showError(err)
 						},
 					)
 			} catch (err) {
-				showError(t('empleados', 'Se ha producido una excepcion [01] [' + err + ']'))
+				showError(t('empleados', 'Se ha producido una excepcion [01] [{error}]', { error: String(err) }))
 			}
 		},
+
 		async vaciarTipo() {
-			// this.loading = true
 			this.closeModalTipo()
 			try {
 				await axios.get(generateUrl('/apps/empleados/VaciarTipo'))
 					.then(
-						(response) => {
+						() => {
 							this.getTipo()
-							showSuccess('Tabla de aniversarios vaciada')
+							showSuccess(t('empleados', 'Tabla de aniversarios vaciada'))
 						},
 						(err) => {
 							showError(err)
 						},
 					)
 			} catch (err) {
-				showError(t('empleados', 'Se ha producido una excepcion [01] [' + err + ']'))
+				showError(t('empleados', 'Se ha producido una excepcion [01] [{error}]', { error: String(err) }))
 			}
 		},
+
 		Exportar() {
-			axios.get(
-				generateUrl('/apps/empleados/ExportListAniversarios'),
-				{
-					responseType: 'blob',
-				},
-			).then(
-				(response) => {
-					const url = URL.createObjectURL(new Blob([response.data], {
-						type: 'application/vnd.ms-excel',
-					}))
-
-					const link = document.createElement('a')
-					link.href = url
-					link.setAttribute('download', 'aniversarios.xlsx')
-					document.body.appendChild(link)
-					link.click()
-				},
-				(err) => {
-					showError(t('ahorrosgossler', 'Se ha producido un error ' + err + ', reporte al administrador'))
-					this.exportardata = false
-				},
-			)
+			axios.get(generateUrl('/apps/empleados/ExportListAniversarios'), { responseType: 'blob' })
+				.then(
+					(response) => {
+						const url = URL.createObjectURL(new Blob([response.data], { type: 'application/vnd.ms-excel' }))
+						const link = document.createElement('a')
+						link.href = url
+						link.setAttribute('download', 'aniversarios.xlsx')
+						document.body.appendChild(link)
+						link.click()
+					},
+					(err) => {
+						showError(t('empleados', 'Se ha producido un error {error}, reporte al administrador', { error: String(err) }))
+					},
+				)
 		},
+
 		ExportarTipo() {
-			axios.get(
-				generateUrl('/apps/empleados/ExportarTipo'),
-				{
-					responseType: 'blob',
-				},
-			).then(
-				(response) => {
-					const url = URL.createObjectURL(new Blob([response.data], {
-						type: 'application/vnd.ms-excel',
-					}))
-
-					const link = document.createElement('a')
-					link.href = url
-					link.setAttribute('download', 'tipos_ausencias.xlsx')
-					document.body.appendChild(link)
-					link.click()
-				},
-				(err) => {
-					showError(t('ahorrosgossler', 'Se ha producido un error ' + err + ', reporte al administrador'))
-					this.exportardata = false
-				},
-			)
+			axios.get(generateUrl('/apps/empleados/ExportarTipo'), { responseType: 'blob' })
+				.then(
+					(response) => {
+						const url = URL.createObjectURL(new Blob([response.data], { type: 'application/vnd.ms-excel' }))
+						const link = document.createElement('a')
+						link.href = url
+						link.setAttribute('download', 'tipos_ausencias.xlsx')
+						document.body.appendChild(link)
+						link.click()
+					},
+					(err) => {
+						showError(t('empleados', 'Se ha producido un error {error}, reporte al administrador', { error: String(err) }))
+					},
+				)
 		},
+
 		async importar() {
-			// eslint-disable-next-line no-console
-			console.log(this.$refs.file.files[0])
 			const formData = new FormData()
 			formData.append('fileXLSX', this.$refs.file.files[0])
 			try {
-				await axios.post(generateUrl('/apps/empleados/ImportListAniversarios'), formData,
-					{
-						headers: {
-							'Content-Type': 'multipart/form-data',
-						},
-					})
-					.then(
-						(response) => {
-							this.getAniversarios()
-							showSuccess(t('empleados', 'Se actualizo la base de datos exitosamente'))
-						},
-						(err) => {
-							showError(err)
-						},
-					)
+				await axios.post(generateUrl('/apps/empleados/ImportListAniversarios'), formData, {
+					headers: { 'Content-Type': 'multipart/form-data' },
+				})
+				this.getAniversarios()
+				showSuccess(t('empleados', 'Se actualizo la base de datos exitosamente'))
 			} catch (err) {
-				showError(t('empleados', 'Se ha producido una excepcion [03] [' + err + ']'))
+				showError(t('empleados', 'Se ha producido una excepcion [03] [{error}]', { error: String(err) }))
 			}
 		},
+
 		async importarTipo() {
-			// eslint-disable-next-line no-console
-			console.log(this.$refs.fileTipo.files[0])
 			const formData = new FormData()
 			formData.append('fileXLSX', this.$refs.fileTipo.files[0])
 			try {
-				await axios.post(generateUrl('/apps/empleados/importarTipo'), formData,
-					{
-						headers: {
-							'Content-Type': 'multipart/form-data',
-						},
-					})
-					.then(
-						(response) => {
-							this.getTipo()
-							showSuccess(t('empleados', 'Se actualizo la base de datos exitosamente'))
-						},
-						(err) => {
-							showError(err)
-						},
-					)
+				await axios.post(generateUrl('/apps/empleados/importarTipo'), formData, {
+					headers: { 'Content-Type': 'multipart/form-data' },
+				})
+				this.getTipo()
+				showSuccess(t('empleados', 'Se actualizo la base de datos exitosamente'))
 			} catch (err) {
-				showError(t('empleados', 'Se ha producido una excepcion [03] [' + err + ']'))
+				showError(t('empleados', 'Se ha producido una excepcion [03] [{error}]', { error: String(err) }))
 			}
 		},
 	},

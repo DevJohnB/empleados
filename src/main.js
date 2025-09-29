@@ -3,10 +3,13 @@ import App from './views/App.vue'
 
 import router from './router/index.js'
 import Router from 'vue-router'
-
 import mitt from 'mitt'
 
+// ⬇️ IMPORTA funciones de l10n
+import { loadTranslations, translate as t, translatePlural as n } from '@nextcloud/l10n'
+
 Vue.use(Router)
+// ⬇️ Expón t/n a todos los componentes (para usarlos en templates y methods)
 Vue.mixin({ methods: { t, n } })
 
 // Agregar OC y OCA a Vue para acceso global
@@ -27,18 +30,17 @@ const subordinatesElement = document.getElementById('subordinates')
 const subordinates = subordinatesElement ? JSON.parse(subordinatesElement.getAttribute('data-parameters') || '{}') : {}
 
 const emitter = mitt()
+Vue.prototype.$bus = emitter
 
-Vue.prototype.$bus = emitter // ✅ Esto hace que $bus esté disponible globalmente
-
-// Crear la vista
-const View = Vue.extend(App)
-
-new View({
-	router,
-	propsData: {
-		parameters: configuraciones,
-		groupsUser: groups,
-		employee,
-		subordinates,
-	},
-}).$mount('#content')
+loadTranslations('empleados').then(() => {
+	const View = Vue.extend(App)
+	new View({
+		router,
+		propsData: {
+			parameters: configuraciones,
+			groupsUser: groups,
+			employee,
+			subordinates,
+		},
+	}).$mount('#content')
+})

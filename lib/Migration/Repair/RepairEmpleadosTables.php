@@ -33,6 +33,8 @@ final class RepairEmpleadosTables implements IRepairStep {
         $this->ensureTableUserAhorro($output, $platform);
         $this->ensureTableHistorialAhorro($output, $platform);
         $this->ensureTableCapitalHumano($output, $platform);
+        $this->ensureTimestampDefault($output, 'ausencias');
+
 
         // 2) Índices no destructivos (si faltan)
         $this->ensureIndex($output, $platform, 'empleados', 'idx_id_gerente', 'Id_gerente');
@@ -516,7 +518,7 @@ final class RepairEmpleadosTables implements IRepairStep {
  `id_aniversario` INT NULL,
  `dias_disponibles` DECIMAL(5,2) NULL DEFAULT 0.00,
  `prima_vacacional` TINYINT(1) NULL DEFAULT 0,
- `timestamp` DATETIME NOT NULL,
+ `timestamp` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
  PRIMARY KEY(`id_ausencias`),
  UNIQUE KEY `uniq_aus_empleado` (`id_empleado`)
 )"
@@ -719,6 +721,34 @@ final class RepairEmpleadosTables implements IRepairStep {
             $output->warning('No fue posible crear user_ahorro: ' . $e->getMessage());
         }
     }
+
+    private function ensureTimestampDefault(\OCP\Migration\IOutput $out, string $tableBase, string $col = 'timestamp'): void {
+    $platform = $this->db->getDatabasePlatform()->getName(); // mysql|postgresql|sqlite
+    $prefix = $this->config->getSystemValueString('dbtableprefix', 'oc_');
+    $phys = $prefix . $tableBase;
+
+    if (!$this->tableExistsExact($phys)) {
+        $out->info("Tabla $phys no existe; omito default $col.");
+        return;
+    }
+
+    try {
+        if ($platform === 'mysql') {
+            // Requiere MySQL ≥5.6 o MariaDB ≥10.2 para DEFAULT en DATETIME
+            $this->db->executeStatement("ALTER TABLE `$phys` MODIFY `$col` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP");
+        } elseif ($platform === 'postgresql') {
+            $this->db->executeStatement("ALTER TABLE \"$phys\" ALTER COLUMN \"$col\" SET DEFAULT NOW()");
+            $this->db->executeStatement("ALTER TABLE \"$phys\" ALTER COLUMN \"$col\" SET NOT NULL");
+        } else { // sqlite
+            // SQLite no soporta ALTER COLUMN fácilmente: deja nota
+            $out->warning("SQLite: no puedo alterar $phys.$col; se aplica sólo en CREATE.");
+            return;
+        }
+        $out->info("Default de $phys.$col asegurado.");
+    } catch (\Throwable $e) {
+        $out->warning("No fue posible asegurar default en $phys.$col: " . $e->getMessage());
+    }
+}
 
     private function ensureTableHistorialAhorro(IOutput $output, string $p): void {
         $base='historial_ahorro'; $phys=$this->tn($base);
