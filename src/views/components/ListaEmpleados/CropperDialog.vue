@@ -1,18 +1,20 @@
 <template>
-	<NcDialog :open="open"
+	<NcDialog
+		:open="open"
 		:buttons="buttons"
-		name="Recortar imagen"
+		:name="t('empleados', 'Crop image')"
 		size="large"
 		@update:open="$emit('update:open', $event)">
 		<template #default>
 			<div v-if="previewUrl && open">
-				<img ref="image"
+				<img
+					ref="image"
 					:src="previewUrl"
-					alt="Imagen a recortar"
+					:alt="t('empleados', 'Image to crop')"
 					style="max-width: 100%;">
 			</div>
 			<div v-else>
-				<p>Selecciona una imagen para recortar.</p>
+				<p>{{ t('empleados', 'Select an image to crop.') }}</p>
 			</div>
 		</template>
 	</NcDialog>
@@ -22,6 +24,7 @@
 import Cropper from 'cropperjs'
 import 'cropperjs/dist/cropper.css'
 import { NcDialog } from '@nextcloud/vue'
+import { translate as t } from '@nextcloud/l10n'
 
 export default {
 	name: 'CropperDialog',
@@ -42,8 +45,8 @@ export default {
 	computed: {
 		buttons() {
 			return [
-				{ label: 'Cancelar', type: 'secondary', callback: this.close },
-				{ label: 'Recortar y subir', type: 'primary', callback: this.confirmCrop },
+				{ label: this.t('empleados', 'Cancel'), type: 'secondary', callback: this.close },
+				{ label: this.t('empleados', 'Crop and upload'), type: 'primary', callback: this.confirmCrop },
 			]
 		},
 	},
@@ -60,6 +63,8 @@ export default {
 		},
 	},
 	methods: {
+		t,
+
 		initCropper() {
 			const img = this.$refs.image
 			if (!img) return setTimeout(this.initCropper, 50)
@@ -88,9 +93,10 @@ export default {
 				img.onload = createCropper
 			}
 		},
+
 		async confirmCrop() {
 			if (!this.cropper || typeof this.cropper.getCroppedCanvas !== 'function') {
-				this.$emit('error', 'Recortador no disponible.')
+				this.$emit('error', this.t('empleados', 'Cropper not available.'))
 				return
 			}
 			const canvas = this.cropper.getCroppedCanvas({ width: 256, height: 256 })
@@ -98,6 +104,7 @@ export default {
 			this.$emit('confirm', blob)
 			this.close()
 		},
+
 		close() {
 			if (this.cropper) {
 				this.cropper.destroy()

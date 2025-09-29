@@ -1,14 +1,14 @@
 <template id="content">
 	<div>
 		<div class="info-vacaciones">
-			<h2>🏖️ Tabla de Vacaciones</h2>
+			<h2>🏖️ {{ t('empleados', 'Vacation Table') }}</h2>
 			<p>
-				Esta tabla te muestra cuántos días de vacaciones te corresponden según los años que lleves trabajando en la empresa. Es una guía basada en la Ley Federal del Trabajo, reformada en 2023.
+				{{ t('empleados', 'This table shows how many vacation days you are entitled to based on your years with the company. It is a guide based on the Federal Labor Law, reformed in 2023.') }}
 			</p>
 
-			<h3>🤔 Preguntas frecuentes</h3>
+			<h3>🤔 {{ t('empleados', 'Frequently Asked Questions') }}</h3>
 
-			<!-- Acordeón -->
+			<!-- Accordion -->
 			<div v-for="(pregunta, index) in preguntas" :key="index" class="acordeon-item">
 				<button class="acordeon-titulo" @click="toggle(index)">
 					{{ pregunta.titulo }}
@@ -19,57 +19,53 @@
 				</div>
 			</div>
 
-			<h3>✅ Recomendación</h3>
+			<h3>✅ {{ t('empleados', 'Recommendation') }}</h3>
 			<p>
-				Consulta esta tabla cada vez que cumplas un aniversario laboral. Así podrás planear tus descansos con anticipación y disfrutar al máximo tus días libres.
+				{{ t('empleados', 'Check this table every time you reach a work anniversary. That way you can plan your time off in advance and enjoy your days to the fullest.') }}
 			</p>
 		</div>
 	</div>
 </template>
 
 <script>
+import { translate as t } from '@nextcloud/l10n'
+
 export default {
 	name: 'MensajeAniversarios',
 
 	props: {
-		info: {
-			type: Object,
-			required: true,
-		},
-		acumular: {
-			type: String,
-			required: true,
-		},
+		info: { type: Object, required: true },
+		acumular: { type: String, required: true },
 	},
 
 	data() {
 		return {
 			preguntas: [
 				{
-					titulo: '¿Desde cuándo tengo derecho a vacaciones?',
-					contenido: 'Desde tu primer año trabajado completo ya puedes disfrutar de vacaciones. El mínimo son 12 días, y va aumentando cada año.',
+					titulo: t('empleados', 'From when do I have the right to vacation?'),
+					contenido: t('empleados', 'From your first full year worked you can already take vacation. The minimum is 12 days and it increases each year.'),
 					abierto: false,
 				},
 				{
-					titulo: '¿Cómo se cuentan los días?',
-					contenido: 'Los días que aparecen en la tabla son días hábiles. No cuentan sábados, domingos ni feriados.',
+					titulo: t('empleados', 'How are the days counted?'),
+					contenido: t('empleados', 'The days shown in the table are business days. Saturdays, Sundays, and holidays are not counted.'),
 					abierto: false,
 				},
 				{
-					titulo: '¿Puedo dividir mis vacaciones?',
-					contenido: 'Sí. Por ley, al menos la mitad debe tomarse de corrido, pero puedes hablar con Recursos Humanos para distribuir los días según tus necesidades y las de tu equipo.',
+					titulo: t('empleados', 'Can I split my vacation?'),
+					contenido: t('empleados', 'Yes. By law, at least half should be taken consecutively, but you can talk to Human Resources to distribute the days according to your needs and your team’s.'),
 					abierto: false,
 				},
 				{
-					titulo: '¿Qué pasa si no tomo mis vacaciones?',
+					titulo: t('empleados', 'What happens if I do not take my vacation?'),
 					contenido: this.acumular === 'true'
-						? 'Las vacaciones no tomadas no se pierden, pero es importante usarlas. Descansar es un derecho y también ayuda a tu salud y desempeño.'
-						: 'Si no tomas tus vacaciones, se pierden. Es importante que las uses para cuidar tu salud y bienestar.',
+						? t('empleados', 'Unused vacation is not lost, but it is important to use it. Resting is a right and also helps your health and performance.')
+						: t('empleados', 'If you do not take your vacation, it is lost. It is important to use it to take care of your health and wellbeing.'),
 					abierto: false,
 				},
 				{
-					titulo: '¿Puedo pedir más días de vacaciones?',
-					contenido: 'Sí, aunque lo establecido por ley es el mínimo, la empresa puede ofrecer más días como prestación adicional. Revisa tu contrato o habla con RH.',
+					titulo: t('empleados', 'Can I ask for more vacation days?'),
+					contenido: t('empleados', 'Yes, although the legal amount is the minimum, the company may offer more days as an additional benefit. Check your contract or talk to HR.'),
 					abierto: false,
 				},
 			],
@@ -77,6 +73,7 @@ export default {
 	},
 
 	methods: {
+		t,
 		toggle(index) {
 			this.preguntas[index].abierto = !this.preguntas[index].abierto
 		},

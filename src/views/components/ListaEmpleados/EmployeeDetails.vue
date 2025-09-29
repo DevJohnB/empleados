@@ -4,7 +4,7 @@
 		<div v-if="Object.keys(data).length === 0">
 			<div class="emptycontent">
 				<img src="../../../../img/crowesito-think.png" width="170px">
-				<h2>Selecciona un empleado para empezar</h2>
+				<h2>{{ t('empleados', 'Select an employee to start') }}</h2>
 			</div>
 		</div>
 
@@ -16,24 +16,28 @@
 						<template #icon>
 							<AccountCog :size="20" />
 						</template>
+
 						<NcActionButton :close-after-click="true" @click="showEdit">
 							<template #icon>
 								<AccountEdit :size="20" />
 							</template>
-							{{ hability }} edición
+							{{ show ? t('empleados', 'Disable editing') : t('empleados', 'Enable editing') }}
 						</NcActionButton>
+
 						<NcActionSeparator />
+
 						<NcActionButton :close-after-click="true" :disabled="true">
 							<template #icon>
 								<AccountEdit :size="20" />
 							</template>
-							Exportar
+							{{ t('empleados', 'Export') }}
 						</NcActionButton>
+
 						<NcActionButton @click="DeactiveUserDialog(data.Id_empleados)">
 							<template #icon>
 								<AccountEdit :size="20" />
 							</template>
-							Deshabilitar empleado
+							{{ t('empleados', 'Disable employee') }}
 						</NcActionButton>
 					</NcActions>
 				</div>
@@ -42,12 +46,10 @@
 			<div class="card-container">
 				<div class="user-card">
 					<div class="avatar">
-						<NcAvatar
-							:url="getAvatarUrl(data.uid)"
-							:size="100" />
+						<NcAvatar :url="getAvatarUrl(data.uid)" :size="100" />
 						<div v-if="show" class="center">
 							<NcButton @click="$refs.fileInput.click()">
-								Cambiar foto
+								{{ t('empleados', 'Change photo') }}
 							</NcButton>
 						</div>
 					</div>
@@ -67,22 +69,27 @@
 					active-text-color="white"
 					type="grow"
 					centered>
-					<VTab title="Empleado">
-						<EmpleadoTab :data="data"
+					<VTab :title="t('empleados', 'Employee')">
+						<EmpleadoTab
+							:data="data"
 							:show="show"
 							:empleados="empleadosProp"
 							:automaticsave="automatic_save_note" />
 					</VTab>
-					<VTab title="Notas">
-						<NotasTab :data="data"
+
+					<VTab :title="t('empleados', 'Notes')">
+						<NotasTab
+							:data="data"
 							:show="show"
 							:empleados="Empleados"
 							:automaticsave="automatic_save_note" />
 					</VTab>
-					<VTab title="Personal">
+
+					<VTab :title="t('empleados', 'Personal')">
 						<PersonalTab :data="data" :show="show" :empleados="Empleados" />
 					</VTab>
-					<VTab title="Archivos">
+
+					<VTab :title="t('empleados', 'Files')">
 						<FilesTab :data="data" :show="show" :empleados="Empleados" />
 					</VTab>
 				</VueTabs>
@@ -90,18 +97,21 @@
 		</div>
 
 		<!-- Dialogs -->
-		<NcDialog :open.sync="showDeactiveUserDialog"
-			name="Confirmación"
-			message="¿Está seguro que desea deshabilitar la cuenta?"
+		<NcDialog
+			:open.sync="showDeactiveUserDialog"
+			:name="t('empleados', 'Confirmation')"
+			:message="t('empleados', 'Are you sure you want to disable the account?')"
 			:buttons="buttons" />
 
-		<input ref="fileInput"
+		<input
+			ref="fileInput"
 			type="file"
 			class="file-input"
 			accept="image/*"
 			@change="onFileSelected">
 
-		<CropperDialog :open.sync="showCropper"
+		<CropperDialog
+			:open.sync="showCropper"
 			:preview-url="previewUrl"
 			@confirm="handleCroppedImage"
 			@error="handleCropperError" />
@@ -121,6 +131,7 @@ import AccountCog from 'vue-material-design-icons/AccountCog.vue'
 import { generateUrl } from '@nextcloud/router'
 import axios from '@nextcloud/axios'
 import { showError } from '@nextcloud/dialogs'
+import { translate as t } from '@nextcloud/l10n'
 import {
 	NcAvatar,
 	NcActions,
@@ -163,7 +174,6 @@ export default {
 	data() {
 		return {
 			show: false,
-			hability: 'Habilitar',
 			automatic_save_note: this.configuraciones.automatic_save_note,
 			Empleados: [],
 			showDeactiveUserDialog: false,
@@ -171,8 +181,9 @@ export default {
 			showCropper: false,
 			previewUrl: null,
 			avatarKey: 0,
+			avatarVersion: 0,
 			buttons: [
-				{ label: 'Ok', type: 'primary', callback: () => this.DeactiveUser() },
+				{ label: this.t('empleados', 'OK'), type: 'primary', callback: () => this.DeactiveUser() },
 			],
 		}
 	},
@@ -187,6 +198,8 @@ export default {
 		})
 	},
 	methods: {
+		t,
+
 		refreshAvatar() {
 			this.avatarKey++
 		},
@@ -197,7 +210,6 @@ export default {
 		},
 		showEdit() {
 			this.show = !this.show
-			this.hability = this.show ? 'Deshabilitar' : 'Habilitar'
 			if (this.show) this.$bus.emit('getall')
 		},
 		DeactiveUserDialog(IdEmpleado) {
@@ -212,7 +224,7 @@ export default {
 				this.$bus.emit('getall')
 				this.$bus.emit('send-data', {})
 			} catch (err) {
-				showError(t('empleados', 'Se ha producido una excepción [03] [' + err + ']'))
+				showError(this.t('empleados', 'An exception has occurred [03] [{error}]', { error: String(err) }))
 			}
 		},
 		onFileSelected(event) {
@@ -229,9 +241,10 @@ export default {
 				const response = await axios.post(generateUrl('/apps/empleados/uploadAvatar'), formData, {
 					headers: { 'Content-Type': 'multipart/form-data' },
 				})
-				this.avatarVersion = response.data.version // Actualizar la versión
+				this.avatarVersion = response.data.version
+				this.refreshAvatar()
 			} catch (err) {
-				showError('Error al subir la imagen.')
+				showError(this.t('empleados', 'Error uploading image.'))
 			}
 		},
 		handleCropperError(msg) {

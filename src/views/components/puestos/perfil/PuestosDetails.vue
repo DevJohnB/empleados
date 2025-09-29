@@ -1,67 +1,70 @@
 <!-- eslint-disable object-curly-newline -->
 <template>
 	<div class="contacts-list__item-wrapper">
-		<div v-if="Object.keys( data ).length == 0">
+		<!-- Empty state -->
+		<div v-if="Object.keys(data).length === 0">
 			<div class="emptycontent">
 				<img src="../../../../../img/crowesito-think.png" width="170px">
-				<h2>Selecciona un area para mas detalles</h2>
+				<h2>{{ t('empleados', 'Select an area for more details') }}</h2>
 			</div>
 		</div>
+
+		<!-- Content -->
 		<div v-else>
-			<div>
-				<div class="container-search-profile">
-					<div class="button-container-profile">
-						<NcActions>
+			<div class="container-search-profile">
+				<div class="button-container-profile">
+					<NcActions>
+						<template #icon>
+							<AccountCog :size="20" />
+						</template>
+
+						<NcActionButton :close-after-click="true" @click="showEdit()">
 							<template #icon>
-								<AccountCog :size="20" />
+								<AccountEdit :size="20" />
 							</template>
-							<NcActionButton
-								:close-after-click="true"
-								@click="showEdit()">
-								<template #icon>
-									<AccountEdit :size="20" />
-								</template>
-								Habilitar edicion
-							</NcActionButton>
-							<NcActionButton
-								:close-after-click="true"
-								@click="ChangeView()">
-								<template #icon>
-									<AccountEdit :size="20" />
-								</template>
-								Cambiar tipo de vista
-							</NcActionButton>
-							<NcActionSeparator />
-							<NcActionButton
-								:close-after-click="true"
-								@click="showDialog = true">
-								<template #icon>
-									<DeleteAlert :size="20" />
-								</template>
-								Eliminar departamento
-							</NcActionButton>
-							<NcDialog :open.sync="showDialog"
-								name="Confirmar"
-								:message="'Desea eliminar ' + data.Nombre + '?'"
-								:buttons="buttons" />
-						</NcActions>
-					</div>
+							{{ t('empleados', 'Enable editing') }}
+						</NcActionButton>
+
+						<NcActionButton :close-after-click="true" @click="ChangeView()">
+							<template #icon>
+								<AccountEdit :size="20" />
+							</template>
+							{{ t('empleados', 'Change view type') }}
+						</NcActionButton>
+
+						<NcActionSeparator />
+
+						<NcActionButton :close-after-click="true" @click="showDialog = true">
+							<template #icon>
+								<DeleteAlert :size="20" />
+							</template>
+							{{ t('empleados', 'Delete department') }}
+						</NcActionButton>
+
+						<NcDialog
+							:open.sync="showDialog"
+							:name="t('empleados', 'Confirm')"
+							:message="t('empleados', 'Do you want to delete {departamento}?', { departamento: data.Nombre })"
+							:buttons="buttons" />
+					</NcActions>
 				</div>
 			</div>
+
 			<div class="center">
 				<div>
-					<div>
-						<h2>{{ data.Nombre }}</h2>
-					</div>
+					<h2>{{ data.Nombre }}</h2>
 				</div>
+
 				<div class="rsg-title">
-					<h3>Empleados en departamento</h3>
+					<h3>{{ t('empleados', 'Employees in department') }}</h3>
 				</div>
+
 				<div>
-					<div v-if="preferencias_puestos"
-						class="rsg">
+					<!-- Card/grid view -->
+					<div v-if="preferencias_puestos" class="rsg">
 						<ul class="container flex">
-							<li v-for="(item) in peopleArea.puesto"
+							<li
+								v-for="item in peopleArea.puesto"
 								:key="item.Id_empleados"
 								class="flex-item">
 								<div class="card">
@@ -80,10 +83,12 @@
 							</li>
 						</ul>
 					</div>
-					<div v-else
-						class="rsgd">
-						<ul class="">
-							<NcListItem v-for="(item) in peopleArea.puesto"
+
+					<!-- List view -->
+					<div v-else class="rsgd">
+						<ul>
+							<NcListItem
+								v-for="item in peopleArea.puesto"
 								:key="item.Id_empleados"
 								bold
 								:name="item.displayname ? item.displayname : item.Id_user"
@@ -103,10 +108,11 @@
 				</div>
 			</div>
 		</div>
+
 		<NcModal
 			v-if="show"
 			ref="modalRef"
-			name="Editar"
+			:name="t('empleados', 'Edit')"
 			@close="closeModal">
 			<div class="modal__content">
 				<div class="container">
@@ -114,15 +120,15 @@
 						<NcTextField
 							:value.sync="area"
 							:v-model="area"
-							label="Nombre del area/departamento" />
+							:label="t('empleados', 'Department/area name')" />
 					</div>
 					<div class="form-group">
 						<NcButton
 							class="center"
-							aria-label="Guardar cambios"
+							:aria-label="t('empleados', 'Save changes')"
 							type="primary"
 							@click="guardarcambioarea()">
-							Guardar cambios
+							{{ t('empleados', 'Save changes') }}
 						</NcButton>
 					</div>
 				</div>
@@ -136,13 +142,11 @@
 import DeleteAlert from 'vue-material-design-icons/DeleteAlert.vue'
 import AccountEdit from 'vue-material-design-icons/AccountEdit.vue'
 import AccountCog from 'vue-material-design-icons/AccountCog.vue'
-// import Cancel from 'vue-material-design-icons/Cancel.vue'
-// import Check from 'vue-material-design-icons/Check.vue'
-// import Cog from 'vue-material-design-icons/Cog.vue'
 
 import { generateUrl } from '@nextcloud/router'
 import axios from '@nextcloud/axios'
 import { showError, showSuccess } from '@nextcloud/dialogs'
+import { translate as t } from '@nextcloud/l10n'
 
 import {
 	NcAvatar,
@@ -154,7 +158,6 @@ import {
 	NcButton,
 	NcListItem,
 	NcModal,
-	// NcProgressBar,
 } from '@nextcloud/vue'
 
 export default {
@@ -194,11 +197,11 @@ export default {
 			showDialog: false,
 			buttons: [
 				{
-					label: 'Cancelar',
+					label: this.t('empleados', 'Cancel'),
 					callback: () => { this.lastResponse = 'Pressed "Cancel"' },
 				},
 				{
-					label: 'Eliminar',
+					label: this.t('empleados', 'Delete'),
 					type: 'primary',
 					callback: () => { this.eliminarPuesto(this.data.Id_puestos) },
 				},
@@ -207,52 +210,46 @@ export default {
 			preferencias_puestos: null,
 		}
 	},
+
 	mounted() {
 		this.$root.$on('show', (data) => {
 			this.show = data
 		})
 		this.preferencias_puestos = localStorage.getItem('nextcloud_empleados_preferencias_puestos')
 		if (this.preferencias_puestos === null) {
-			// No existía, la inicializamos
 			localStorage.setItem('nextcloud_empleados_preferencias_puestos', 'false')
 			this.preferencias_puestos = false
 		} else {
-			// Convertimos el string a boolean
 			this.preferencias_puestos = this.preferencias_puestos === 'true'
 		}
 	},
 
 	methods: {
+		t,
+
 		showEdit() {
 			this.show = !this.show
 			if (this.show === true) {
-				// eslint-disable-next-line no-console
 				this.getall()
 				this.area = this.data.Nombre
 			}
 		},
+
 		closeModal() {
 			this.show = !this.show
 		},
+
 		async eliminarPuesto(puesto) {
 			this.showDialog = false
 			try {
-				await axios.post(generateUrl('/apps/empleados/EliminarPuesto'),
-					{
-						id_puesto: puesto,
-					})
-					.then(
-						(response) => {
-							showSuccess('Area eliminada exitosamente')
-							this.$root.$emit('reload')
-							this.$root.$emit('send-data-puestos', {})
-						},
-						(err) => {
-							showError(err)
-						},
-					)
+				await axios.post(generateUrl('/apps/empleados/EliminarPuesto'), {
+					id_puesto: puesto,
+				})
+				showSuccess(this.t('empleados', 'Department removed successfully'))
+				this.$root.$emit('reload')
+				this.$root.$emit('send-data-puestos', {})
 			} catch (err) {
-				showError(t('empleados', 'Se ha producido una excepcion [03] [' + err + ']'))
+				showError(this.t('empleados', 'An exception has occurred [03] [{error}]', { error: String(err) }))
 			}
 		},
 
@@ -261,56 +258,38 @@ export default {
 			localStorage.setItem('nextcloud_empleados_preferencias_puestos', this.preferencias_puestos)
 		},
 
-		checknull(satanizar) {
-			if (satanizar == null) {
-				return ''
-			}
-
-			return satanizar
+		checknull(val) {
+			return val == null ? '' : val
 		},
 
 		async getall() {
 			try {
-				await axios.get(generateUrl('/apps/empleados/GetPuestosFix'))
-					.then(
-						(response) => {
-							this.options = response.data
-						},
-						(err) => {
-							showError(err)
-						},
-					)
+				const response = await axios.get(generateUrl('/apps/empleados/GetPuestosFix'))
+				this.options = response.data
 			} catch (err) {
-				showError(t('empleados', 'Se ha producido una excepcion [01] [' + err + ']'))
+				showError(this.t('empleados', 'An exception has occurred [01] [{error}]', { error: String(err) }))
 			}
 		},
 
 		async guardarcambioarea() {
 			try {
-				await axios.post(generateUrl('/apps/empleados/GuardarCambioPuestos'),
-					{
-						id_puestos: this.data.Id_puestos,
-						nombre: this.area,
-					})
-					.then(
-						(response) => {
-							showSuccess('Area eliminada exitosamente')
-							this.$root.$emit('reload')
-							this.$root.$emit('send-data-puestos', {})
-							this.showEdit()
-						},
-						(err) => {
-							this.showEdit()
-							showError(err)
-						},
-					)
+				await axios.post(generateUrl('/apps/empleados/GuardarCambioPuestos'), {
+					id_puestos: this.data.Id_puestos,
+					nombre: this.area,
+				})
+				showSuccess(this.t('empleados', 'Department updated successfully'))
+				this.$root.$emit('reload')
+				this.$root.$emit('send-data-puestos', {})
+				this.showEdit()
 			} catch (err) {
-				showError(t('empleados', 'Se ha producido una excepcion [03] [' + err + ']'))
+				this.showEdit()
+				showError(this.t('empleados', 'An exception has occurred [03] [{error}]', { error: String(err) }))
 			}
 		},
 	},
 }
 </script>
+
 <style>
 .button-container-profile {
   float: right;
@@ -342,59 +321,28 @@ export default {
 	width: auto;
 	margin-top: 20px;
 }
-
 .item {
   box-shadow: rgba(0, 41, 0, 0.15) 0px 0px 11px 1px;
   width: 100px;
   margin: 10px;
   border-radius: 15px;
 }
+.float { max-width: 1200px; margin: 0 auto; }
+.float:after { content: "."; display: block; height: 0; clear: both; visibility: hidden; }
+.float-item { float: left; }
+.inline-b { max-width:1200px; margin:0 auto; }
+.inline-b-item { display: inline-block; }
 
-/*float layout*/
-.float {
-  max-width: 1200px;
-  margin: 0 auto;
-}
-.float:after {
-  content: ".";
-  display: block;
-  height: 0;
-  clear: both;
-  visibility: hidden;
-}
-.float-item {
-  float: left;
-}
-
-/*inline-block*/
-.inline-b {
-  max-width:1200px;
-  margin:0 auto;
-}
-.inline-b-item {
-  display: inline-block;
-}
-
-/*Flexbox*/
 .flex {
   padding: 0;
   margin: 0;
   list-style: none;
-
-  display: -webkit-box;
-  display: -moz-box;
-  display: -ms-flexbox;
-  display: -webkit-flex;
   display: flex;
-
-  -webkit-flex-flow: row wrap;
+  flex-flow: row wrap;
   justify-content: space-around;
 }
 
-h2 {
-  font-size: 28px;
-  margin-bottom: auto;
-}
+h2 { font-size: 28px; margin-bottom: auto; }
 
 .wrapper {
 	display: flex;
@@ -403,64 +351,30 @@ h2 {
 	flex-wrap: wrap;
 }
 
-.external-label {
-	display: flex;
-	width: 100%;
-	margin-top: 1rem;
-}
+.external-label { display: flex; width: 100%; margin-top: 1rem; }
+.external-label label { padding-top: 7px; padding-right: 14px; white-space: nowrap; }
 
-.external-label label {
-	padding-top: 7px;
-	padding-right: 14px;
-	white-space: nowrap;
-}
-.grid {
-	display: grid;
-	grid-template-columns: repeat(1, 500px);
-	gap: 10px;
-}
+.grid { display: grid; grid-template-columns: repeat(1, 500px); gap: 10px; }
 
 .card {
   --gray: rgba(229, 231, 235, 1);
   width: 350px;
   display: flex;
-  grid-gap: 1.25rem;
   gap: 1.25rem;
   border-radius: 1rem;
-  background-color: rgba(255, 255, 255, 1);
+  background-color: #fff;
   padding: 1.5rem;
-  box-shadow: rgba(0, 41, 0, 0.15) 0px 0px 11px 1px;
+  box-shadow: rgba(0, 41, 0, 0.15) 0 0 11px 1px;
 }
 
-.card-1 {
-  font-size: 14px;
-  font-weight: bold;
-}
+.card-1 { font-size: 14px; font-weight: bold; }
+.right { display: flex; flex: 1 1 0%; flex-direction: column; gap: 1.25rem; }
+.card-2 { font-size: 14px; }
 
-.right {
-  display: flex;
-  flex: 1 1 0%;
-  flex-direction: column;
-  grid-gap: 1.25rem;
-}
+@keyframes pulse { to { opacity: .2; } }
 
-.card-2 {
-font-size: 14px;
-}
-
-@keyframes pulse {
-  to {
-    opacity: .2;
-  }
-}
-
-.modal__content {
-	margin: 50px;
-}
-
-.modal__content h2 {
-	text-align: center;
-}
+.modal__content { margin: 50px; }
+.modal__content h2 { text-align: center; }
 
 .form-group {
 	margin: calc(var(--default-grid-baseline) * 4) 0;

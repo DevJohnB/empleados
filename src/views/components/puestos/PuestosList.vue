@@ -1,12 +1,12 @@
 <template id="EmployeeList">
-	<NcAppContent v-if="loading" name="Loading">
-		<NcEmptyContent class="empty-content" name="Cargando">
+	<NcAppContent v-if="loading" :name="t('empleados', 'Loading')">
+		<NcEmptyContent class="empty-content" :name="t('empleados', 'Loading')">
 			<template #icon>
 				<NcLoadingIcon :size="20" />
 			</template>
 		</NcEmptyContent>
 	</NcAppContent>
-	<NcAppContent v-else name="Loading">
+	<NcAppContent v-else :name="t('empleados', 'Loading')">
 		<!-- contacts list -->
 		<template #list>
 			<PuestosFullList
@@ -30,6 +30,7 @@ import { showError /* showSuccess */ } from '@nextcloud/dialogs'
 import { generateUrl } from '@nextcloud/router'
 import axios from '@nextcloud/axios'
 import mitt from 'mitt'
+import { translate as t } from '@nextcloud/l10n'
 
 import {
 	NcEmptyContent,
@@ -75,6 +76,8 @@ export default {
 	},
 
 	methods: {
+		t,
+
 		async getallpuesto(puesto) {
 			try {
 				await axios.get(generateUrl('/apps/empleados/GetEmpleadosPuesto/' + puesto))
@@ -87,7 +90,7 @@ export default {
 						},
 					)
 			} catch (err) {
-				showError(t('empleados', 'Se ha producido una excepcion [01] [' + err + ']'))
+				showError(t('empleados', 'An exception has occurred [01] [{error}]', { error: String(err) }))
 			}
 		},
 
@@ -104,7 +107,7 @@ export default {
 						},
 					)
 			} catch (err) {
-				showError(t('empleados', 'Se ha producido una excepcion [01] [' + err + ']'))
+				showError(t('empleados', 'An exception has occurred [01] [{error}]', { error: String(err) }))
 			}
 		},
 	},

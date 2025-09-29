@@ -1,11 +1,12 @@
 <template id="EmployeeList">
 	<NcAppContent v-if="loading" name="Loading">
-		<NcEmptyContent class="empty-content" name="Cargando">
+		<NcEmptyContent class="empty-content" :name="t('empleados', 'Loading')">
 			<template #icon>
 				<NcLoadingIcon :size="20" />
 			</template>
 		</NcEmptyContent>
 	</NcAppContent>
+
 	<NcAppContent v-else name="Loading">
 		<!-- contacts list -->
 		<template #list>
@@ -30,6 +31,7 @@ import { showError /* showSuccess */ } from '@nextcloud/dialogs'
 import { generateUrl } from '@nextcloud/router'
 import axios from '@nextcloud/axios'
 import mitt from 'mitt'
+import { translate as t } from '@nextcloud/l10n'
 
 import {
 	NcEmptyContent,
@@ -45,7 +47,6 @@ export default {
 		NcAppContent,
 		NcLoadingIcon,
 		AreasDetails,
-		// ContactsList,
 	},
 
 	data() {
@@ -66,7 +67,7 @@ export default {
 			this.data_areas = data
 			this.getalldepartament(data.Id_departamento)
 		})
-		this.$root.$on('delete-areas', (data) => {
+		this.$root.$on('delete-areas', () => {
 			this.getall()
 		})
 		this.$root.$on('reload', () => {
@@ -75,6 +76,9 @@ export default {
 	},
 
 	methods: {
+		// expone i18n en plantilla
+		t,
+
 		async getalldepartament(departamento) {
 			try {
 				await axios.get(generateUrl('/apps/empleados/GetEmpleadosArea/' + departamento))
@@ -87,7 +91,7 @@ export default {
 						},
 					)
 			} catch (err) {
-				showError(t('empleados', 'Se ha producido una excepcion [01] [' + err + ']'))
+				showError(t('empleados', 'Se ha producido una excepcion [01] [{error}]', { error: String(err) }))
 			}
 		},
 
@@ -104,14 +108,14 @@ export default {
 						},
 					)
 			} catch (err) {
-				showError(t('empleados', 'Se ha producido una excepcion [01] [' + err + ']'))
+				showError(t('empleados', 'Se ha producido una excepcion [01] [{error}]', { error: String(err) }))
 			}
 		},
 	},
 }
 </script>
-<style scoped lang="scss">
 
+<style scoped lang="scss">
 	.container {
 		padding-left: 60px;
 	}
@@ -127,5 +131,4 @@ export default {
 			margin-right: 8px;
 		}
 	}
-
 </style>

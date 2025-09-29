@@ -48,6 +48,7 @@ final class RepairEmpleadosTables implements IRepairStep {
             'automatic_save_note',
             'acumular_vacaciones',
             'modulo_ahorro',
+            'modulo_ausencias',
             'ausencias_readonly',
         ]);
 

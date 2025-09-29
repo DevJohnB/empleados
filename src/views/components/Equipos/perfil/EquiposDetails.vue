@@ -1,69 +1,67 @@
 <!-- eslint-disable object-curly-newline -->
 <template>
 	<div class="contacts-list__item-wrapper">
-		<div v-if="Object.keys( data ).length == 0">
+		<div v-if="Object.keys(data).length === 0">
 			<div class="emptycontent">
 				<img src="../../../../../img/crowesito-think.png" width="170px">
-				<h2>Selecciona un equipo para mas detalles</h2>
+				<h2>{{ t('empleados', 'Select a team for more details') }}</h2>
 			</div>
 		</div>
+
 		<div v-else>
-			<div>
-				<div class="container-search-profile">
-					<div class="button-container-profile">
-						<NcActions>
+			<div class="container-search-profile">
+				<div class="button-container-profile">
+					<NcActions>
+						<template #icon>
+							<AccountCog :size="20" />
+						</template>
+
+						<NcActionButton :close-after-click="true" @click="showEdit()">
 							<template #icon>
-								<AccountCog :size="20" />
+								<AccountEdit :size="20" />
 							</template>
-							<NcActionButton
-								:close-after-click="true"
-								@click="showEdit()">
-								<template #icon>
-									<AccountEdit :size="20" />
-								</template>
-								Habilitar edicion
-							</NcActionButton>
-							<NcActionButton
-								:close-after-click="true"
-								@click="ChangeView()">
-								<template #icon>
-									<AccountEdit :size="20" />
-								</template>
-								Cambiar tipo de vista
-							</NcActionButton>
-							<NcActionSeparator />
-							<NcActionButton
-								:close-after-click="true"
-								@click="showDialog = true">
-								<template #icon>
-									<DeleteAlert :size="20" />
-								</template>
-								Eliminar departamento
-							</NcActionButton>
-							<NcDialog :open.sync="showDialog"
-								name="Confirmar"
-								:message="'Desea eliminar ' + data.Nombre + '?'"
-								:buttons="buttons" />
-						</NcActions>
-					</div>
+							{{ t('empleados', 'Enable editing') }}
+						</NcActionButton>
+
+						<NcActionButton :close-after-click="true" @click="ChangeView()">
+							<template #icon>
+								<AccountEdit :size="20" />
+							</template>
+							{{ t('empleados', 'Change view type') }}
+						</NcActionButton>
+
+						<NcActionSeparator />
+
+						<NcActionButton :close-after-click="true" @click="showDialog = true">
+							<template #icon>
+								<DeleteAlert :size="20" />
+							</template>
+							{{ t('empleados', 'Delete team') }}
+						</NcActionButton>
+
+						<NcDialog
+							:open.sync="showDialog"
+							:name="t('empleados', 'Confirm')"
+							:message="t('empleados', 'Do you want to delete {name}?', { name: data.Nombre })"
+							:buttons="buttons" />
+					</NcActions>
 				</div>
 			</div>
+
 			<div class="center">
 				<div>
-					<div>
-						<h2>{{ data.Nombre }}</h2>
-					</div>
+					<h2>{{ data.Nombre }}</h2>
 				</div>
+
 				<div class="rsg-title">
-					<h3>Equipo</h3>
+					<h3>{{ t('empleados', 'Team') }}</h3>
 				</div>
+
 				<div>
-					<div v-if="preferencias_equipos"
-						class="rsg">
+					<!-- Cards -->
+					<div v-if="preferencias_equipos" class="rsg">
 						<ul class="container flex">
-							<li v-for="(item) in peopleArea.equipo"
-								:key="item.Id_empleados"
-								class="flex-item">
+							<li v-for="item in peopleArea.equipo" :key="item.Id_empleados" class="flex-item">
 								<div class="card">
 									<div>
 										<NcAvatar :user="item.Id_user" :display-name="item.Id_user" :size="60" />
@@ -80,10 +78,12 @@
 							</li>
 						</ul>
 					</div>
-					<div v-else
-						class="rsgd">
-						<ul class="">
-							<NcListItem v-for="(item) in peopleArea.equipo"
+
+					<!-- List -->
+					<div v-else class="rsgd">
+						<ul>
+							<NcListItem
+								v-for="item in peopleArea.equipo"
 								:key="item.Id_empleados"
 								bold
 								:name="item.displayname ? item.displayname : item.Id_user"
@@ -103,31 +103,35 @@
 				</div>
 			</div>
 		</div>
-		<NcModal
-			v-if="show"
+
+		<!-- Edit modal -->
+		<NcModal v-if="show"
 			ref="modalRef"
-			name="Editar"
+			:name="t('empleados', 'Edit')"
 			@close="closeModal">
 			<div class="modal__content">
 				<div class="container">
 					<div class="form-group">
 						<NcTextField
-							:value.sync="area"
-							:v-model="area"
-							label="Nombre del area/departamento" />
+							:value.sync="equipo_nombre"
+							:v-model="equipo_nombre"
+							:label="t('empleados', 'Team name')" />
 					</div>
+
 					<div class="form-group">
-						<NcSelect v-model="padre"
-							input-label="Area Padre"
-							:options="options" />
+						<NcSelect
+							v-model="selected_user"
+							:options="optionsGestor"
+							:user-select="true"
+							:input-label="t('empleados', 'Team lead')" />
 					</div>
+
 					<div class="form-group">
-						<NcButton
-							class="center"
-							aria-label="Guardar cambios"
+						<NcButton class="center"
+							:aria-label="t('empleados', 'Save changes')"
 							type="primary"
-							@click="guardarcambioarea()">
-							Guardar cambios
+							@click="GuardarCambioEquipo()">
+							{{ t('empleados', 'Save changes') }}
 						</NcButton>
 					</div>
 				</div>
@@ -141,13 +145,11 @@
 import DeleteAlert from 'vue-material-design-icons/DeleteAlert.vue'
 import AccountEdit from 'vue-material-design-icons/AccountEdit.vue'
 import AccountCog from 'vue-material-design-icons/AccountCog.vue'
-// import Cancel from 'vue-material-design-icons/Cancel.vue'
-// import Check from 'vue-material-design-icons/Check.vue'
-// import Cog from 'vue-material-design-icons/Cog.vue'
 
 import { generateUrl } from '@nextcloud/router'
 import axios from '@nextcloud/axios'
 import { showError, showSuccess } from '@nextcloud/dialogs'
+import { translate as t } from '@nextcloud/l10n'
 
 import {
 	NcAvatar,
@@ -160,7 +162,6 @@ import {
 	NcSelect,
 	NcListItem,
 	NcModal,
-	// NcProgressBar,
 } from '@nextcloud/vue'
 
 export default {
@@ -183,23 +184,23 @@ export default {
 	},
 
 	props: {
-		data: {
-			type: Object,
-			required: true,
-		},
-		peopleArea: {
-			type: Object,
-			required: true,
-		},
+		data: { type: Object, required: true },
+		peopleArea: { type: Object, required: true },
 	},
 
 	data() {
 		return {
 			show: false,
-			options: [],
-			Empleados: [],
 			showDialog: false,
-			optionsGestor: [], // Se llena con response.data.Users
+
+			// Para edición
+			equipo_nombre: '',
+			optionsGestor: [], // lista de usuarios (from GetConfigurations.Users)
+			selected_user: null, // objeto usuario (NcSelect) o string id
+
+			// Preferencias de vista
+			preferencias_equipos: null,
+
 			buttons: [
 				{
 					label: 'Cancelar',
@@ -211,61 +212,53 @@ export default {
 					callback: () => { this.eliminarEquipo(this.data.Id_equipo) },
 				},
 			],
-			equipo_nombre: '',
-			selected_user: null, // Gestor de datos seleccionado
-			preferencias_equipos: null,
 		}
 	},
+
 	mounted() {
-		this.$root.$on('show', (data) => {
-			this.show = data
-		})
+		this.$root.$on('show', (data) => { this.show = data })
 		this.preferencias_equipos = localStorage.getItem('nextcloud_empleados_preferencias_equipos')
 		if (this.preferencias_equipos === null) {
-			// No existía, la inicializamos
 			localStorage.setItem('nextcloud_empleados_preferencias_equipos', 'false')
 			this.preferencias_equipos = false
 		} else {
-			// Convertimos el string a boolean
 			this.preferencias_equipos = this.preferencias_equipos === 'true'
 		}
 	},
 
 	methods: {
+		t,
+
 		async showEdit() {
 			this.show = !this.show
-			if (this.show === true) {
-				// eslint-disable-next-line no-console
-				const response = await axios.get(generateUrl('/apps/empleados/GetConfigurations'))
-				// Lista de usuarios disponibles
-				this.optionsGestor = response.data.Users
-				this.getall()
-				this.equipo_nombre = this.data.Nombre
-				this.selected_user = this.data.Id_jefe_equipo
+			if (this.show) {
+				try {
+					const response = await axios.get(generateUrl('/apps/empleados/GetConfigurations'))
+					this.optionsGestor = response.data.Users
+					this.equipo_nombre = this.data.Nombre
+					// Si el backend guarda el ID del líder, preseleccionamos:
+					// Puede llegar como string (uid) o como objeto, normalizamos:
+					const current = this.data.Id_jefe_equipo
+					this.selected_user = current || null
+				} catch (err) {
+					showError(t('empleados', 'Se ha producido una excepcion [01] [{error}]', { error: String(err) }))
+				}
 			}
 		},
+
 		closeModal() {
 			this.show = !this.show
 		},
+
 		async eliminarEquipo(equipo) {
 			this.showDialog = false
 			try {
-				await axios.post(generateUrl('/apps/empleados/EliminarEquipo'),
-					{
-						id_equipo: equipo,
-					})
-					.then(
-						(response) => {
-							showSuccess('Area eliminada exitosamente')
-							this.$root.$emit('reload')
-							this.$root.$emit('send-data-equipos', {})
-						},
-						(err) => {
-							showError(err)
-						},
-					)
+				await axios.post(generateUrl('/apps/empleados/EliminarEquipo'), { id_equipo: equipo })
+				showSuccess(t('empleados', 'Equipo eliminado exitosamente'))
+				this.$root.$emit('reload')
+				this.$root.$emit('send-data-equipos', {})
 			} catch (err) {
-				showError(t('empleados', 'Se ha producido una excepcion [03] [' + err + ']'))
+				showError(t('empleados', 'Se ha producido una excepcion [03] [{error}]', { error: String(err) }))
 			}
 		},
 
@@ -274,60 +267,40 @@ export default {
 			localStorage.setItem('nextcloud_empleados_preferencias_equipos', this.preferencias_equipos)
 		},
 
-		checknull(satanizar) {
-			if (satanizar == null) {
-				return ''
-			}
-
-			return satanizar
-		},
-
-		async getall() {
-			try {
-				await axios.get(generateUrl('/apps/empleados/GetEquiposFix'))
-					.then(
-						(response) => {
-							this.options = response.data
-						},
-						(err) => {
-							showError(err)
-						},
-					)
-			} catch (err) {
-				showError(t('empleados', 'Se ha producido una excepcion [01] [' + err + ']'))
-			}
+		// Normaliza el valor de selected_user para enviar ID correcto
+		_normalizeSelectedUser(val) {
+			// NcSelect con userSelect suele retornar el objeto de usuario con { id, uid, displayName, ... }
+			// pero si ya viene de la API puede ser string. Manejamos ambos.
+			if (!val) return ''
+			if (typeof val === 'string') return val
+			if (typeof val === 'object' && val.id) return val.id
+			if (typeof val === 'object' && val.uid) return val.uid
+			return String(val)
 		},
 
 		async GuardarCambioEquipo() {
 			try {
-				if (this.selected_user.id !== null) {
-					this.selected_user = this.selected_user.id
-				}
-				await axios.post(generateUrl('/apps/empleados/GuardarCambioEquipo'),
-					{
-						Id_Equipo: this.data.Id_equipo,
-						Id_jefe_equipo: this.selected_user,
-						Nombre: this.equipo_nombre,
-					})
-					.then(
-						(response) => {
-							showSuccess('Grupo actualizado exitosamente')
-							this.$root.$emit('reload')
-							this.$root.$emit('send-data-equipos', {})
-							this.showEdit()
-						},
-						(err) => {
-							this.showEdit()
-							showError(err)
-						},
-					)
+				const idJefe = this._normalizeSelectedUser(this.selected_user)
+
+				await axios.post(generateUrl('/apps/empleados/GuardarCambioEquipo'), {
+					Id_Equipo: this.data.Id_equipo,
+					Id_jefe_equipo: idJefe,
+					Nombre: this.equipo_nombre,
+				})
+
+				showSuccess(t('empleados', 'Equipo actualizado exitosamente'))
+				this.$root.$emit('reload')
+				this.$root.$emit('send-data-equipos', {})
+				this.showEdit()
 			} catch (err) {
-				showError(t('empleados', 'Se ha producido una excepcion [03] [' + err + ']'))
+				this.showEdit()
+				showError(t('empleados', 'Se ha producido una excepcion [03] [{error}]', { error: String(err) }))
 			}
 		},
 	},
 }
 </script>
+
 <style>
 .button-container-profile {
   float: right;
@@ -368,121 +341,48 @@ export default {
 }
 
 /*float layout*/
-.float {
-  max-width: 1200px;
-  margin: 0 auto;
-}
-.float:after {
-  content: ".";
-  display: block;
-  height: 0;
-  clear: both;
-  visibility: hidden;
-}
-.float-item {
-  float: left;
-}
+.float { max-width: 1200px; margin: 0 auto; }
+.float:after { content: "."; display: block; height: 0; clear: both; visibility: hidden; }
+.float-item { float: left; }
 
 /*inline-block*/
-.inline-b {
-  max-width:1200px;
-  margin:0 auto;
-}
-.inline-b-item {
-  display: inline-block;
-}
+.inline-b { max-width:1200px; margin:0 auto; }
+.inline-b-item { display: inline-block; }
 
 /*Flexbox*/
 .flex {
-  padding: 0;
-  margin: 0;
-  list-style: none;
-
-  display: -webkit-box;
-  display: -moz-box;
-  display: -ms-flexbox;
-  display: -webkit-flex;
-  display: flex;
-
-  -webkit-flex-flow: row wrap;
-  justify-content: space-around;
+  padding: 0; margin: 0; list-style: none;
+  display: -webkit-box; display: -moz-box; display: -ms-flexbox; display: -webkit-flex; display: flex;
+  -webkit-flex-flow: row wrap; justify-content: space-around;
 }
 
-h2 {
-  font-size: 28px;
-  margin-bottom: auto;
-}
+h2 { font-size: 28px; margin-bottom: auto; }
 
-.wrapper {
-	display: flex;
-	gap: 4px;
-	align-items: flex-end;
-	flex-wrap: wrap;
-}
+.wrapper { display: flex; gap: 4px; align-items: flex-end; flex-wrap: wrap; }
 
-.external-label {
-	display: flex;
-	width: 100%;
-	margin-top: 1rem;
-}
+.external-label { display: flex; width: 100%; margin-top: 1rem; }
+.external-label label { padding-top: 7px; padding-right: 14px; white-space: nowrap; }
 
-.external-label label {
-	padding-top: 7px;
-	padding-right: 14px;
-	white-space: nowrap;
-}
-.grid {
-	display: grid;
-	grid-template-columns: repeat(1, 500px);
-	gap: 10px;
-}
+.grid { display: grid; grid-template-columns: repeat(1, 500px); gap: 10px; }
 
 .card {
   --gray: rgba(229, 231, 235, 1);
-  width: 350px;
-  display: flex;
-  grid-gap: 1.25rem;
-  gap: 1.25rem;
-  border-radius: 1rem;
-  background-color: rgba(255, 255, 255, 1);
-  padding: 1.5rem;
+  width: 350px; display: flex; gap: 1.25rem; border-radius: 1rem;
+  background-color: #fff; padding: 1.5rem;
   box-shadow: rgba(0, 41, 0, 0.15) 0px 0px 11px 1px;
 }
 
-.card-1 {
-  font-size: 14px;
-  font-weight: bold;
-}
+.card-1 { font-size: 14px; font-weight: bold; }
+.right { display: flex; flex: 1 1 0%; flex-direction: column; gap: 1.25rem; }
+.card-2 { font-size: 14px; }
 
-.right {
-  display: flex;
-  flex: 1 1 0%;
-  flex-direction: column;
-  grid-gap: 1.25rem;
-}
+@keyframes pulse { to { opacity: .2; } }
 
-.card-2 {
-font-size: 14px;
-}
-
-@keyframes pulse {
-  to {
-    opacity: .2;
-  }
-}
-
-.modal__content {
-	margin: 50px;
-}
-
-.modal__content h2 {
-	text-align: center;
-}
+.modal__content { margin: 50px; }
+.modal__content h2 { text-align: center; }
 
 .form-group {
 	margin: calc(var(--default-grid-baseline) * 4) 0;
-	display: flex;
-	flex-direction: column;
-	align-items: flex-start;
+	display: flex; flex-direction: column; align-items: flex-start;
 }
 </style>

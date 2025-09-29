@@ -4,10 +4,10 @@
 
 <script>
 import EquiposList from './EquiposList.vue'
-
-import { showError /* showSuccess */ } from '@nextcloud/dialogs'
+import { showError } from '@nextcloud/dialogs'
 import { generateUrl } from '@nextcloud/router'
 import axios from '@nextcloud/axios'
+import { translate as t } from '@nextcloud/l10n'
 
 export default {
 	name: 'Equipos',
@@ -30,18 +30,9 @@ export default {
 			this.loading = false
 			try {
 				await axios.get(generateUrl('/apps/empleados/GetEquiposList'))
-					.then(
-						(response) => {
-							// eslint-disable-next-line no-console
-							console.log(response)
-							this.loading = false
-						},
-						(err) => {
-							showError(err)
-						},
-					)
+				// Si necesitas algo del response, úsalo aquí.
 			} catch (err) {
-				showError(t('empleados', 'Se ha producido una excepcion [01] [' + err + ']'))
+				showError(t('empleados', 'Se ha producido una excepcion [01] [{error}]', { error: String(err) }))
 			}
 		},
 	},

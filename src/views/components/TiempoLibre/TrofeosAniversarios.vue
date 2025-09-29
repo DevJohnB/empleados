@@ -71,13 +71,13 @@
 						d="M 508.94664,330.64924 C 464.78526,403.01219 385.18731,534.39333 375.37728,550.33326 387.41788,537.13371 530.80243,377.15292 533.48664,373.95766 L 432.15373,550.28554 c 35.099,-38.47213 125.46431,-137.72038 129.8412,-142.5543 4.0273,4.56642 120.571,136.60755 125.41862,141.79211 -58.0266,-105.15644 -115.7204,-208.92881 -174.19762,-313.08816 -2.50387,3.86175 -187.23521,295.10322 -198.03775,312.17544"
 						sodipodi:nodetypes="cccccccc" />
 				</svg>
-
 				<p class="ranking_number">
-					{{ info.id_aniversario }}<span class="ranking_word">Aniversario</span>
+					{{ info.id_aniversario }}
+					<span class="ranking_word">{{ t('empleados', 'Anniversary') }}</span>
 				</p>
 				<div class="splitLine" />
 				<p class="userName">
-					Gracias!
+					{{ t('empleados', 'Thanks!') }}
 				</p>
 			</div>
 			<div class="detailPage">
@@ -151,7 +151,7 @@
 							class="" />
 					</svg>
 					<p class="gradesBoxLabel">
-						Dias trabajados
+						{{ t('empleados', 'Worked days') }}
 					</p>
 					<p class="gradesBoxNum">
 						{{ (info.id_aniversario * 260) + calcularDiasLaborales() }}

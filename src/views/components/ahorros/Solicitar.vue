@@ -2,47 +2,62 @@
 	<NcAppContent v-if="loading == true" name="Loading">
 		<NcLoadingIcon />
 	</NcAppContent>
+
 	<NcAppContent v-else name="Loading">
 		<div class="main-content">
+			<!-- State: can request -->
 			<div v-if="userdata.state == 1" class="pack_card">
 				<div class="pack_name">
-					Ya puedes solicitar tu ahorro!
+					{{ t('empleados', 'You can now request your savings!') }}
 				</div>
 
 				<p class="description">
-					Solicita hasta el <strong>90% del saldo acumulado</strong> de tu Fondo de Ahorro, considerando tanto la aportación del empleado como la del empleador.
+					{{ t('empleados', 'Request up to {percent} of your accumulated Savings Fund balance, considering both the employee and employer contributions.', { percent: '90%' }) }}
 				</p>
 
 				<div class="bottom">
 					<div class="price_container">
 						<span class="devise">$</span>
 						<span class="price">{{ employee[0].Fondo_ahorro }}</span>
-						<span class="date"> <small><strong>mi ahorro</strong></small></span>
+						<span class="date">
+							<small><strong>{{ t('empleados', 'my savings') }}</strong></small>
+						</span>
 					</div>
-					<NcButton aria-label="center (default)"
+
+					<NcButton
+						aria-label="center (default)"
 						type="primary"
 						wide
 						@click="showSolicitud()">
 						<template #icon>
 							<Check :size="20" />
 						</template>
-						Generar solicitud
+						{{ t('empleados', 'Create request') }}
 					</NcButton>
 				</div>
 			</div>
+
+			<!-- State: request sent -->
 			<div v-if="userdata.state == 2">
-				<NcNoteCard type="success" text="Tu solicitud ha sido enviada, espera la respuesta." />
+				<NcNoteCard
+					type="success"
+					:text="t('empleados', 'Your request has been sent, please wait for a response.')" />
 			</div>
+
+			<!-- State: read-only -->
 			<div v-if="userdata.state == 0 || !userdata.state">
-				<NcNoteCard type="info" text="Tu perfil esta en modo solo lectura." />
+				<NcNoteCard
+					type="info"
+					:text="t('empleados', 'Your profile is in read-only mode.')" />
 			</div>
 		</div>
 
+		<!-- Request modal -->
 		<NcModal
 			v-if="modal && userdata.state == 1"
 			ref="modalRef"
 			size="large"
-			name="Solicitud"
+			:name="t('empleados', 'Request')"
 			@close="showSolicitud()">
 			<div class="modal__content">
 				<div class="semi-container">
@@ -52,35 +67,38 @@
 								<ul class="list-style">
 									<li>
 										<p class="mb-0">
-											El día 30 de junio se realizará el depósito correspondiente al Préstamo del Fondo de Ahorro, el cual no genera intereses.
+											{{ t('empleados', 'On June 30th, the deposit corresponding to the Savings Fund Loan will be made. This loan does not accrue interest.') }}
 										</p>
 									</li>
 									<li>
 										<p class="mb-0">
-											El monto disponible podrá ser hasta el 90% del total acumulado a la fecha, considerando tanto la aportación del trabajador como la del empleador.
+											{{ t('empleados', 'The available amount may be up to {percent} of the total accumulated to date, considering both the worker and the employer contributions.', { percent: '90%' }) }}
 										</p>
 									</li>
 									<li>
 										<p class="mb-0">
-											En este formulario, la cantidad debe registrarse en pesos. Si deseas solicitar un porcentaje específico, puedes indicarlo en el campo de notas.
+											{{ t('empleados', 'In this form, the amount must be entered in pesos. If you wish to request a specific percentage, you can indicate it in the notes field.') }}
 										</p>
 									</li>
 									<li>
 										<p class="mb-0">
-											<strong>Importante:</strong> Verifica cuidadosamente la información antes de enviar tu solicitud, ya que no podrá ser cancelada ni modificada.
+											<strong>{{ t('empleados', 'Important:') }}</strong>
+											{{ t('empleados', 'Carefully verify the information before submitting your request, as it cannot be canceled or modified.') }}
 										</p>
 									</li>
 								</ul>
 							</div>
 						</div>
 					</div>
+
 					<div class="mymoney">
-						El 90% de tu ahorro es: {{ aproxFormateado }}
+						{{ t('empleados', '90% of your savings is: {amount}', { amount: aproxFormateado }) }}
 					</div>
+
 					<div class="form-box">
 						<NcTextField
 							:model-value="cantidadFormateada"
-							label="Cantidad a solicitar"
+							:label="t('empleados', 'Amount to request')"
 							trailing-button-icon="close"
 							:show-trailing-button="cantidad !== ''"
 							@trailing-button-click="limpiarCantidad"
@@ -90,11 +108,16 @@
 								<CurrencyUsd :size="20" />
 							</template>
 						</NcTextField>
+
 						<br>
-						<NcTextArea v-model="notas"
-							label="Notas"
-							placeholder="Notas" />
+
+						<NcTextArea
+							v-model="notas"
+							:label="t('empleados', 'Notes')"
+							:placeholder="t('empleados', 'Notes')" />
+
 						<br>
+
 						<div>
 							<div class="center-box">
 								<NcCheckboxRadioSwitch
@@ -102,17 +125,18 @@
 									value="true"
 									name="acept_terms">
 									<strong style="font-size: 12px; margin-left: 10px;">
-										Autorizo a Gossler, S.C. a descontar de mi ahorro el monto correspondiente según las condiciones del préstamo.
+										{{ t('empleados', 'I authorize to deduct from my savings the corresponding amount according to the loan conditions.') }}
 									</strong>
 								</NcCheckboxRadioSwitch>
 							</div>
+
 							<div class="center-box">
 								<NcButton
 									style="margin-top: 20px;"
-									text="Enviar Solicitud"
+									:text="t('empleados', 'Submit request')"
 									type="primary"
 									@click="EnviarSolicitud()">
-									Enviar solicitud
+									{{ t('empleados', 'Submit request') }}
 								</NcButton>
 							</div>
 						</div>
@@ -120,20 +144,19 @@
 				</div>
 			</div>
 		</NcModal>
+
 		<historial :id="userdata.id_ahorro" />
 	</NcAppContent>
 </template>
 
 <script>
 import historial from './Historial.vue'
-// Importing necessary components
 import { ref } from 'vue'
 import { showError /* showSuccess */ } from '@nextcloud/dialogs'
 import { generateUrl } from '@nextcloud/router'
 import axios from '@nextcloud/axios'
 
 // iconos
-// import ClockAlertOutline from 'vue-material-design-icons/ClockAlertOutline.vue'
 import CurrencyUsd from 'vue-material-design-icons/CurrencyUsd.vue'
 import Check from 'vue-material-design-icons/Check.vue'
 
@@ -147,6 +170,9 @@ import {
 	NcTextArea,
 	NcCheckboxRadioSwitch,
 } from '@nextcloud/vue'
+
+import { translate as t } from '@nextcloud/l10n'
+
 export default {
 	name: 'Solicitar',
 
@@ -162,7 +188,6 @@ export default {
 		NcTextArea,
 		NcCheckboxRadioSwitch,
 		historial,
-		// ClockAlertOutline,
 	},
 
 	inject: ['employee'],
@@ -176,11 +201,12 @@ export default {
 			modalRef: ref(null),
 			cantidad: '',
 			notas: '',
-			aproxValor: 0, // número real para validaciones
+			aproxValor: 0,
 			aproxFormateado: '',
 			acept_terms: [],
 		}
 	},
+
 	computed: {
 		cantidadFormateada() {
 			if (this.cantidad === '') return ''
@@ -191,54 +217,56 @@ export default {
 	},
 
 	mounted() {
+		this.employee[0].Fondo_ahorro = this.employee[0].Fondo_ahorro === null ? '0' : this.employee[0].Fondo_ahorro
 		this.aproxValor = Number(this.employee[0].Fondo_ahorro.replace(',', '')) * 0.9
 		this.aproxFormateado = Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(this.aproxValor)
 		this.getAll()
 	},
+
 	methods: {
+		// expone t en template si lo quieres usar como método
+		t,
+
 		async getAll() {
 			this.loading = true
 			try {
-				await axios.post(generateUrl('/apps/empleados/GetInfoAhorro'),
-					{
-						Id_user: this.employee[0].Id_empleados,
-					})
+				await axios.post(generateUrl('/apps/empleados/GetInfoAhorro'), {
+					Id_user: this.employee[0].Id_empleados,
+				})
 					.then(
 						(response) => {
 							this.userdata = response.data[0]
 							this.loading = false
 						},
-						(err) => {
-							showError(err)
-						},
+						(err) => { showError(err) },
 					)
 			} catch (err) {
-				showError(t('empleados', 'Se ha producido una excepcion [03] [' + err + ']'))
+				showError(t('empleados', 'Se ha producido una excepcion [03] [{error}]', { error: String(err) }))
 			}
 		},
+
 		showSolicitud() {
 			this.modal = !this.modal
 		},
+
 		actualizarCantidad(event) {
 			let valor = event.target.value.replace(/,/g, '')
 
 			if (!/^\d*\.?\d*$/.test(valor)) {
 				valor = this.cantidad
 			}
-
 			if (Number(valor) > this.aproxValor) {
 				valor = this.cantidad
 			}
-
 			this.cantidad = valor
 		},
+
 		soloNumerosYPunto(event) {
 			const char = String.fromCharCode(event.which)
 
 			if (!/[0-9.]/.test(char)) {
 				event.preventDefault()
 			}
-
 			if (char === '.' && this.cantidad.includes('.')) {
 				event.preventDefault()
 			}
@@ -248,12 +276,12 @@ export default {
 				event.preventDefault()
 			}
 		},
+
 		limpiarCantidad() {
 			this.cantidad = ''
 		},
+
 		EnviarSolicitud() {
-			// eslint-disable-next-line no-console
-			console.log(this.acept_terms)
 			if (this.acept_terms[0] === 'true' && this.cantidad !== '') {
 				axios.post(
 					generateUrl('/apps/empleados/EnviarSolicitud'),
@@ -263,7 +291,7 @@ export default {
 						nota: this.notas,
 					},
 				).then(
-					(response) => {
+					() => {
 						this.getAll()
 						this.modal = false
 						this.cantidad = ''
@@ -272,15 +300,10 @@ export default {
 						this.aproxFormateado = ''
 						this.acept_terms = []
 					},
-					(err) => {
-						showError(Promise.reject(err))
-					},
+					(err) => { showError(Promise.reject(err)) },
 				)
-				/* .catch((err) => {
-                            //console.log(Promise.reject(err))
-                        }) */
 			} else {
-				showError(t('ahorrosgossler', 'X - Verifique el formulario'))
+				showError(t('empleados', 'X - Verifique el formulario'))
 			}
 		},
 	},
@@ -377,49 +400,49 @@ export default {
 }
 
 .container{
-        padding-left: 50px;
-        padding-right: 24px;
-    }
-    .semi-container{
-        padding-left: 24px;
-        padding-right: 24px;
-    }
-    .board-title {
-        margin-right: 10px;
-        margin-top: 14px;
-        font-size: 25px;
-        display: flex;
-        align-items: center;
-        font-weight: bold;
-        .icon {
-            margin-right: 8px;
-        }
-    }
-    .content-box{
-		margin-top: 15px;
-		margin-bottom: 10px;
-        -moz-border-radius:50px;
-        -webkit-border-radius:50px;
-        background-color: #f8f9fa;
-        border-radius: 10px;
-    }
-    .list-style {
-        list-style-type: square;
-    }
-	.mymoney {
-	padding: 10px;
-	margin: 10px 10px 10px 10px;
-	text-align: center;
-	font-size: 1.5rem;
-	font-weight: 700;
-	}
-	.center-box {
-		display: flex;
-		justify-content: center;
-		align-items: center;
-	}
-	.form-box {
-		margin: 10px 10px 10px 10px;
-		padding: 10px;
-	}
+  padding-left: 50px;
+  padding-right: 24px;
+}
+.semi-container{
+  padding-left: 24px;
+  padding-right: 24px;
+}
+.board-title {
+  margin-right: 10px;
+  margin-top: 14px;
+  font-size: 25px;
+  display: flex;
+  align-items: center;
+  font-weight: bold;
+  .icon {
+    margin-right: 8px;
+  }
+}
+.content-box{
+  margin-top: 15px;
+  margin-bottom: 10px;
+  -moz-border-radius:50px;
+  -webkit-border-radius:50px;
+  background-color: #f8f9fa;
+  border-radius: 10px;
+}
+.list-style {
+  list-style-type: square;
+}
+.mymoney {
+  padding: 10px;
+  margin: 10px 10px 10px 10px;
+  text-align: center;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+.center-box {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.form-box {
+  margin: 10px 10px 10px 10px;
+  padding: 10px;
+}
 </style>

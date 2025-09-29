@@ -5,12 +5,11 @@
 </template>
 
 <script>
-// Importing necessary components
 import EmployeeList from './EmployeeList.vue'
-
 import { showError /* showSuccess */ } from '@nextcloud/dialogs'
 import { generateUrl } from '@nextcloud/router'
 import axios from '@nextcloud/axios'
+import { translate as t } from '@nextcloud/l10n'
 
 export default {
 	name: 'Employees',
@@ -22,6 +21,7 @@ export default {
 		return {
 			loading: true,
 			Empleados: [],
+			data_empleado: {},
 		}
 	},
 
@@ -36,6 +36,8 @@ export default {
 	},
 
 	methods: {
+		t,
+
 		async getall() {
 			try {
 				await axios.get(generateUrl('/apps/empleados/GetEmpleadosList'))
@@ -45,11 +47,13 @@ export default {
 							this.loading = false
 						},
 						(err) => {
+							this.loading = false
 							showError(err)
 						},
 					)
 			} catch (err) {
-				showError(t('empleados', 'Se ha producido una excepcion [01] [' + err + ']'))
+				this.loading = false
+				showError(t('empleados', 'An exception has occurred [01] [{error}]', { error: String(err) }))
 			}
 		},
 	},
@@ -57,19 +61,19 @@ export default {
 </script>
 
 <style scoped lang="scss">
-	.container {
-		padding-left: 60px;
+.container {
+	padding-left: 60px;
+}
+.board-title {
+	padding-left: 60px;
+	margin-right: 10px;
+	margin-top: 14px;
+	font-size: 25px;
+	display: flex;
+	align-items: center;
+	font-weight: bold;
+	.icon {
+		margin-right: 8px;
 	}
-	.board-title {
-		padding-left: 60px;
-		margin-right: 10px;
-		margin-top: 14px;
-		font-size: 25px;
-		display: flex;
-		align-items: center;
-		font-weight: bold;
-		.icon {
-			margin-right: 8px;
-		}
-	}
+}
 </style>

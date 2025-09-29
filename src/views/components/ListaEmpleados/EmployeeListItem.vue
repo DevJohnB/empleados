@@ -24,7 +24,6 @@
 </template>
 
 <script>
-
 import {
 	NcListItem as ListItem,
 	NcAvatar as BaseAvatar,
@@ -32,12 +31,10 @@ import {
 
 export default {
 	name: 'EmployeeListItem',
-
 	components: {
 		ListItem,
 		BaseAvatar,
 	},
-
 	props: {
 		index: {
 			type: Number,
@@ -48,7 +45,6 @@ export default {
 			required: true,
 		},
 	},
-
 	methods: {
 		showDetails(data) {
 			this.$bus.emit('send-data', data)
@@ -57,17 +53,13 @@ export default {
 	},
 }
 </script>
+
 <style lang="scss" scoped>
-
 .envelope {
-	.app-content-list-item-icon {
-		height: 40px; // To prevent some unexpected spacing below the avatar
-	}
-
+	.app-content-list-item-icon { height: 40px; }
 	&__subtitle {
 		display: flex;
 		gap: 4px;
-
 		&__subject {
 			color: var(--color-main-text);
 			line-height: 130%;
@@ -76,20 +68,12 @@ export default {
 		}
 	}
 }
-
-.list-item-style {
-	list-style: none;
-}
-
+.list-item-style { list-style: none; }
 </style>
+
 <style lang="scss">
 .contacts-list__item-wrapper {
-	&[draggable='true'] .avatardiv * {
-		cursor: move !important;
-	}
-
-	&[draggable='false'] .avatardiv * {
-		cursor: not-allowed !important;
-	}
+	&[draggable='true'] .avatardiv * { cursor: move !important; }
+	&[draggable='false'] .avatardiv * { cursor: not-allowed !important; }
 }
 </style>

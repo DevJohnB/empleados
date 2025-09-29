@@ -1,10 +1,10 @@
 <!-- eslint-disable object-curly-newline -->
 <template>
 	<div class="contacts-list__item-wrapper">
-		<div v-if="Object.keys( data ).length == 0">
+		<div v-if="Object.keys(data).length == 0">
 			<div class="emptycontent">
 				<img src="../../../../../img/crowesito-think.png" width="170px">
-				<h2>Selecciona un area para mas detalles</h2>
+				<h2>{{ t('empleados', 'Select an area for more details') }}</h2>
 			</div>
 		</div>
 		<div v-else>
@@ -21,7 +21,7 @@
 								<template #icon>
 									<AccountEdit :size="20" />
 								</template>
-								Habilitar edicion
+								{{ t('empleados', 'Enable editing') }}
 							</NcActionButton>
 							<NcActionButton
 								:close-after-click="true"
@@ -29,7 +29,7 @@
 								<template #icon>
 									<AccountEdit :size="20" />
 								</template>
-								Cambiar tipo de vista
+								{{ t('empleados', 'Change view type') }}
 							</NcActionButton>
 							<NcActionSeparator />
 							<NcActionButton
@@ -38,11 +38,12 @@
 								<template #icon>
 									<DeleteAlert :size="20" />
 								</template>
-								Eliminar departamento
+								{{ t('empleados', 'Delete department') }}
 							</NcActionButton>
-							<NcDialog :open.sync="showDialog"
-								name="Confirmar"
-								:message="'Desea eliminar ' + data.Nombre + '?'"
+							<NcDialog
+								:open.sync="showDialog"
+								:name="t('empleados', 'Confirm')"
+								:message="t('empleados', 'Do you want to delete {departamento}?', { departamento: data.Nombre })"
 								:buttons="buttons" />
 						</NcActions>
 					</div>
@@ -58,11 +59,10 @@
 					</div>
 				</div>
 				<div class="rsg-title">
-					<h3>Empleados en departamento</h3>
+					<h3>{{ t('empleados', 'Employees in department') }}</h3>
 				</div>
 				<div>
-					<div v-if="preferencias_areas"
-						class="rsg">
+					<div v-if="preferencias_areas" class="rsg">
 						<ul class="container flex">
 							<li v-for="(item) in peopleArea.area"
 								:key="item.Id_empleados"
@@ -83,9 +83,8 @@
 							</li>
 						</ul>
 					</div>
-					<div v-else
-						class="rsgd">
-						<ul class="">
+					<div v-else class="rsgd">
+						<ul>
 							<NcListItem v-for="(item) in peopleArea.area"
 								:key="item.Id_empleados"
 								bold
@@ -106,10 +105,11 @@
 				</div>
 			</div>
 		</div>
+
 		<NcModal
 			v-if="show"
 			ref="modalRef"
-			name="Editar"
+			:name="t('empleados', 'Edit')"
 			@close="closeModal">
 			<div class="modal__content">
 				<div class="container">
@@ -117,20 +117,21 @@
 						<NcTextField
 							:value.sync="area"
 							:v-model="area"
-							label="Nombre del area/departamento" />
+							:label="t('empleados', 'Department/area name')" />
 					</div>
 					<div class="form-group">
-						<NcSelect v-model="padre"
-							input-label="Area Padre"
+						<NcSelect
+							v-model="padre"
+							:input-label="t('empleados', 'Parent area')"
 							:options="options" />
 					</div>
 					<div class="form-group">
 						<NcButton
 							class="center"
-							aria-label="Guardar cambios"
+							:aria-label="t('empleados', 'Save changes')"
 							type="primary"
 							@click="guardarcambioarea()">
-							Guardar cambios
+							{{ t('empleados', 'Save changes') }}
 						</NcButton>
 					</div>
 				</div>
@@ -144,13 +145,11 @@
 import DeleteAlert from 'vue-material-design-icons/DeleteAlert.vue'
 import AccountEdit from 'vue-material-design-icons/AccountEdit.vue'
 import AccountCog from 'vue-material-design-icons/AccountCog.vue'
-// import Cancel from 'vue-material-design-icons/Cancel.vue'
-// import Check from 'vue-material-design-icons/Check.vue'
-// import Cog from 'vue-material-design-icons/Cog.vue'
 
 import { generateUrl } from '@nextcloud/router'
 import axios from '@nextcloud/axios'
 import { showError, showSuccess } from '@nextcloud/dialogs'
+import { translate as t } from '@nextcloud/l10n'
 
 import {
 	NcAvatar,
@@ -163,7 +162,6 @@ import {
 	NcButton,
 	NcListItem,
 	NcModal,
-	// NcProgressBar,
 } from '@nextcloud/vue'
 
 export default {
@@ -202,42 +200,48 @@ export default {
 			options: [],
 			Empleados: [],
 			showDialog: false,
-			buttons: [
-				{
-					label: 'Cancelar',
-					callback: () => { this.lastResponse = 'Pressed "Cancel"' },
-				},
-				{
-					label: 'Eliminar',
-					type: 'primary',
-					callback: () => { this.eliminarDepartamento(this.data.Id_departamento) },
-				},
-			],
 			area: '',
 			padre: '',
 			preferencias_areas: null,
 		}
 	},
+
+	computed: {
+		buttons() {
+			return [
+				{
+					label: this.t('empleados', 'Cancelar'),
+					callback: () => { this.lastResponse = 'Pressed "Cancel"' },
+				},
+				{
+					label: this.t('empleados', 'Eliminar'),
+					type: 'primary',
+					callback: () => { this.eliminarDepartamento(this.data.Id_departamento) },
+				},
+			]
+		},
+	},
+
 	mounted() {
 		this.$root.$on('show', (data) => {
 			this.show = data
 		})
 		this.preferencias_areas = localStorage.getItem('nextcloud_empleados_preferencias_areas')
 		if (this.preferencias_areas === null) {
-			// No existía, la inicializamos
 			localStorage.setItem('nextcloud_empleados_preferencias_areas', 'false')
 			this.preferencias_areas = false
 		} else {
-			// Convertimos el string a boolean
 			this.preferencias_areas = this.preferencias_areas === 'true'
 		}
 	},
 
 	methods: {
+		// expone t en el template
+		t,
+
 		showEdit() {
 			this.show = !this.show
 			if (this.show === true) {
-				// eslint-disable-next-line no-console
 				this.getall()
 				this.padre = this.data.Id_padre
 				this.area = this.data.Nombre
@@ -249,22 +253,14 @@ export default {
 		async eliminarDepartamento(departamento) {
 			this.showDialog = false
 			try {
-				await axios.post(generateUrl('/apps/empleados/EliminarArea'),
-					{
-						id_departamento: departamento,
-					})
-					.then(
-						(response) => {
-							showSuccess('Area eliminada exitosamente')
-							this.$root.$emit('reload')
-							this.$root.$emit('send-data-areas', {})
-						},
-						(err) => {
-							showError(err)
-						},
-					)
+				await axios.post(generateUrl('/apps/empleados/EliminarArea'), {
+					id_departamento: departamento,
+				})
+				showSuccess(this.t('empleados', 'Área eliminada exitosamente'))
+				this.$root.$emit('reload')
+				this.$root.$emit('send-data-areas', {})
 			} catch (err) {
-				showError(t('empleados', 'Se ha producido una excepcion [03] [' + err + ']'))
+				showError(this.t('empleados', 'Se ha producido una excepcion [03] [{error}]', { error: String(err) }))
 			}
 		},
 
@@ -273,27 +269,16 @@ export default {
 			localStorage.setItem('nextcloud_empleados_preferencias_areas', this.preferencias_areas)
 		},
 
-		checknull(satanizar) {
-			if (satanizar == null) {
-				return ''
-			}
-
-			return satanizar
+		checknull(value) {
+			return value == null ? '' : value
 		},
 
 		async getall() {
 			try {
-				await axios.get(generateUrl('/apps/empleados/GetAreasFix'))
-					.then(
-						(response) => {
-							this.options = response.data
-						},
-						(err) => {
-							showError(err)
-						},
-					)
+				const response = await axios.get(generateUrl('/apps/empleados/GetAreasFix'))
+				this.options = response.data
 			} catch (err) {
-				showError(t('empleados', 'Se ha producido una excepcion [01] [' + err + ']'))
+				showError(this.t('empleados', 'Se ha producido una excepcion [01] [{error}]', { error: String(err) }))
 			}
 		},
 
@@ -305,31 +290,24 @@ export default {
 			}
 
 			try {
-				await axios.post(generateUrl('/apps/empleados/GuardarCambioArea'),
-					{
-						id_departamento: this.data.Id_departamento,
-						padre: this.padre,
-						nombre: this.area,
-					})
-					.then(
-						(response) => {
-							showSuccess('Area eliminada exitosamente')
-							this.$root.$emit('reload')
-							this.$root.$emit('send-data-areas', {})
-							this.showEdit()
-						},
-						(err) => {
-							this.showEdit()
-							showError(err)
-						},
-					)
+				await axios.post(generateUrl('/apps/empleados/GuardarCambioArea'), {
+					id_departamento: this.data.Id_departamento,
+					padre: this.padre,
+					nombre: this.area,
+				})
+				showSuccess(this.t('empleados', 'Área actualizada exitosamente'))
+				this.$root.$emit('reload')
+				this.$root.$emit('send-data-areas', {})
+				this.showEdit()
 			} catch (err) {
-				showError(t('empleados', 'Se ha producido una excepcion [03] [' + err + ']'))
+				this.showEdit()
+				showError(this.t('empleados', 'Se ha producido una excepcion [03] [{error}]', { error: String(err) }))
 			}
 		},
 	},
 }
 </script>
+
 <style>
 .button-container-profile {
   float: right;
@@ -365,118 +343,47 @@ export default {
   border-radius: 15px;
 }
 
-/*float layout*/
-.float {
-  max-width: 1200px;
-  margin: 0 auto;
-}
-.float:after {
-  content: ".";
-  display: block;
-  height: 0;
-  clear: both;
-  visibility: hidden;
-}
-.float-item {
-  float: left;
-}
+.float { max-width: 1200px; margin: 0 auto; }
+.float:after { content: "."; display: block; height: 0; clear: both; visibility: hidden; }
+.float-item { float: left; }
 
-/*inline-block*/
-.inline-b {
-  max-width:1200px;
-  margin:0 auto;
-}
-.inline-b-item {
-  display: inline-block;
-}
+.inline-b { max-width:1200px; margin:0 auto; }
+.inline-b-item { display: inline-block; }
 
-/*Flexbox*/
 .flex {
   padding: 0;
   margin: 0;
   list-style: none;
-
-  display: -webkit-box;
-  display: -moz-box;
-  display: -ms-flexbox;
-  display: -webkit-flex;
   display: flex;
-
-  -webkit-flex-flow: row wrap;
   flex-flow: row wrap;
   justify-content: space-around;
 }
 
-h2 {
-  font-size: 28px;
-  margin-bottom: auto;
-}
+h2 { font-size: 28px; margin-bottom: auto; }
 
-.wrapper {
-	display: flex;
-	gap: 4px;
-	align-items: flex-end;
-	flex-wrap: wrap;
-}
+.wrapper { display: flex; gap: 4px; align-items: flex-end; flex-wrap: wrap; }
+.external-label { display: flex; width: 100%; margin-top: 1rem; }
+.external-label label { padding-top: 7px; padding-right: 14px; white-space: nowrap; }
 
-.external-label {
-	display: flex;
-	width: 100%;
-	margin-top: 1rem;
-}
-
-.external-label label {
-	padding-top: 7px;
-	padding-right: 14px;
-	white-space: nowrap;
-}
-.grid {
-	display: grid;
-	grid-template-columns: repeat(1, 500px);
-	gap: 10px;
-}
+.grid { display: grid; grid-template-columns: repeat(1, 500px); gap: 10px; }
 
 .card {
-  --gray: rgba(229, 231, 235, 1);
   width: 350px;
   display: flex;
-  grid-gap: 1.25rem;
   gap: 1.25rem;
   border-radius: 1rem;
-  background-color: rgba(255, 255, 255, 1);
+  background-color: #fff;
   padding: 1.5rem;
   box-shadow: rgba(0, 41, 0, 0.15) 0px 0px 11px 1px;
 }
+.card-1 { font-size: 14px; font-weight: bold; }
+.right { display: flex; flex: 1 1 0%; flex-direction: column; gap: 1.25rem; }
+.card-2 { font-size: 14px; }
 
-.card-1 {
-  font-size: 14px;
-  font-weight: bold;
-}
+@keyframes pulse { to { opacity: .2; } }
 
-.right {
-  display: flex;
-  flex: 1 1 0%;
-  flex-direction: column;
-  grid-gap: 1.25rem;
-}
-
-.card-2 {
-font-size: 14px;
-}
-
-@keyframes pulse {
-  to {
-    opacity: .2;
-  }
-}
-
-.modal__content {
-	margin: 50px;
-}
-
-.modal__content h2 {
-	text-align: center;
-}
+.modal__content { margin: 50px; }
+.modal__content h2 { text-align: center; }
 
 .form-group {
 	margin: calc(var(--default-grid-baseline) * 4) 0;

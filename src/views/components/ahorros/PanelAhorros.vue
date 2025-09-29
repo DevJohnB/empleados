@@ -15,14 +15,14 @@
 									decorative
 									class="icon"
 									style="margin-top: 4px;" />
-								<span>Solicitudes pendientes</span>
+								<span>{{ t('empleados', 'Pending requests') }}</span>
 							</h2>
 						</div>
 
 						<div style="margin-left: auto; margin-right: 0; margin-top: 10px;">
 							<NcSelect v-model="options_estado_values"
 								class="container__select"
-								input-label="estado"
+								:input-label="t('empleados', 'status')"
 								:options="options_estado"
 								required
 								@option:selected="gethistorial()" />
@@ -32,7 +32,7 @@
 							<NcSelect v-model="options_fechas_value"
 								class="container__select"
 								style="margin-top: 10px;"
-								input-label="estado"
+								:input-label="t('empleados', 'status')"
 								:options="options_fechas"
 								required
 								@option:selected="gethistorial()" />
@@ -43,7 +43,7 @@
 								<template #icon>
 									<DatabaseExport :size="20" />
 								</template>
-								exportar
+								{{ t('empleados', 'export') }}
 							</NcButton>
 						</div>
 					</div>
@@ -76,13 +76,13 @@
 									<template #icon>
 										<Eye :size="20" />
 									</template>
-									Ver solicitud
+									{{ t('empleados', 'View request') }}
 								</NcActionButton>
 								<NcActionButton v-if="item.estado == 0" @click="accion('aceptar', item.id_historial, item.id_user)">
-									Aprobar
+									{{ t('empleados', 'Approve') }}
 								</NcActionButton>
 								<NcActionButton v-if="item.estado == 0" @click="accion('denegar', item.id_historial, item.id_user)">
-									Eliminar
+									{{ t('empleados', 'Delete') }}
 								</NcActionButton>
 							</template>
 						</NcListItem>
@@ -91,7 +91,7 @@
 			</div>
 			<div v-else id="emptycontent">
 				<h2>
-					{{ t('empleados', 'Aun no se han registrado movimientos.') }}
+					{{ t('empleados', 'No movements have been recorded yet.') }}
 				</h2>
 			</div>
 		</div>
@@ -99,24 +99,24 @@
 		<NcModal
 			v-if="modal"
 			ref="modalRef"
-			name="Exportar informacion"
+			:name="t('empleados', 'Export information')"
 			@close="closeModal">
 			<div class="center">
 				<div v-if="exportardata">
 					<div>
-						<h2>Exportando</h2>
+						<h2>{{ t('empleados', 'Exporting') }}</h2>
 						<form class="center" @submit.prevent>
 							<NcProgressBar :value="exportardata_value" size="medium" />
 						</form>
 					</div>
 				</div>
 				<div v-else>
-					<h2>Seleccione el periodo y tipo de solictud</h2>
+					<h2>{{ t('empleados', 'Select the period and request type') }}</h2>
 					<br>
 					<div>
 						<NcSelect v-model="export_estado_values"
 							class="container__select"
-							input-label="estado"
+							:input-label="t('empleados', 'status')"
 							:options="options_estado"
 							required />
 					</div>
@@ -124,13 +124,13 @@
 					<div>
 						<NcSelect v-model="export_fechas_value"
 							class="container__select"
-							input-label="estado"
+							:input-label="t('empleados', 'status')"
 							:options="options_fechas"
 							required />
 					</div>
 					<br>
 					<NcButton class="center" @click="exportar">
-						exportar
+						{{ t('empleados', 'export') }}
 					</NcButton>
 				</div>
 			</div>
@@ -140,7 +140,7 @@
 			v-if="modaldetails"
 			ref="modalRef"
 			size="large"
-			name="Exportar informacion"
+			:name="t('empleados', 'View request')"
 			@close="closeModaldetails">
 			<div class="center">
 				<ul>
@@ -155,13 +155,13 @@
 					</li>
 					<li style="margin: 25px">
 						<NcNoteCard v-if="historial[index].estado == 0" type="info">
-							<p>Esta solicitud aun no ha sido respondida</p>
+							<p>{{ t('empleados', 'This request has not been answered yet') }}</p>
 						</NcNoteCard>
 					</li>
 					<li>
 						<ul>
 							<NcListItem
-								:name="'Ahorro Total:'"
+								:name="t('empleados', 'Total Savings:')"
 								:compact="true"
 								one-line
 								@click.prevent>
@@ -170,7 +170,7 @@
 								</template>
 							</NcListItem>
 							<NcListItem
-								:name="'Ahorro Solicitado'"
+								:name="t('empleados', 'Requested Savings')"
 								:compact="true"
 								one-line
 								@click.prevent>
@@ -179,7 +179,7 @@
 								</template>
 							</NcListItem>
 							<NcListItem
-								:name="'Nota de la solicitud'"
+								:name="t('empleados', 'Request note')"
 								:compact="true"
 								one-line
 								@click.prevent>
@@ -194,12 +194,12 @@
 							<div style="display: flex; gap: 12px;">
 								<div style="display: flex; flex-direction: column; gap: 12px; flex: 1">
 									<NcButton type="secondary" wide @click="accion('aceptar', historial[index].id_historial, historial[index].id_user)">
-										ACEPTAR
+										{{ t('empleados', 'ACCEPT') }}
 									</NcButton>
 								</div>
 								<div style="display: flex; flex-direction: column; gap: 12px; flex: 1">
 									<NcButton type="error" wide @click="accion('denegar', historial[index].id_historial, historial[index].id_user)">
-										DENEGAR
+										{{ t('empleados', 'DENY') }}
 									</NcButton>
 								</div>
 							</div>
@@ -212,7 +212,6 @@
 </template>
 
 <script>
-
 import {
 	NcAppContent,
 	NcActionButton,
@@ -224,7 +223,6 @@ import {
 	NcSelect,
 	NcProgressBar,
 	NcNoteCard,
-	// NcActions,
 } from '@nextcloud/vue'
 
 import '@nextcloud/dialogs/styles/toast.scss'
@@ -233,9 +231,9 @@ import { showError, showSuccess } from '@nextcloud/dialogs'
 import axios from '@nextcloud/axios'
 import Archive from 'vue-material-design-icons/Archive.vue'
 import Eye from 'vue-material-design-icons/Eye.vue'
-// import CheckboxBlankCircle from 'vue-material-design-icons/CheckboxBlankCircle.vue'
 import DatabaseExport from 'vue-material-design-icons/DatabaseExport.vue'
 import { ref } from 'vue'
+import { translate as t } from '@nextcloud/l10n'
 
 export default {
 	name: 'PanelAhorros',
@@ -244,10 +242,8 @@ export default {
 		NcActionButton,
 		NcLoadingIcon,
 		NcButton,
-	    // NcActions,
 		NcListItem,
 		Archive,
-	    // CheckboxBlankCircle,
 		NcAvatar,
 		NcModal,
 		DatabaseExport,
@@ -278,33 +274,28 @@ export default {
 			exportardata_value: 0,
 			index: 0,
 			options_fechas_value: new Date().getFullYear(),
-			options_estado_values: 'Pendientes',
+			options_estado_values: t('empleados', 'Pendientes'),
 			options_fechas: this.generateYears(),
-			options_estado: ['Pendientes', 'Aprobados'],
+			options_estado: [t('empleados', 'Pendientes'), t('empleados', 'Aprobados')],
 
-			export_estado_values: 'Aprobados',
+			export_estado_values: t('empleados', 'Aprobados'),
 			export_fechas_value: new Date().getFullYear(),
 		}
 	},
 
-	async mounted() {
-		await this.gethistorial()
+	mounted() {
+		this.gethistorial()
 	},
 
 	methods: {
+		// expone t al template si lo prefieres como método (además del import)
+		t,
+
 		async gethistorial() {
-			// user.data.ocs.data.id <- get username
 			let state
 			try {
-				if (this.options_estado_values === 'Pendientes') {
-					state = '0'
-				} else {
-					state = '1'
-				}
-
-				const response = await axios.get(generateUrl('apps/empleados/GetHistorialPanel/' + this.options_fechas_value + '/' + state + ''))
-
-				// Extraer el nombre de usuario del objeto de respuesta
+				state = (this.options_estado_values === t('empleados', 'Pendientes')) ? '0' : '1'
+				const response = await axios.get(generateUrl('apps/empleados/GetHistorialPanel/' + this.options_fechas_value + '/' + state))
 				this.historial = response.data
 				this.loading = false
 			} catch (e) {
@@ -327,25 +318,15 @@ export default {
 			this.modaldetails = false
 		},
 		exportar() {
-			let state
-			if (this.export_estado_values === 'Pendientes') {
-				state = '0'
-			} else {
-				state = '1'
-			}
+			const state = (this.export_estado_values === t('empleados', 'Pendientes')) ? '0' : '1'
 			this.exportardata = true
 			axios.get(
-				generateUrl('/apps/empleados/GenerateReport/' + this.export_fechas_value + '/' + state + ''),
-				{
-					responseType: 'blob',
-				},
+				generateUrl('/apps/empleados/GenerateReport/' + this.export_fechas_value + '/' + state),
+				{ responseType: 'blob' },
 			).then(
 				(response) => {
 					this.exportardata_value = 10
-					const url = URL.createObjectURL(new Blob([response.data], {
-						type: 'application/vnd.ms-excel',
-					}))
-
+					const url = URL.createObjectURL(new Blob([response.data], { type: 'application/vnd.ms-excel' }))
 					const link = document.createElement('a')
 					link.href = url
 					link.setAttribute('download', 'historial.xlsx')
@@ -356,12 +337,9 @@ export default {
 				},
 				(err) => {
 					showError(err)
-					// console.log(Promise.reject(err))
 					this.exportardata = false
 				},
 			)
-			// this.exportardata_value = 23
-
 		},
 
 		generateYears() {
@@ -381,51 +359,33 @@ export default {
 			if (accion === 'aceptar') {
 				axios.post(
 					generateUrl('/apps/empleados/AceptarAhorro'),
-					{
-						id_ahorro: idahorro,
-						id,
-					},
+					{ id_ahorro: idahorro, id },
 				).then(
-					async (response) => {
+					async () => {
 						this.send = true
 						await this.gethistorial()
 						showSuccess(t('empleados', 'Solicitud aceptada'))
 					},
-					(err) => {
-						showError(err)
-						// console.log(Promise.reject(err))
-					},
+					(err) => { showError(err) },
 				)
-				/* .catch((err) => {
-                            //console.log(Promise.reject(err))
-                        }) */
 			} else {
 				axios.post(
 					generateUrl('/apps/empleados/DenegarAhorro'),
-					{
-						id_ahorro: idahorro,
-						id,
-					},
+					{ id_ahorro: idahorro, id },
 				).then(
-					async (response) => {
+					async () => {
 						this.send = true
 						await this.gethistorial()
 						showSuccess(t('empleados', 'Solicitud Denegada'))
 					},
-					(err) => {
-						showError(err)
-						// console.log(Promise.reject(err))
-					},
+					(err) => { showError(err) },
 				)
-				/* .catch((err) => {
-                            //console.log(Promise.reject(err))
-                        }) */
 			}
 		},
 	},
-
 }
 </script>
+
 <style scoped>
 	#emptycontent, .emptycontent {
 		margin-top: 20vh;

@@ -1,53 +1,66 @@
 <template>
 	<NcAppNavigation>
-		<NcAppNavigationCaption heading-id="General"
+		<!-- General -->
+		<NcAppNavigationCaption
+			:heading-id="t('empleados', 'General')"
 			is-heading
-			name="General" />
-		<NcAppNavigationList aria-labelledby="General">
-			<NcAppNavigationItem name="Inicio"
+			:name="t('empleados', 'General')" />
+		<NcAppNavigationList :aria-labelledby="t('empleados', 'General')">
+			<NcAppNavigationItem
+				:name="t('empleados', 'Home')"
 				:to="{ name: 'Home' }"
 				exact />
 		</NcAppNavigationList>
 
+		<!-- Capital Humano (solo admin / RH) -->
 		<div v-if="isAdmin()">
-			<NcAppNavigationCaption heading-id="CapitalHumano"
+			<NcAppNavigationCaption
+				:heading-id="t('empleados', 'Human Resources')"
 				is-heading
-				name="Capital Humano" />
-			<NcAppNavigationList aria-labelledby="CapitalHumano">
-				<NcAppNavigationItem name="Empleados"
+				:name="t('empleados', 'Human Resources')" />
+			<NcAppNavigationList :aria-labelledby="t('empleados', 'Human Resources')">
+				<NcAppNavigationItem
+					:name="t('empleados', 'Employees')"
 					:to="{ name: 'Empleados' }" />
-
-				<NcAppNavigationItem name="Areas"
+				<NcAppNavigationItem
+					:name="t('empleados', 'Areas')"
 					:to="{ name: 'Areas' }" />
-
-				<NcAppNavigationItem name="Puestos"
+				<NcAppNavigationItem
+					:name="t('empleados', 'Positions')"
 					:to="{ name: 'Puestos' }" />
-
-				<NcAppNavigationItem name="Equipos"
+				<NcAppNavigationItem
+					:name="t('empleados', 'Teams')"
 					:to="{ name: 'Equipos' }" />
 			</NcAppNavigationList>
 		</div>
 
+		<!-- Ahorro -->
 		<div v-if="ahorroModulo()">
-			<NcAppNavigationCaption heading-id="Ahorro Gossler"
+			<NcAppNavigationCaption
+				:heading-id="t('empleados', 'Savings module')"
 				is-heading
-				name="Ahorro Gossler" />
-			<NcAppNavigationList aria-labelledby="Ahorro Gossler">
-				<NcAppNavigationItem name="Solicitar"
+				:name="t('empleados', 'Savings module')" />
+			<NcAppNavigationList :aria-labelledby="t('empleados', 'Savings module')">
+				<NcAppNavigationItem
+					:name="t('empleados', 'Request')"
 					:to="{ name: 'Ahorros' }" />
 			</NcAppNavigationList>
-			<NcAppNavigationList v-if="isAdmin()" aria-labelledby="Ahorro Gossler">
-				<NcAppNavigationItem name="Panel administrativo"
+			<NcAppNavigationList v-if="isAdmin()" :aria-labelledby="t('empleados', 'Savings module')">
+				<NcAppNavigationItem
+					:name="t('empleados', 'Admin panel')"
 					:to="{ name: 'PanelAhorros' }" />
 			</NcAppNavigationList>
 		</div>
 
+		<!-- Ausencias -->
 		<div v-if="ausenciasModulo()">
-			<NcAppNavigationCaption heading-id="Tiempo Laboral"
+			<NcAppNavigationCaption
+				:heading-id="t('empleados', 'Working time')"
 				is-heading
-				name="Tiempo Laboral" />
-			<NcAppNavigationList aria-labelledby="Tiempo Laboral">
-				<NcAppNavigationItem name="Calendario"
+				:name="t('empleados', 'Working time')" />
+			<NcAppNavigationList :aria-labelledby="t('empleados', 'Working time')">
+				<NcAppNavigationItem
+					:name="t('empleados', 'Calendar')"
 					:to="{ name: 'Calendario' }" />
 			</NcAppNavigationList>
 		</div>
@@ -61,6 +74,7 @@ import {
 	NcAppNavigationList,
 	NcAppNavigationCaption,
 } from '@nextcloud/vue'
+import { translate as t } from '@nextcloud/l10n'
 
 export default {
 	name: 'Sidenavigation',
@@ -70,10 +84,9 @@ export default {
 		NcAppNavigationList,
 		NcAppNavigationCaption,
 	},
-
 	inject: ['groupuser', 'configuraciones'],
-
 	methods: {
+		t, // expone t al template
 		navigateTo(route) {
 			this.$router.push({ name: route })
 		},
@@ -81,20 +94,11 @@ export default {
 			return 'admin' in this.groupuser || 'recursos_humanos' in this.groupuser
 		},
 		ahorroModulo() {
-			if (this.configuraciones.modulo_ahorro === 'true') {
-				return true
-			}
-			return false
+			return this.configuraciones.modulo_ahorro === 'true'
 		},
 		ausenciasModulo() {
-			if (this.configuraciones.modulo_ausencias === 'true') {
-				return true
-			}
-			return false
+			return this.configuraciones.modulo_ausencias === 'true'
 		},
 	},
 }
 </script>
-
-<!--style scoped lang="scss">
-</style-->

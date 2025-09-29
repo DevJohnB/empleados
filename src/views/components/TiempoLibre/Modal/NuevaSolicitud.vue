@@ -11,7 +11,7 @@
 								<thead>
 									<tr>
 										<th>
-											Como administrado puedes solicitar o asigar una ausencia para el empleado seleccionado
+											{{ t('empleados', 'As an administrator, you can request or assign an absence for the selected employee') }}
 										</th>
 									</tr>
 								</thead>
@@ -23,11 +23,12 @@
 									</tr>
 								</tbody>
 							</table>
+
 							<table>
 								<thead>
 									<tr>
 										<th>
-											Selecciona el tipo de ausencia
+											{{ t('empleados', 'Select the absence type') }}
 										</th>
 									</tr>
 								</thead>
@@ -40,16 +41,17 @@
 												class="hide-label"
 												:options="TipoAusencias"
 												:keep-open="false"
-												input-label="Tipo de ausencia" />
+												:input-label="t('empleados', 'Absence type')" />
 										</td>
 									</tr>
 								</tbody>
 							</table>
+
 							<table v-if="AusenciaSeleccionada && AusenciaSeleccionada.descripcion">
 								<thead>
 									<tr>
 										<th>
-											Detalles
+											{{ t('empleados', 'Details') }}
 										</th>
 									</tr>
 								</thead>
@@ -63,30 +65,32 @@
 							</table>
 						</div>
 					</div>
+
 					<div v-if="AusenciaSeleccionada && AusenciaSeleccionada.descripcion">
 						<div v-if="AusenciaSeleccionada &&
 							AusenciaSeleccionada.solicitar_prima_vacacional == 1 &&
 							diasSolicitados > TotalDias">
 							<NcNoteCard type="info">
 								<p>
-									No puedes solicitar más días de los disponibles.
+									{{ t('empleados', 'You cannot request more days than available.') }}
 								</p>
 							</NcNoteCard>
 						</div>
 						<div v-else>
 							<div v-if="admin">
 								<br>
-								<NcNoteCard type="warning"
-									heading="Atención!!!"
-									text="Estás registrando una ausencia en modo administrador. Las notificaciones y mensajes automáticos seguirán activos, y los días correspondientes serán descontados del empleado seleccionado." />
+								<NcNoteCard
+									type="warning"
+									:heading="t('empleados', 'ATTENTION')"
+									:text="t('empleados', 'You are registering an absence in admin mode. Notifications and automatic messages will remain active, and the corresponding days will be deducted from the selected employee.')" />
 								<br>
 							</div>
 							<div v-else>
 								<table class="top">
-									<caption>DATOS DEL PERIODO</caption>
+									<caption>{{ t('empleados', 'PERIOD DATA') }}</caption>
 									<tbody>
 										<tr v-if="AusenciaSeleccionada && AusenciaSeleccionada.solicitar_prima_vacacional == 1">
-											<td>Dias Disponibles</td>
+											<td>{{ t('empleados', 'Available days') }}</td>
 											<td>
 												<span v-if="TotalDias">
 													{{ TotalDias }}
@@ -94,7 +98,7 @@
 											</td>
 										</tr>
 										<tr>
-											<td>Dias a tomar</td>
+											<td>{{ t('empleados', 'Days to take') }}</td>
 											<td>
 												<span class="block text-gray-600 text-sm text-left font-bold mb-2">
 													{{ diasSolicitados }}
@@ -102,7 +106,7 @@
 											</td>
 										</tr>
 										<tr v-if="AusenciaSeleccionada && AusenciaSeleccionada.solicitar_prima_vacacional == 1">
-											<td>Dias restantes</td>
+											<td>{{ t('empleados', 'Remaining days') }}</td>
 											<td>
 												<span v-if="RestanteDias">
 													{{ RestanteDias }}
@@ -111,11 +115,12 @@
 										</tr>
 									</tbody>
 								</table>
+
 								<table class="top">
 									<thead>
 										<tr>
 											<th>
-												Periodo de ausencia
+												{{ t('empleados', 'Absence period') }}
 											</th>
 										</tr>
 									</thead>
@@ -123,46 +128,48 @@
 										<tr>
 											<td>
 												<span v-if="date">
-													Desde: {{ date.start.toLocaleDateString() }}
+													{{ t('empleados', 'From:') }} {{ date.start.toLocaleDateString() }}
 													-
-													Hasta: {{ date.end ? date.end.toLocaleDateString() : 'Indefinido' }}
+													{{ t('empleados', 'To:') }} {{ date.end ? date.end.toLocaleDateString() : t('empleados', 'Undefined') }}
 												</span>
 											</td>
 										</tr>
 									</tbody>
 								</table>
+
 								<div v-if="AusenciaSeleccionada && AusenciaSeleccionada.solicitar_archivo">
 									<div class="top">
-										<NcNoteCard type="info" text="Es necesario subir un archivo que justifique tu ausencia" />
+										<NcNoteCard type="info" :text="t('empleados', 'It is necessary to upload a file to justify your absence.')" />
 									</div>
+
 									<input ref="fileInput"
 										type="file"
 										class="file-input"
 										multiple
 										@change="uploadFile">
+
 									<div
 										class="drop-area top"
 										@dragover.prevent
 										@dragenter.prevent
 										@drop.prevent="handleDrop"
 										@click="$refs.fileInput.click()">
-										Suelta los archivos aquí o haz clic para seleccionar
+										{{ t('empleados', 'Drop files here or click to select') }}
 									</div>
+
 									<div v-if="selectedFiles.length > 0" class="top">
 										<div class="table_component" role="region" tabindex="0">
 											<table>
-												<caption>Archivos seleccionados:</caption>
+												<caption>{{ t('empleados', 'Selected files:') }}</caption>
 												<thead>
 													<tr>
-														<th>Nombre archivo</th>
-														<th>Peso</th>
+														<th>{{ t('empleados', 'File name') }}</th>
+														<th>{{ t('empleados', 'Size') }}</th>
 													</tr>
 												</thead>
 												<tbody>
 													<tr v-for="(file, index) in selectedFiles" :key="index">
-														<td>
-															{{ file.name }}
-														</td>
+														<td>{{ file.name }}</td>
 														<td>
 															{{ file.size < 1024 * 1024 ? (file.size / 1024).toFixed(2) + ' KB' : (file.size / (1024 * 1024)).toFixed(2) + ' MB' }}
 														</td>
@@ -172,33 +179,38 @@
 										</div>
 									</div>
 								</div>
+
 								<div class="top">
 									<NcCheckboxRadioSwitch
 										v-if="AusenciaSeleccionada &&
 											AusenciaSeleccionada.solicitar_prima_vacacional == 1 &&
 											prima == 1"
 										v-model="SolicitarPrima">
-										Solicitar prima vacacional
+										{{ t('empleados', 'Request vacation bonus') }}
 									</NcCheckboxRadioSwitch>
 								</div>
+
 								<div class="top">
-									<NcTextArea v-model="comentarios"
+									<NcTextArea
+										v-model="comentarios"
 										resize="vertical"
-										label="Comentarios"
-										placeholder="Comenta tu solicitud (OPCIONAL)"
-										helper-text="Comenta tu solicitud (OPCIONAL)" />
+										:label="t('empleados', 'Comments')"
+										:placeholder="t('empleados', 'Add a comment to your request (OPTIONAL)')"
+										:helper-text="t('empleados', 'Add a comment to your request (OPTIONAL)')" />
 								</div>
 							</div>
 						</div>
+
 						<div v-if="loading">
 							<NcLoadingIcon :size="64" />
 						</div>
+
 						<div v-else class="top">
 							<NcButton variant="secondary" wide @click="EnviarAusencia()">
 								<template #icon>
 									<Airplane :size="20" />
 								</template>
-								Enviar
+								{{ t('empleados', 'Submit') }}
 							</NcButton>
 						</div>
 					</div>
@@ -212,16 +224,12 @@
 import { showError /* showSuccess */ } from '@nextcloud/dialogs'
 import { generateUrl } from '@nextcloud/router'
 import axios from '@nextcloud/axios'
-// import 'v-calendar/src/styles/base.css'
-// import { DatePicker } from 'v-calendar'
+import { translate as t } from '@nextcloud/l10n'
 
 // icons
 import Airplane from 'vue-material-design-icons/Airplane.vue'
-// import CalendarQuestionOutline from 'vue-material-design-icons/CalendarQuestionOutline.vue'
 
 import {
-// NcActions,
-// NcActionButton,
 	NcButton,
 	NcSelect,
 	NcTextArea,
@@ -229,6 +237,7 @@ import {
 	NcNoteCard,
 	NcLoadingIcon,
 } from '@nextcloud/vue'
+
 export default {
 	name: 'NuevaSolicitud',
 
@@ -238,46 +247,27 @@ export default {
 		NcTextArea,
 		NcCheckboxRadioSwitch,
 		NcNoteCard,
-		// DatePicker,
-		// NcActions,
-		// NcActionButton,
 		Airplane,
-		// CalendarQuestionOutline,
 		NcLoadingIcon,
 	},
 
 	inject: ['employee'],
 
 	props: {
-		diasSolicitados: {
-			type: Number,
-			required: true,
-		},
-		diasDisponibles: {
-			type: String,
-			required: true,
-		},
+		diasSolicitados: { type: Number, required: true },
+		diasDisponibles: { type: String, required: true },
 		date: {
 			type: Object,
 			required: true,
 			validator: (value) => {
 				return value
-		&& value.start instanceof Date
-		&& (value.end instanceof Date || value.end === null)
+					&& value.start instanceof Date
+					&& (value.end instanceof Date || value.end === null)
 			},
 		},
-		prima: {
-			type: Number,
-			default: 0,
-		},
-		employees: {
-			type: Array,
-			default: () => [],
-		},
-		admin: {
-			type: Boolean,
-			default: false,
-		},
+		prima: { type: Number, default: 0 },
+		employees: { type: Array, default: () => [] },
+		admin: { type: Boolean, default: false },
 	},
 
 	data() {
@@ -289,14 +279,14 @@ export default {
 			comentarios: '',
 			SolicitarPrima: false,
 			selectedFiles: [],
-			loading: false, // Para mostrar el loading
+			loading: false,
 			propsEmployees: {
-				inputLabel: 'Todos los empleados',
+				inputLabel: t('empleados', 'All employees'),
 				userSelect: true,
 				closeOnSelect: true,
-				options: this.employees, // Se llena con todos los usuarios (optionsGestor)
+				options: this.employees,
 			},
-			employees_list: [], // Para almacenar los empleados seleccionados
+			employees_list: [],
 		}
 	},
 
@@ -307,6 +297,8 @@ export default {
 	},
 
 	methods: {
+		t,
+
 		async GetTipoAusencias() {
 			try {
 				await axios.get(generateUrl('/apps/empleados/getTipo'))
@@ -322,27 +314,27 @@ export default {
 									solicitar_prima_vacacional: item.solicitar_prima_vacacional,
 								}))
 						},
-						(err) => {
-							showError(err)
-						},
+						(err) => { showError(err) },
 					)
 			} catch (err) {
-				showError(t('empleados', 'Se ha producido una excepcion [01] [' + err + ']'))
+				showError(t('empleados', 'An exception has occurred [01] [{error}]', { error: String(err) }))
 			}
 		},
+
 		handleDrop(event) {
 			const files = event.dataTransfer.files
-			this.uploadFile({ target: { files } }) // Reusa tu método existente
+			this.uploadFile({ target: { files } })
 		},
+
 		uploadFile(event) {
 			const files = event.target.files || event.dataTransfer.files
-			this.selectedFiles = Array.from(files) // convierte FileList a Array
+			this.selectedFiles = Array.from(files)
 		},
+
 		async EnviarAusencia() {
-			this.loading = true // Inicia el loading
+			this.loading = true
 			try {
 				const formData = new FormData()
-
 				formData.append('id_usuario', this.employees_list.user)
 				formData.append('id_tipo_ausencia', this.AusenciaSeleccionada.id)
 				formData.append('dias_solicitados', this.diasSolicitados)
@@ -351,38 +343,30 @@ export default {
 				formData.append('prima_vacacional', this.SolicitarPrima)
 				formData.append('notas', this.comentarios)
 
-				// Adjuntar todos los archivos
 				for (let i = 0; i < this.selectedFiles.length; i++) {
 					formData.append('archivos[]', this.selectedFiles[i])
 				}
 
-				// eslint-disable-next-line no-console
-				console.log('Archivos a subir:', this.selectedFiles)
-
 				const response = await axios.post(
 					generateUrl('/apps/empleados/EnviarAusencia'),
 					formData,
-					{
-						headers: {
-							'Content-Type': 'multipart/form-data',
-						},
-					},
+					{ headers: { 'Content-Type': 'multipart/form-data' } },
 				)
 
 				// eslint-disable-next-line no-console
 				console.log(response.data)
 
 				this.$bus.emit('close-solicitud')
-				this.loading = false // Inicia el loading
-
+				this.loading = false
 			} catch (err) {
-				this.loading = false // Inicia el loading
-				showError(t('empleados', 'Error al enviar la solicitud de ausencia: ' + err))
+				this.loading = false
+				showError(t('empleados', 'Error sending absence request: {error}', { error: String(err) }))
 			}
 		},
 	},
 }
 </script>
+
 <style>
 .table_component {
 	overflow: auto;
@@ -417,9 +401,7 @@ export default {
 	color: #000000;
 	padding: 5px;
 }
-.hide-label label {
-  display: none !important;
-}
+.hide-label label { display: none !important; }
 .file-input { display: none; }
 .drop-area {
 	border: 2px dashed #999;
@@ -430,8 +412,5 @@ export default {
 	cursor: pointer;
 	transition: background-color 0.3s;
 }
-.drop-area:hover {
-	background-color: #f0f0f0;
-}
-
+.drop-area:hover { background-color: #f0f0f0; }
 </style>

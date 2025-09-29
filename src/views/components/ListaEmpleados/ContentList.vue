@@ -4,37 +4,43 @@
 			<div class="search-contacts-field">
 				<div class="container-search">
 					<div class="input-container">
-						<input v-model="query" type="text" :placeholder="t('empleados', 'Buscar empleados...')">
+						<input v-model="query" type="text" :placeholder="t('empleados', 'Search employees...')">
 					</div>
 					<div class="button-container">
 						<NcActions>
 							<template #icon>
 								<Cog :size="20" />
 							</template>
+
 							<NcActionButton @click="Exportar()">
 								<template #icon>
 									<DatabaseExport :size="20" />
 								</template>
-								Exportar listado
+								{{ t('empleados', 'Export list') }}
 							</NcActionButton>
+
 							<NcActionSeparator />
+
 							<NcActionButton @click="$refs.file.click()">
 								<template #icon>
 									<Upload :size="20" />
 								</template>
-								Importar datos desde plantilla
+								{{ t('empleados', 'Import data from template') }}
 							</NcActionButton>
 						</NcActions>
 					</div>
 				</div>
 			</div>
 		</div>
-		<VirtualList ref="scroller"
+
+		<VirtualList
+			ref="scroller"
 			class="contacts-list"
 			data-key="Id_empleados"
 			:data-sources="filteredList"
 			:data-component="EmployeeListItem"
 			:estimate-size="60" />
+
 		<input
 			ref="file"
 			type="file"
@@ -57,6 +63,7 @@ import EmployeeListItem from './EmployeeListItem.vue'
 import VirtualList from 'vue-virtual-scroll-list'
 import { generateUrl } from '@nextcloud/router'
 import axios from '@nextcloud/axios'
+import { translate as t } from '@nextcloud/l10n'
 
 import DatabaseExport from 'vue-material-design-icons/DatabaseExport.vue'
 import Upload from 'vue-material-design-icons/Upload.vue'
@@ -96,8 +103,7 @@ export default {
 
 	computed: {
 		filteredList() {
-			return this.employees
-				.filter(item => this.matchSearch(item.displayname, item.uid))
+			return this.employees.filter(item => this.matchSearch(item.displayname, item.uid))
 		},
 	},
 
@@ -106,65 +112,52 @@ export default {
 	},
 
 	methods: {
-		matchSearch(empleados, uid) {
+		// expone t al template y métodos
+		t,
+
+		matchSearch(displayname, uid) {
 			try {
 				if (this.query.trim() !== '') {
-					return empleados.toString().toLowerCase().search(this.query.trim().toLowerCase()) !== -1
+					return displayname.toString().toLowerCase().includes(this.query.trim().toLowerCase())
 				}
 			} catch (error) {
 				if (this.query.trim() !== '') {
-					return uid.toString().toLowerCase().search(this.query.trim().toLowerCase()) !== -1
+					return uid.toString().toLowerCase().includes(this.query.trim().toLowerCase())
 				}
 			}
 			return true
 		},
-		Exportar() {
-			axios.get(
-				generateUrl('/apps/empleados/ExportListEmpleados'),
-				{
-					responseType: 'blob',
-				},
-			).then(
-				(response) => {
-					const url = URL.createObjectURL(new Blob([response.data], {
-						type: 'application/vnd.ms-excel',
-					}))
 
+		Exportar() {
+			axios.get(generateUrl('/apps/empleados/ExportListEmpleados'), { responseType: 'blob' })
+				.then((response) => {
+					const url = URL.createObjectURL(new Blob([response.data], { type: 'application/vnd.ms-excel' }))
 					const link = document.createElement('a')
 					link.href = url
-					link.setAttribute('download', 'historial.xlsx')
+					link.setAttribute('download', 'empleados.xlsx')
 					document.body.appendChild(link)
 					link.click()
-				},
-				(err) => {
-					showError(t('ahorrosgossler', 'Se ha producido un error ' + err + ', reporte al administrador'))
-					this.exportardata = false
-				},
-			)
+				})
+				.catch((err) => {
+					showError(t('empleados', 'An error occurred {error}, please report to the administrator', { error: String(err) }))
+				})
 		},
+
 		async importar() {
-			// eslint-disable-next-line no-console
-			console.log(this.$refs.file.files[0])
+			const file = this.$refs.file?.files?.[0]
+			if (!file) return
+
 			const formData = new FormData()
-			formData.append('fileXLSX', this.$refs.file.files[0])
+			formData.append('fileXLSX', file)
+
 			try {
-				await axios.post(generateUrl('/apps/empleados/ImportListEmpleados'), formData,
-					{
-						headers: {
-							'Content-Type': 'multipart/form-data',
-						},
-					})
-					.then(
-						(response) => {
-							this.$bus.emit('getall')
-							showSuccess(t('empleados', 'Se actualizo la base de datos exitosamente'))
-						},
-						(err) => {
-							showError(err)
-						},
-					)
+				await axios.post(generateUrl('/apps/empleados/ImportListEmpleados'), formData, {
+					headers: { 'Content-Type': 'multipart/form-data' },
+				})
+				this.$bus?.emit('getall')
+				showSuccess(t('empleados', 'Database updated successfully'))
 			} catch (err) {
-				showError(t('empleados', 'Se ha producido una excepcion [03] [' + err + ']'))
+				showError(t('empleados', 'An exception has occurred [03] [{error}]', { error: String(err) }))
 			}
 		},
 	},
@@ -199,16 +192,16 @@ export default {
 }
 
 .container-search {
-            display: flex;
-        }
-        .input-container {
-            flex: 1;
-            margin-right: 5px;
-        }
-        .input-container input {
-            width: 100%;
-        }
-        .button-container button {
-            width: 100%;
-        }
+	display: flex;
+}
+.input-container {
+	flex: 1;
+	margin-right: 5px;
+}
+.input-container input {
+	width: 100%;
+}
+.button-container button {
+	width: 100%;
+}
 </style>

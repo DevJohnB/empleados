@@ -6,33 +6,39 @@
 					<template #icon>
 						<LanguageMarkdown :size="20" />
 					</template>
-					{{ hability }} diseño
+					{{ showMarkdown ? t('empleados', 'Disable design') : t('empleados', 'Enable design') }}
 				</NcActionButton>
 			</NcActions>
 		</div>
+
 		<div class="top">
 			<div>
-				<NcRichText v-if="showMarkdown"
-					:class="{'plain-text': !useMarkdown }"
+				<NcRichText
+					v-if="showMarkdown"
+					:class="{ 'plain-text': !useMarkdown }"
 					:text="inputValue"
 					:autolink="true"
 					:use-markdown="useMarkdown" />
+
 				<!-- Employee Notes -->
-				<NcTextArea v-if="!showMarkdown"
+				<NcTextArea
+					v-else
 					input-class="model"
 					class="top"
-					label="NOTAS EMPLEADO"
+					:label="t('empleados', 'Employee notes')"
 					resize="vertical"
 					:disabled="show"
 					:value.sync="inputValue" />
 			</div>
+
 			<NcButton
 				v-if="automaticsave === 'false'"
-				aria-label="Guardar nota"
+				:aria-label="t('empleados', 'Save note')"
 				type="primary"
-				@click="guardarNota()">
-				Guardar nota
+				@click="guardarNota">
+				{{ t('empleados', 'Save note') }}
 			</NcButton>
+
 			<br>
 		</div>
 	</div>
@@ -44,14 +50,10 @@ import { generateUrl } from '@nextcloud/router'
 import 'vue-nav-tabs/themes/vue-tabs.css'
 import axios from '@nextcloud/axios'
 import debounce from 'debounce'
+import { translate as t } from '@nextcloud/l10n' // <-- agrega t
 
 // ICONOS
 import LanguageMarkdown from 'vue-material-design-icons/LanguageMarkdown.vue'
-// import Piggybankoutline from 'vue-material-design-icons/PiggyBankOutline.vue'
-// import Calendarrange from 'vue-material-design-icons/CalendarRange.vue'
-// import Laptopaccount from 'vue-material-design-icons/LaptopAccount.vue'
-// import Bank from 'vue-material-design-icons/Bank.vue'
-// import Cash from 'vue-material-design-icons/Cash.vue'
 
 import {
 	NcTextArea,
@@ -97,7 +99,6 @@ export default {
 			notas: this.data.Notas ?? '',
 			showMarkdown: false,
 			useMarkdown: true,
-			hability: 'Habilitar',
 		}
 	},
 
@@ -131,21 +132,23 @@ export default {
 	},
 
 	methods: {
+		// expone t al template por si lo necesitas como método
+		t,
 
 		showEdit() {
 			this.showMarkdown = !this.showMarkdown
-			this.hability = this.showMarkdown ? 'Deshabilitar' : 'Habilitar'
 		},
+
 		async guardarNota() {
 			try {
 				await axios.post(generateUrl('/apps/empleados/GuardarNota'), {
 					id_empleados: this.data.Id_empleados,
 					nota: this.notas,
 				})
-				showSuccess('Nota ha sido actualizada')
-				this.$bus.emit('getall')
+				showSuccess(t('empleados', 'Note has been updated'))
+				this.$bus?.emit('getall')
 			} catch (err) {
-				showError(t('empleados', 'Se ha producido una excepcion [03] [' + err + ']'))
+				showError(t('empleados', 'An exception has occurred [03] [{error}]', { error: String(err) }))
 			}
 		},
 	},
@@ -153,7 +156,6 @@ export default {
 </script>
 
 <style>
-
 .editbutton{
 	float: right;
 	position: absolute;

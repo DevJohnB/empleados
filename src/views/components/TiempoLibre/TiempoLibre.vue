@@ -4,9 +4,10 @@
 			<div class="text-center section">
 				<div v-if="configuraciones.modulo_ausencias_readonly === 'true'">
 					<br>
-					<NcNoteCard type="error"
-						heading="Atención!!!"
-						text="El modulo se encuentra en modo solo lectura" />
+					<NcNoteCard
+						type="error"
+						:heading="t('empleados', 'Attention!!!')"
+						:text="t('empleados', 'The module is in read-only mode')" />
 					<br>
 				</div>
 				<section class="layout">
@@ -27,13 +28,13 @@
 											<template #icon>
 												<CalendarQuestionOutline :size="20" />
 											</template>
-											Mi informacion
+											{{ t('empleados', 'My information') }}
 										</NcActionButton>
 									</NcActions>
 								</div>
 								<div>
 									<h2 class="h2-white">
-										Vacaciones
+										{{ t('empleados', 'Vacation') }}
 									</h2>
 								</div>
 								<div class="vacations">
@@ -48,14 +49,14 @@
 								</div>
 							</div>
 							<div class="infos">
-								<!-- Acordeón notificaciones -->
+								<!-- Notifications accordion -->
 								<div v-if="notificaciones" class="acordeon-item">
 									<button class="acordeon-notification" @click="toggle(0)">
 										<div class="noti-wrapper">
 											<BellOutline class="bell-icon" :class="{ 'bell-shake': isShaking }" />
 											<NcCounterBubble :count="notifications_counter" class="noti-badge" />
 										</div>
-										<span class="noti-text">Pendientes</span>
+										<span class="noti-text">{{ t('empleados', 'Pending') }}</span>
 										<span class="arrow">{{ accordeon[0].abierto ? '-' : '+' }}</span>
 									</button>
 									<div :class="['acordeon-contenido', { abierto: accordeon[0].abierto }]">
@@ -75,7 +76,7 @@
 																	:display-name="item.Id_user" />
 															</template>
 															<template #subname>
-																{{ new Date(item.fecha_de).toLocaleDateString('es-MX', { day: 'numeric', month: 'short', year: 'numeric' }) }}
+																{{ new Date(item.fecha_de).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }) }}
 															</template>
 														</NcListItem>
 													</ul>
@@ -85,20 +86,20 @@
 									</div>
 								</div>
 
-								<!-- Mostrar solo mis ausencias -->
+								<!-- Show only my absences -->
 								<NcButton
 									class="btn-top"
 									text="center (default)"
 									variant="secondary"
 									wide
 									@click="typePetition = null; $refs.fullCalendar.getApi().refetchEvents()">
-									Mostras mis ausencias
+									{{ t('empleados', 'Show my absences') }}
 								</NcButton>
 
-								<!-- Acordeón vista equipo -->
+								<!-- Team view accordion -->
 								<div class="acordeon-item btn-top">
 									<button class="acordeon-titulo" @click="toggle(1)">
-										Filtrar por equipo
+										{{ t('empleados', 'Filter by team') }}
 										<span>{{ accordeon[1].abierto ? '-' : '+' }}</span>
 									</button>
 									<div :class="['acordeon-contenido', { abierto: accordeon[1].abierto }]">
@@ -138,10 +139,10 @@
 									</div>
 								</div>
 
-								<!-- Acordeón vista administrativa -->
+								<!-- Administrative view accordion -->
 								<div v-if="isAdmin()" class="acordeon-item btn-top">
 									<button class="acordeon-titulo" @click="toggle(2)">
-										Administrativo
+										{{ t('empleados', 'Administrative') }}
 										<span>{{ accordeon[2].abierto ? '-' : '+' }}</span>
 									</button>
 									<div :class="['acordeon-contenido', { abierto: accordeon[2].abierto }]">
@@ -151,17 +152,17 @@
 									</div>
 								</div>
 
-								<!-- Acordeón mis empleados -->
+								<!-- My subordinates -->
 								<div v-if="subordinates.length > 0" class="acordeon-item">
 									<button class="acordeon-titulo" @click="toggle(3)">
-										Mis empleados <span>{{ accordeon[3].abierto ? '-' : '+' }}</span>
+										{{ t('empleados', 'My subordinates') }} <span>{{ accordeon[3].abierto ? '-' : '+' }}</span>
 									</button>
 									<div :class="['acordeon-contenido', { abierto: accordeon[3].abierto }]">
 										<div>
 											<div class="rst-title">
 												<div class="title_flex">
 													<div class="subtitle_flex">
-														Mis empleados
+														{{ t('empleados', 'My subordinates') }}
 													</div>
 													<div class="flex-to-right">
 														<AccountGroup class="pointer" @click="typePetition = 'all-employees'; $refs.fullCalendar.getApi().refetchEvents()" />
@@ -200,12 +201,12 @@
 				</section>
 			</div>
 		</div>
-		<!-- INICIO MODAL DETALLES EVENTO -->
+		<!-- EVENT DETAILS MODAL -->
 		<NcModal
 			v-if="modalEvento"
 			ref="modalRef"
 			size="large"
-			name="Detalles ausencia"
+			:name="t('empleados', 'Absence details')"
 			@close="closeModalEvento">
 			<div class="modal__content">
 				<div class="form-group">
@@ -213,13 +214,13 @@
 				</div>
 			</div>
 		</NcModal>
-		<!-- FINAL MODAL DETALLES EVENTO -->
+		<!-- END EVENT DETAILS MODAL -->
 
-		<!-- INICIO MODAL SOLICITUD DE VACACIONES -->
+		<!-- ABSENCE REQUEST MODAL -->
 		<NcModal
 			v-if="modal"
 			size="large"
-			name="Formato de ausencias"
+			:name="t('empleados', 'Absence form')"
 			@close="closeModal">
 			<NuevaSolicitud
 				v-if="modal"
@@ -232,14 +233,14 @@
 				:admin="isAdmin()"
 				@close="closeModal" />
 		</NcModal>
-		<!-- FINAL MODAL SOLICITUD DE VACACIONES -->
+		<!-- END ABSENCE REQUEST MODAL -->
 
-		<!-- INICIO MODAL ANIVERSARIOS SOLO INFO -->
+		<!-- ANNIVERSARIES INFO MODAL -->
 		<NcModal
 			v-if="ModalAniversario"
 			ref="modalRef"
 			size="large"
-			name="Tabla de aniversarios"
+			:name="t('empleados', 'Anniversary table')"
 			@close="closeModalAniversario">
 			<div class="table_component" role="region" tabindex="0">
 				<div class="modal__content">
@@ -249,12 +250,12 @@
 							<br>
 							<table>
 								<caption>
-									<span class="caption-title">Tabla de aniversarios</span>
+									<span class="caption-title">{{ t('empleados', 'Anniversary table') }}</span>
 								</caption>
 								<thead>
 									<tr>
-										<th>Aniversario(s)</th>
-										<th>Días libres</th>
+										<th>{{ t('empleados', 'Anniversary(ies)') }}</th>
+										<th>{{ t('empleados', 'Days off') }}</th>
 									</tr>
 								</thead>
 								<tbody>
@@ -264,7 +265,7 @@
 												{{ grupo.desde }}
 											</span>
 											<span v-else>
-												{{ grupo.desde }} al {{ grupo.hasta }}
+												{{ t('empleados', '{from} to {to}', { from: grupo.desde, to: grupo.hasta }) }}
 											</span>
 										</td>
 										<td>{{ grupo.dias }}</td>
@@ -279,7 +280,7 @@
 				</div>
 			</div>
 		</NcModal>
-		<!-- FINAL MODAL ANIVERSARIOS SOLO INFO -->
+		<!-- END ANNIVERSARIES INFO MODAL -->
 	</NcAppContent>
 </template>
 
@@ -300,6 +301,7 @@ import usernameToColor from '@nextcloud/vue/functions/usernameToColor'
 import { showError, /* showSuccess */ showInfo } from '@nextcloud/dialogs'
 import { generateUrl } from '@nextcloud/router'
 import axios from '@nextcloud/axios'
+import { translate as t } from '@nextcloud/l10n'
 
 // icons
 import BellOutline from 'vue-material-design-icons/BellOutline.vue'
@@ -369,7 +371,7 @@ export default {
 					right: 'dayGridMonth,multiMonthYear',
 				},
 				initialView: 'dayGridMonth',
-				locale: 'es',
+				locale: 'en',
 				plugins: [dayGridPlugin, interactionPlugin, multiMonthPlugin],
 				events: this.fetchEvents,
 				dateClick: this.onDateClick,
@@ -377,21 +379,18 @@ export default {
 				select: this.onDateRangeSelect,
 				selectable: true,
 
-				// 🔧 CLAVES para que NO se haga larguísimo
 				fixedWeekCount: false,
 				height: 'auto',
 				contentHeight: 'auto',
 				expandRows: false,
 				aspectRatio: 1.2,
 
-				// 🔧 Limita eventos visibles por día
 				dayMaxEvents: true,
 				dayMaxEventRows: 2,
 				moreLinkClick: 'popover',
 
-				// —— tu HTML con avatar se queda igual ——
 				eventContent(arg) {
-					const nombreEmpleado = arg.event.extendedProps.nombre_empleado || 'Empleado Desconocido'
+					const nombreEmpleado = arg.event.extendedProps.nombre_empleado || 'Unknown employee'
 					const imgUrl = `/avatar/${nombreEmpleado}/64`
 					return {
 						html: `
@@ -406,28 +405,28 @@ export default {
 			peopleEquipo: {},
 			Equipo: {},
 			typePetition: null,
-			selected_user: null, // Para almacenar el usuario seleccionado
+			selected_user: null, // selected user
 			propsEmployees: {
-				inputLabel: 'Todos los empleados',
+				inputLabel: t('empleados', 'All employees'),
 				userSelect: true,
 				multiple: true,
 				closeOnSelect: false,
-				options: [], // Se llena con todos los usuarios (optionsGestor)
+				options: [],
 			},
-			employees: [], // Para almacenar los empleados seleccionados
-			infoSelected: null, // Para almacenar la información del empleado seleccionado
-			vista_actual: 'Mis ausencias',
+			employees: [],
+			infoSelected: null,
+			vista_actual: t('empleados', 'My absences'),
 			accordeon: [
 				{ abierto: false },
 				{ abierto: false },
 				{ abierto: false },
 				{ abierto: false },
-			], // Acordeón para preguntas frecuentes
-			notificaciones: false, // Para mostrar de notificaciones
-			notifications_counter: 0, // Contador de notificaciones
-			loading: false, // Para mostrar el loading
-			notifications_result: [], // Para almacenar las notificaciones
-			isShaking: false, // Para animar el icono de notificaciones
+			],
+			notificaciones: false,
+			notifications_counter: 0,
+			loading: false,
+			notifications_result: [],
+			isShaking: false,
 		}
 	},
 
@@ -439,7 +438,7 @@ export default {
 			let diasActual = null
 
 			this.Aniversarios.forEach((item, index) => {
-				const diasNumero = Number(item.dias) // Por si viene como string
+				const diasNumero = Number(item.dias)
 				if (diasActual === null) {
 					inicio = item.numero_aniversario
 					fin = item.numero_aniversario
@@ -447,22 +446,14 @@ export default {
 				} else if (diasNumero === diasActual) {
 					fin = item.numero_aniversario
 				} else {
-					agrupados.push({
-						desde: inicio,
-						hasta: fin,
-						dias: diasActual,
-					})
+					agrupados.push({ desde: inicio, hasta: fin, dias: diasActual })
 					inicio = item.numero_aniversario
 					fin = item.numero_aniversario
 					diasActual = diasNumero
 				}
 
 				if (index === this.Aniversarios.length - 1) {
-					agrupados.push({
-						desde: inicio,
-						hasta: fin,
-						dias: diasActual,
-					})
+					agrupados.push({ desde: inicio, hasta: fin, dias: diasActual })
 				}
 			})
 
@@ -495,27 +486,23 @@ export default {
 		this.checkNotifications()
 	},
 	methods: {
-		// Verificar si el empleado actual cuenta con subordinados
+		t,
 		async checkNotifications() {
 			if (this.subordinates.length > 0) {
 				try {
 					await axios.get(generateUrl('/apps/empleados/GetNotificationsSubordinates'))
-						.then(
-							(response) => {
-								// eslint-disable-next-line no-console
-								console.log('🔔 Notificaciones de subordinados:', response.data)
-								if (response.data.length > 0) {
-									this.notificaciones = true
-									this.notifications_counter = response.data.length // Actualizar el contador de notificaciones
-									this.notifications_result = response.data // Guardar las notificaciones para usarlas en el acordeón
-									this.startShaking()
-								} else {
-									this.notificaciones = false
-								}
-							},
-						)
+						.then((response) => {
+							if (response.data.length > 0) {
+							 this.notificaciones = true
+							 this.notifications_counter = response.data.length
+							 this.notifications_result = response.data
+							 this.startShaking()
+							} else {
+							 this.notificaciones = false
+							}
+						})
 				} catch (err) {
-					showError(t('empleados', 'Se ha producido una excepción [01] [' + err + ']'))
+					showError(t('empleados', 'An exception has occurred [01] [{err}]', { err }))
 				}
 			}
 		},
@@ -525,33 +512,28 @@ export default {
 				this.isShaking = true
 				setTimeout(() => {
 					this.isShaking = false
-				}, 900) // Duración de la animación (igual que en CSS)
-			}, 2000) // Cada 2 segundos
+				}, 900)
+			}, 2000)
 		},
 
-		// Alterna el estado abierto/cerrado de las preguntas frecuentes
 		toggle(index) {
 			this.accordeon = this.accordeon.map((item, i) => ({
 				...item,
 				abierto: i === index ? !item.abierto : false,
 			}))
 		},
-		// Abre el modal de aniversarios y carga los datos
 		showAniversarioModal() {
 			this.getAniversarios()
 		},
-		// Cierra el modal de solicitud de vacaciones
 		closeModal() {
 			this.modal = false
 		},
-		// Cierra el modal de aniversarios
 		closeModalAniversario() {
 			this.ModalAniversario = false
 		},
 		closeModalEvento() {
 			this.modalEvento = false
 		},
-		// Obtiene los datos de ausencias del usuario actual
 		async GetAusencias() {
 			try {
 				const response = await axios.post(generateUrl('/apps/empleados/GetAusenciasByUser'), {
@@ -559,74 +541,61 @@ export default {
 				})
 				this.Ausencias = response.data[0]
 			} catch (err) {
-				showError(t('empleados', 'Se ha producido una excepción [03] [' + err + ']'))
+				showError(t('empleados', 'An exception has occurred [03] [{err}]', { err }))
 			}
 		},
-		// Obtiene la tabla de aniversarios
 		async getAniversarios() {
 			try {
 				const response = await axios.get(generateUrl('/apps/empleados/Getaniversarios'))
 				this.Aniversarios = response.data
 				this.ModalAniversario = true
 			} catch (err) {
-				showError(t('empleados', 'Se ha producido una excepción [01] [' + err + ']'))
+				showError(t('empleados', 'An exception has occurred [01] [{err}]', { err }))
 			}
 		},
-		// Formatea los días disponibles para mostrar texto amigable
 		formatearDias(dias) {
 			const entero = Math.floor(dias)
 			const decimal = dias % 1
 			if (decimal === 0) {
-				return `${entero} ${entero === 1 ? 'día' : 'días'}`
+				return `${entero} ${entero === 1 ? t('empleados', 'day') : t('empleados', 'days')}`
 			} else if (decimal === 0.5) {
-				return `${entero} ${entero === 1 ? 'día' : 'días'} y medio`
+				return `${entero} ${entero === 1 ? t('empleados', 'day') : t('empleados', 'days')} ${t('empleados', 'and a half')}`
 			} else {
-				return `${dias} días`
+				return `${dias} ${t('empleados', 'days')}`
 			}
 		},
-		// Refresca los eventos del calendario al cambiar de mes/vista
 		onDatesSet() {
 			this.$refs.fullCalendar.getApi().refetchEvents()
 		},
-		// Carga los eventos de ausencias para el calendario
 		fetchEvents(fetchInfo, success, failure) {
 			switch (this.typePetition) {
 			case 'all':
 				this.getAllAusencias(fetchInfo, success, failure)
-				this.vista_actual = 'Todo mi equipo'
+				this.vista_actual = t('empleados', 'All my team')
 				break
 			case 'employee':
 				this.getEmployeeAusencias(fetchInfo, success, failure)
-				this.vista_actual = 'Empleado seleccionado'
+				this.vista_actual = t('empleados', 'Selected employee')
 				break
 			case 'all-employees':
 				this.GetAusenciasMyWorkers(fetchInfo, success, failure)
-				this.vista_actual = 'Todos mis empleados'
+				this.vista_actual = t('empleados', 'All my subordinates')
 				break
 			default:
-				this.accordeon = this.accordeon.map(item => ({
-					...item,
-					abierto: false,
-				}))
+				this.accordeon = this.accordeon.map(item => ({ ...item, abierto: false }))
 				this.employees = []
 				this.getMyAusencias(fetchInfo, success, failure)
-				this.vista_actual = 'Mis ausencias'
+				this.vista_actual = t('empleados', 'My absences')
 			}
 		},
 
 		getMyAusencias(fetchInfo, success, failure) {
-			// eslint-disable-next-line no-console
-			console.log('🔄 Llamando fetchEvents para:', fetchInfo)
-
 			axios.post(generateUrl('/apps/empleados/GetAusenciasHistorial'), {
 				desde: fetchInfo.startStr,
 				hasta: fetchInfo.endStr,
 			})
 				.then(r => {
 					const data = r.data.message || []
-					// eslint-disable-next-line no-console
-					console.log('📦 Datos recibidos:', data)
-
 					const events = data.map(item => {
 						const fechaInicio = new Date(item.fecha_de)
 						const fechaHasta = new Date(item.fecha_hasta)
@@ -638,34 +607,25 @@ export default {
 							start: fechaInicio.toISOString(),
 							end: fechaHasta.toISOString(),
 							allDay: true,
-							color: this.color(this.employee[0].Id_user), // Asignar color basado en el usuario
-							nombre_empleado: item.nombre_empleado, // Agregar nombre del empleado
+							color: this.color(this.employee[0].Id_user),
+							nombre_empleado: item.nombre_empleado,
 						}
 					})
-
-					// eslint-disable-next-line no-console
-					console.log('✅ Eventos generados:', events)
 					success(events)
 				})
 				.catch(error => {
-					console.error('❌ Error al obtener eventos:', error)
+					console.error(error)
 					failure(error)
 				})
 		},
 
 		GetAusenciasMyWorkers(fetchInfo, success, failure) {
-			// eslint-disable-next-line no-console
-			console.log('🔄 Llamando fetchEvents para:', fetchInfo)
-
 			axios.post(generateUrl('/apps/empleados/GetAusenciasMyWorkers'), {
 				desde: fetchInfo.startStr,
 				hasta: fetchInfo.endStr,
 			})
 				.then(r => {
 					const data = r.data.message || []
-					// eslint-disable-next-line no-console
-					console.log('📦 Datos recibidos:', data)
-
 					const events = data.map(item => {
 						const fechaInicio = new Date(item.fecha_de)
 						const fechaHasta = new Date(item.fecha_hasta)
@@ -677,34 +637,25 @@ export default {
 							start: fechaInicio.toISOString(),
 							end: fechaHasta.toISOString(),
 							allDay: true,
-							color: this.color(item.nombre_empleado), // Asignar color basado en el usuario
-							nombre_empleado: item.nombre_empleado, // Agregar nombre del empleado
+							color: this.color(item.nombre_empleado),
+							nombre_empleado: item.nombre_empleado,
 						}
 					})
-
-					// eslint-disable-next-line no-console
-					console.log('✅ Eventos generados:', events)
 					success(events)
 				})
 				.catch(error => {
-					console.error('❌ Error al obtener eventos:', error)
+					console.error(error)
 					failure(error)
 				})
 		},
 
 		getAllAusencias(fetchInfo, success, failure) {
-			// eslint-disable-next-line no-console
-			console.log('🔄 Llamando fetchEvents para:', fetchInfo)
-
 			axios.post(generateUrl('/apps/empleados/GetAusenciasHistorialAll'), {
 				desde: fetchInfo.startStr,
 				hasta: fetchInfo.endStr,
 			})
 				.then(r => {
 					const data = r.data.message || []
-					// eslint-disable-next-line no-console
-					console.log('📦 Datos recibidos:', data)
-
 					const events = data.map(item => {
 						const fechaInicio = new Date(item.fecha_de)
 						const fechaHasta = new Date(item.fecha_hasta)
@@ -716,37 +667,30 @@ export default {
 							start: fechaInicio.toISOString(),
 							end: fechaHasta.toISOString(),
 							allDay: true,
-							color: this.color(item.nombre_empleado), // Asignar color basado en el usuario
-							nombre_empleado: item.nombre_empleado, // Agregar nombre del empleado
+							color: this.color(item.nombre_empleado),
+							nombre_empleado: item.nombre_empleado,
 						}
 					})
-
-					// eslint-disable-next-line no-console
-					console.log('✅ Eventos generados:', events)
 					success(events)
 				})
 				.catch(error => {
-					console.error('❌ Error al obtener eventos:', error)
+					console.error(error)
 					failure(error)
 				})
 		},
 
 		getEmployeeAusencias(fetchInfo, success, failure) {
-			// eslint-disable-next-line no-console
-			console.log('🔄 Llamando fetchEvents para:', fetchInfo)
-
 			axios.post(generateUrl('/apps/empleados/GetAusenciasEmployeeHistorial'), {
-				id_employee: this.selected_user, // puede ser objeto o array
+				id_employee: this.selected_user,
 				desde: fetchInfo.startStr,
 				hasta: fetchInfo.endStr,
 			})
 				.then(r => {
 					const data = r.data.message || []
-
 					const events = data.map(item => {
 						const fechaInicio = new Date(item.fecha_de)
 						const fechaHasta = new Date(item.fecha_hasta)
-						fechaHasta.setDate(fechaHasta.getDate() + 1) // para que sea exclusivo
+						fechaHasta.setDate(fechaHasta.getDate() + 1)
 
 						return {
 							id: item.id_historial_ausencias,
@@ -755,31 +699,25 @@ export default {
 							end: fechaHasta.toISOString(),
 							allDay: true,
 							color: this.color?.(item.nombre_empleado) || '#3a87ad',
-							nombre_empleado: item.nombre_empleado, // Agregar nombre del empleado
+							nombre_empleado: item.nombre_empleado,
 						}
 					})
-
 					success(events)
 				})
 				.catch(error => {
-					console.error('❌ Error al obtener eventos:', error)
+					console.error(error)
 					this.selected_user = null
 					failure(error)
 				})
 		},
 
-		// Acción al hacer clic en una fecha (puedes implementar si se requiere)
 		onDateClick(arg) {
-			// eslint-disable-next-line no-console
-			console.log('Fecha clickeada 1:', arg.dateStr)
 			if (this.configuraciones.modulo_ausencias_readonly === 'true') {
-				showInfo('Este modulo se encuentra en modo solo lectura')
+				showInfo(t('empleados', 'This module is in read-only mode'))
 			}
 		},
 
 		OnClickEvent(info) {
-			// eslint-disable-next-line no-console
-			console.log('Fecha clickeada 2:', info.event)
 			this.infoSelected = info.event
 			this.modalEvento = true
 		},
@@ -798,28 +736,24 @@ export default {
 				const response = await axios.get(generateUrl('/apps/empleados/GetEmpleadosList'))
 				const empleados = response.data.Empleados || []
 
-				// eslint-disable-next-line no-console
-				console.log('📦 Lista de usuarios actualizada:', empleados)
-
 				this.propsEmployees.options = empleados.map(user => ({
-					Id_empleados: user.Id_empleados, // <- importante: NcSelect usa el UID
-					displayName: user.Nombre || user.Id_user, // usa el nombre si existe
+					Id_empleados: user.Id_empleados,
+					displayName: user.Nombre || user.Id_user,
 					isNoUser: false,
 					icon: '',
 					user: user.Id_user,
 					preloadedUserStatus: {
 						icon: '',
 						status: user.Estatus === 'activo' ? 'online' : 'offline',
-						message: user.Estatus === 'activo' ? 'Activo' : 'Inactivo',
+						message: user.Estatus === 'activo' ? t('empleados', 'Active') : t('empleados', 'Inactive'),
 					},
 				}))
 			} catch (err) {
-				showError('Se ha producido una excepción: ' + err)
+				showError(t('empleados', 'An exception has occurred: {err}', { err }))
 				console.error(err)
 			}
 		},
 
-		// Maneja la selección de un rango de fechas en el calendario
 		onDateRangeSelect(selection) {
 			if (!this.isAdmin()) {
 				if (this.configuraciones.modulo_ausencias_readonly === 'true') {
@@ -834,26 +768,26 @@ export default {
 			const endDate = new Date(this.range.end)
 			endDate.setDate(endDate.getDate() - 1)
 
-			// No permitir fechas pasadas
+			// No past dates if not admin
 			if (!this.isAdmin()) {
 				if (
 					new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate())
 					< new Date(nDate.getFullYear(), nDate.getMonth(), nDate.getDate())
 				) {
-					showError('No puedes solicitar ausencias en fechas pasadas')
+					showError(t('empleados', 'You cannot request absences on past dates'))
 					return
 				}
 			}
 
-			// No permitir iniciar o terminar en fin de semana
+			// No weekend start/end
 			const dia = endDate.getDay()
 			const diaInicio = startDate.getDay()
 			if (dia === 0 || dia === 6 || diaInicio === 0 || diaInicio === 6) {
-				showError('No puedes iniciar o finalizar tu ausencia en fin de semana')
+				showError(t('empleados', 'You cannot start or end your absence on a weekend'))
 				return
 			}
 
-			// Contar días hábiles
+			// Business day count
 			let fecha = new Date(startDate)
 			let diasHabiles = 0
 			while (fecha <= endDate) {
@@ -861,7 +795,7 @@ export default {
 				if (diaSemana !== 0 && diaSemana !== 6) {
 					diasHabiles++
 				}
-				fecha = new Date(fecha.getFullYear(), fecha.getMonth(), fecha.getDate() + 1) // ✅ AVANZAMOS la fecha
+				fecha = new Date(fecha.getFullYear(), fecha.getMonth(), fecha.getDate() + 1)
 			}
 
 			this.diasSolicitados = diasHabiles
@@ -874,11 +808,9 @@ export default {
 		async GetAllEquipo() {
 			try {
 				await axios.get(generateUrl('/apps/empleados/GetMyEquipo'))
-					.then(
-						(response) => {
-							this.peopleEquipo = response.data
-						},
-					)
+					.then((response) => {
+						this.peopleEquipo = response.data
+					})
 			} catch (err) {
 				// eslint-disable-next-line no-console
 				console.log(err)
@@ -889,19 +821,17 @@ export default {
 				id: this.employee[0].Id_equipo,
 			})
 				.then(r => {
-					const data = r.data.message || []
-					// eslint-disable-next-line no-console
-					console.log('📦 Datos recibidos:', data)
 					this.Equipo = r.data[0]
 				})
 				.catch(error => {
-					console.error('❌ Error al jefe de equipo:', error)
+					console.error('Error getting team lead:', error)
 				})
 		},
 	},
 }
 </script>
 <style scoped>
+/* (styles unchanged) */
 .layout {
   width: 100%;
   display: flex;
@@ -1021,11 +951,8 @@ export default {
 
 .sectionPicker {
   height: clamp(520px, 70vh, 780px);
-  /* opcional: bordes para ver el contenedor mientras pruebas */
-  /* outline: 1px dashed rgba(0,0,0,.1); */
 }
 
-/* el componente debe ocupar el 100% del alto del contenedor */
 .my-calendar { height: 100%;
 --color-background-dark: transparent !important;}
 
@@ -1051,7 +978,7 @@ export default {
 }
 
 .acordeon-contenido.abierto {
-	max-height: 500px; /* suficiente para cubrir el contenido */
+	max-height: 500px;
 	opacity: 1;
 }
 .flex-to-right {
@@ -1116,5 +1043,4 @@ export default {
 .bell-shake {
   animation: shake 0.8s ease;
 }
-
 </style>

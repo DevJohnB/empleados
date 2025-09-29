@@ -4,7 +4,7 @@
 			<div class="search-contacts-field">
 				<div class="container-search">
 					<div class="input-container">
-						<input v-model="query" type="text" :placeholder="t('empleados', 'Buscar empleados...')">
+						<input v-model="query" type="text" :placeholder="t('empleados', 'Search employees...')">
 					</div>
 					<div class="button-container">
 						<NcActions
@@ -17,26 +17,26 @@
 								<template #icon>
 									<AccountMultiplePlusOutline :size="20" />
 								</template>
-								Agregar area nueva
+								{{ t('empleados', 'Add new area') }}
 							</NcActionButton>
 							<NcActionButton @click="Exportar()">
 								<template #icon>
 									<DatabaseExport :size="20" />
 								</template>
-								Exportar listado
+								{{ t('empleados', 'Export list') }}
 							</NcActionButton>
 							<NcActionSeparator />
 							<!--NcActionButton @click="showMessage('Delete')">
 								<template #icon>
 									<Download :size="20" />
 								</template>
-								Exportar plantilla vacia
+								{{ t('empleados', 'Export empty template') }}
 							</NcActionButton-->
 							<NcActionButton @click="$refs.file.click()">
 								<template #icon>
 									<Upload :size="20" />
 								</template>
-								Importar datos desde plantilla
+								{{ t('empleados', 'Import data from template') }}
 							</NcActionButton>
 						</NcActions>
 					</div>
@@ -59,19 +59,19 @@
 		<NcModal
 			v-if="modal"
 			ref="modalRef"
-			name="Agregar nueva area"
+			:name="t('empleados', 'Add new area')"
 			@close="closeModal">
 			<div class="modal__content">
 				<div class="form-group center">
 					<NcTextField :value.sync="nombre_area"
-						label="Nombre del area" />
+						:label="t('empleados', 'Area name')" />
 					<br>
 					<NcButton
 						class="center"
-						aria-label="Guardar cambios"
+						:aria-label="t('empleados', 'Save changes')"
 						type="primary"
 						@click="crearPuesto()">
-						Guardar cambios
+						{{ t('empleados', 'Save changes') }}
 					</NcButton>
 				</div>
 			</div>
@@ -83,6 +83,7 @@
 import { showError, showSuccess } from '@nextcloud/dialogs'
 import { generateUrl } from '@nextcloud/router'
 import axios from '@nextcloud/axios'
+import { translate as t } from '@nextcloud/l10n'
 
 // Iconos
 import DatabaseExport from 'vue-material-design-icons/DatabaseExport.vue'
@@ -98,6 +99,7 @@ import {
 	NcModal,
 	NcTextField,
 	NcButton,
+	NcActionSeparator,
 } from '@nextcloud/vue'
 import PuestosListItem from './PuestosListItem.vue'
 import VirtualList from 'vue-virtual-scroll-list'
@@ -117,6 +119,7 @@ export default {
 		NcModal,
 		NcTextField,
 		NcButton,
+		NcActionSeparator,
 	},
 
 	props: {
@@ -169,6 +172,8 @@ export default {
 	},
 
 	methods: {
+		t,
+
 		matchSearch(puestos) {
 			if (this.query.trim() !== '') {
 				return puestos.toString().toLowerCase().search(this.query.trim().toLowerCase()) !== -1
@@ -188,7 +193,7 @@ export default {
 						},
 					)
 			} catch (err) {
-				showError(t('empleados', 'Se ha producido una excepcion [01] [' + err + ']'))
+				showError(t('empleados', 'An exception has occurred [01] [{error}]', { error: String(err) }))
 			}
 		},
 
@@ -207,12 +212,12 @@ export default {
 
 					const link = document.createElement('a')
 					link.href = url
-					link.setAttribute('download', 'historial.xlsx')
+					link.setAttribute('download', 'positions.xlsx')
 					document.body.appendChild(link)
 					link.click()
 				},
 				(err) => {
-					showError(t('ahorrosgossler', 'Se ha producido un error ' + err + ', reporte al administrador'))
+					showError(t('empleados', 'An error occurred {error}, please report to the administrator', { error: String(err) }))
 					this.exportardata = false
 				},
 			)
@@ -233,14 +238,14 @@ export default {
 							this.$root.$emit('getall')
 							this.$root.$emit('reload')
 							this.$root.$emit('send-data-puestos', {})
-							showSuccess(t('empleados', 'Se actualizo la base de datos exitosamente'))
+							showSuccess(t('empleados', 'Database updated successfully'))
 						},
 						(err) => {
 							showError(err)
 						},
 					)
 			} catch (err) {
-				showError(t('empleados', 'Se ha producido una excepcion [03] [' + err + ']'))
+				showError(t('empleados', 'An exception has occurred [03] [{error}]', { error: String(err) }))
 			}
 		},
 		AgregarNuevo() {
@@ -261,7 +266,7 @@ export default {
 					})
 					.then(
 						(response) => {
-							showSuccess('Area creada exitosamente')
+							showSuccess(t('empleados', 'Area created successfully'))
 							this.$root.$emit('reload')
 							this.nombre_area = ''
 							this.modal = false
@@ -271,7 +276,7 @@ export default {
 						},
 					)
 			} catch (err) {
-				showError(t('empleados', 'Se ha producido una excepcion [03] [' + err + ']'))
+				showError(t('empleados', 'An exception has occurred [03] [{error}]', { error: String(err) }))
 			}
 		},
 	},

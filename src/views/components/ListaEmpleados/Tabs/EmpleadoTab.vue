@@ -5,14 +5,14 @@
 				<div class="box1">
 					<div>
 						<div class="divider">
-							<span>Informacion Laboral</span>
+							<span>{{ t('empleados', 'Work information') }}</span>
 						</div>
 						<div class="flexible">
-							<!-- numero de empleado -->
+							<!-- Employee number -->
 							<div class="box1Inside">
 								<label for="Numero_empleado" class="labeltype">
 									<Badgeaccountoutline :size="20" />
-									Num. Empleado
+									{{ t('empleados', 'Employee No.') }}
 								</label>
 								<input id="Numero_empleado"
 									v-model="Numero_empleado"
@@ -21,11 +21,11 @@
 									class="inputtype">
 							</div>
 
-							<!-- Sueldo -->
+							<!-- Salary -->
 							<div class="box1Inside">
 								<label for="Sueldo" class="labeltype">
 									<Cash :size="20" />
-									Sueldo
+									{{ t('empleados', 'Salary') }}
 								</label>
 								<input id="Sueldo"
 									v-model="Sueldo"
@@ -34,11 +34,11 @@
 									class="inputtype">
 							</div>
 
-							<!-- Numero de cuenta bancaria -->
+							<!-- Bank account -->
 							<div class="box1Inside">
 								<label for="Numero_cuenta" class="labeltype">
 									<Bank :size="20" />
-									Cuenta Bancaria
+									{{ t('empleados', 'Bank account') }}
 								</label>
 								<input id="Numero_cuenta"
 									v-model="Numero_cuenta"
@@ -48,11 +48,11 @@
 							</div>
 						</div>
 						<div class="flexible top">
-							<!-- Fecha de ingreso -->
+							<!-- Start date -->
 							<div class="box1Inside">
 								<label for="Ingreso" class="labeltype">
 									<Calendarrange :size="20" />
-									Fecha de Ingreso
+									{{ t('empleados', 'Start date') }}
 								</label>
 								<input id="Ingreso"
 									v-model="Ingreso"
@@ -61,11 +61,11 @@
 									class="inputtype">
 							</div>
 
-							<!-- Aniversario -->
+							<!-- Anniversary -->
 							<div class="box1Inside">
 								<label for="Aniversario" class="labeltype">
 									<PartyPopper :size="20" />
-									Aniversario
+									{{ t('empleados', 'Anniversary') }}
 								</label>
 								<input id="Aniversario"
 									v-model="Aniversario"
@@ -74,11 +74,11 @@
 									class="inputtype">
 							</div>
 
-							<!-- vacaciones disponibles -->
+							<!-- Vacation -->
 							<div class="box1Inside">
 								<label for="Vacaciones" class="labeltype">
 									<BagSuitcase :size="20" />
-									Vacaciones
+									{{ t('empleados', 'Vacation') }}
 								</label>
 								<input id="Vacaciones"
 									v-model="Vacaciones"
@@ -87,8 +87,10 @@
 									class="inputtype">
 							</div>
 
-							<!-- calcular vacaciones -->
-							<div v-if="Ingreso && (Aniversario == 0 || !Aniversario || Aniversario == null) && (!Vacaciones || Vacaciones == 0.00 || Vacaciones == null)" class="topRefresh MarginRight">
+							<!-- Calculate vacations -->
+							<div
+								v-if="Ingreso && (Aniversario == 0 || !Aniversario) && (!Vacaciones || Vacaciones == 0.00)"
+								class="topRefresh MarginRight">
 								<NcButton
 									type="primary"
 									:disabled="!show"
@@ -96,19 +98,21 @@
 									<template #icon>
 										<Refresh :size="20" />
 									</template>
+									{{ t('empleados', 'Calculate') }}
 								</NcButton>
 							</div>
 						</div>
 					</div>
+
 					<div>
 						<div class="divider">
-							<span>Fondo de ahorro</span>
+							<span>{{ t('empleados', 'Savings fund') }}</span>
 						</div>
 						<div class="flexible">
 							<div class="box1Inside">
 								<label for="Fondo_clave" class="labeltype">
 									<Piggybankoutline :size="20" />
-									Fondo Clave
+									{{ t('empleados', 'Fund key') }}
 								</label>
 								<input id="Fondo_clave"
 									v-model="Fondo_clave"
@@ -120,7 +124,7 @@
 							<div class="box1Inside">
 								<label for="Fondo_ahorro" class="labeltype">
 									<Piggybankoutline :size="20" />
-									Fondo ahorro
+									{{ t('empleados', 'Savings fund') }}
 								</label>
 								<input id="Fondo_ahorro"
 									v-model="Fondo_ahorro"
@@ -128,24 +132,26 @@
 									:disabled="!show"
 									class="inputtype">
 							</div>
+
 							<div class="topRefresh MarginRight">
 								<NcCheckboxRadioSwitch
 									v-model="state"
 									type="switch">
-									{{ state ? 'puede solicitar' : 'Modo lectura' }}
+									{{ state ? t('empleados', 'Can request') : t('empleados', 'Read-only mode') }}
 								</NcCheckboxRadioSwitch>
 							</div>
 						</div>
 					</div>
+
 					<div>
 						<div class="divider">
-							<span>Sistemas</span>
+							<span>{{ t('empleados', 'Systems') }}</span>
 						</div>
 						<div class="flexible">
 							<div class="box1Inside">
 								<label for="Equipo_asignado" class="labeltype">
 									<Laptopaccount :size="20" />
-									Equipo Asignado
+									{{ t('empleados', 'Assigned equipment') }}
 								</label>
 								<input id="Equipo_asignado"
 									v-model="Equipo_asignado"
@@ -159,8 +165,9 @@
 
 				<div class="box2">
 					<div class="divider">
-						<span>Estructura Laboral</span>
+						<span>{{ t('empleados', 'Employment structure') }}</span>
 					</div>
+
 					<div>
 						<!-- Organization Chart -->
 						<div class="box2" :style="show ? { display: 'none' } : {}">
@@ -191,7 +198,7 @@
 							</div>
 						</div>
 
-						<!-- Departamento and Puesto Select Inputs -->
+						<!-- Department and Position -->
 						<div class="main">
 							<div class="label-input-trabajo">
 								<NcSelect id="Id_departamento"
@@ -199,7 +206,7 @@
 									class="container__select"
 									:disabled="!show"
 									:options="optionsarea"
-									input-label="Departamento" />
+									:input-label="t('empleados','Department')" />
 							</div>
 
 							<div class="label-input-trabajo">
@@ -208,38 +215,39 @@
 									class="container__select_puesto"
 									:disabled="!show"
 									:options="optionspuesto"
-									input-label="Puesto" />
+									:input-label="t('empleados','Position')" />
 							</div>
 						</div>
 
-						<!-- Socio and Gerente Select Inputs -->
+						<!-- Partner and Manager -->
 						<div v-if="show" class="main">
 							<div class="label-input-trabajo">
 								<NcSelect v-model="socio"
 									class="select"
-									input-label="Socio"
 									:disabled="!show"
 									:options="EmpleadosList"
-									:user-select="true" />
+									:user-select="true"
+									:input-label="t('empleados','Partner')" />
 							</div>
 
 							<div class="label-input-trabajo">
 								<NcSelect v-model="gerente"
 									class="select"
 									:disabled="!show"
-									input-label="Gerente"
 									:options="EmpleadosList"
-									:user-select="true" />
+									:user-select="true"
+									:input-label="t('empleados','Manager')" />
 							</div>
 						</div>
-						<!-- equipo edit -->
+
+						<!-- Team -->
 						<div v-if="show" class="main">
 							<div class="label-input-puesto">
 								<NcSelect v-model="Equipo"
 									class="select"
 									:disabled="!show"
-									input-label="Equipo"
-									:options="optionsequipos" />
+									:options="optionsequipos"
+									:input-label="t('empleados','Team')" />
 							</div>
 						</div>
 						<div v-else class="">
@@ -254,16 +262,6 @@
 								</div>
 							</div>
 							<div class="rst">
-								<!--ul class="container flex">
-									<li v-for="(item) in peopleEquipo.equipo"
-										:key="item.Id_empleados"
-										class="item flex-item">
-										<NcAvatar :user="item.Id_user" :display-name="item.Id_user" style="margin-top: inherit;" />
-										<h3>{{ item.Id_user }}</h3>
-										<NcAvatar :user="item.Id_user" :display-name="item.Id_user" />
-										<h3>{{ item.Id_user }}</h3>
-									</li>
-								</ul-->
 								<ul>
 									<NcListItem
 										v-for="(item) in peopleEquipo.equipo"
@@ -282,6 +280,7 @@
 					</div>
 				</div>
 			</div>
+
 			<br>
 			<div class="div-center">
 				<NcButton
@@ -289,7 +288,7 @@
 					aria-label="Guardar"
 					type="primary"
 					@click="CambiosEmpleado()">
-					Aplicar cambios
+					{{ t('empleados', 'Apply changes') }}
 				</NcButton>
 			</div>
 		</div>
@@ -302,7 +301,7 @@ import OrganizationChart from 'vue-organization-chart'
 import { generateUrl } from '@nextcloud/router'
 import 'vue-nav-tabs/themes/vue-tabs.css'
 import axios from '@nextcloud/axios'
-// import debounce from 'debounce'
+import { translate as t } from '@nextcloud/l10n'
 
 // ICONOS
 import Badgeaccountoutline from 'vue-material-design-icons/BadgeAccountOutline.vue'
@@ -345,22 +344,10 @@ export default {
 	},
 
 	props: {
-		data: {
-			type: Object,
-			required: true,
-		},
-		show: {
-			type: Boolean,
-			required: true,
-		},
-		empleados: {
-			type: Array,
-			required: true,
-		},
-		automaticsave: {
-			type: String,
-			required: true,
-		},
+		data: { type: Object, required: true },
+		show: { type: Boolean, required: true },
+		empleados: { type: Array, required: true },
+		automaticsave: { type: String, required: true },
 	},
 
 	data() {
@@ -392,9 +379,12 @@ export default {
 	},
 
 	watch: {
-		state(oldState, newState) {
-			if (newState !== this.state) {
-				this.cambioEstado(newState ? '0' : '1')
+		// FIX: la firma correcta es (newVal, oldVal)
+		state(newVal, oldVal) {
+			// Solo enviar si realmente cambió
+			if (newVal !== oldVal) {
+				// true => '1' (puede solicitar), false => '0' (solo lectura)
+				this.cambioEstado(newVal ? '1' : '0')
 			}
 		},
 		data(news) {
@@ -447,6 +437,8 @@ export default {
 	},
 
 	methods: {
+		t,
+
 		setAttr(NumeroEmpleado, Ingreso, Area, Puesto, Gerente, Socio, FondoClave, FondoAhorro, NumeroCuenta, Equipo, EquipoAsignado, Sueldo, Vacaciones, Aniversario, state) {
 			this.Numero_empleado = this.checknull(NumeroEmpleado)
 			this.Ingreso = this.checknull(Ingreso)
@@ -463,6 +455,7 @@ export default {
 			this.Vacaciones = this.checknull(Vacaciones)
 			this.Aniversario = this.checknull(Aniversario)
 
+			// Mapeo de estado: '1' = puede solicitar; '0'/'2' = solo lectura
 			if (state === '0' || state === '2') {
 				this.state = false
 			} else if (state === '1') {
@@ -484,7 +477,7 @@ export default {
 					this.area = ''
 				}
 			} catch (err) {
-				showError(t('empleados', 'Se ha producido una excepcion [01] [' + err + ']'))
+				showError(t('empleados', 'Se ha producido una excepción [01] [{error}]', { error: String(err) }))
 			}
 		},
 
@@ -498,7 +491,7 @@ export default {
 					this.puesto = ''
 				}
 			} catch (err) {
-				showError(t('empleados', 'Se ha producido una excepcion [01] [' + err + ']'))
+				showError(t('empleados', 'Se ha producido una excepción [01] [{error}]', { error: String(err) }))
 			}
 		},
 
@@ -506,34 +499,26 @@ export default {
 			this.loading = false
 			this.GetAllEquipo(Equipo)
 			try {
-				await axios.get(generateUrl('/apps/empleados/GetEquiposList'))
-					.then(
-						(response) => {
-							this.optionsequipos = response.data.map(equipo => ({
-								value: equipo.Id_equipo,
-								label: equipo.Nombre,
-								jefe: equipo.Id_jefe_equipo,
-							}))
-							if (Equipo && Equipo.length !== 0) {
-								this.Equipo = this.optionsequipos.find(role => role.value === parseInt(Equipo))
-							} else {
-								this.Equipo = ''
-							}
-						},
-					)
+				const { data } = await axios.get(generateUrl('/apps/empleados/GetEquiposList'))
+				this.optionsequipos = data.map(equipo => ({
+					value: equipo.Id_equipo,
+					label: equipo.Nombre,
+					jefe: equipo.Id_jefe_equipo,
+				}))
+				if (Equipo && Equipo.length !== 0) {
+					this.Equipo = this.optionsequipos.find(role => role.value === parseInt(Equipo))
+				} else {
+					this.Equipo = ''
+				}
 			} catch (err) {
-				showError(t('empleados', 'Se ha producido una excepcion [01] [' + err + ']'))
+				showError(t('empleados', 'Se ha producido una excepción [01] [{error}]', { error: String(err) }))
 			}
 		},
 
 		async GetAllEquipo(equipo) {
 			try {
-				await axios.get(generateUrl('/apps/empleados/GetEmpleadosEquipo/' + equipo))
-					.then(
-						(response) => {
-							this.peopleEquipo = response.data
-						},
-					)
+				const { data } = await axios.get(generateUrl('/apps/empleados/GetEmpleadosEquipo/' + equipo))
+				this.peopleEquipo = data
 			} catch (err) {
 				// eslint-disable-next-line no-console
 				console.log(err)
@@ -546,9 +531,9 @@ export default {
 			return {
 				id: 'nodo-oculto',
 				children: [
-					{ id: '1', name: socio, title: 'Socio' },
-					{ id: '2', name: gerente, title: 'Gerente' },
-					{ id: '3', name: user, title: 'Empleado' },
+					{ id: '1', name: socio, title: t('empleados', 'Socio') },
+					{ id: '2', name: gerente, title: t('empleados', 'Gerente') },
+					{ id: '3', name: user, title: t('empleados', 'Empleado') },
 				],
 			}
 		},
@@ -559,15 +544,14 @@ export default {
 
 		async CambiosEmpleado() {
 			try {
+				this.areaSend = this.area?.value
+				this.puestoSend = this.puesto?.value
 
-				this.areaSend = this.area.value
-				this.puestoSend = this.puesto.value
-
-				if (!this.area.value) {
+				if (!this.area?.value) {
 					this.areaSend = this.optionsarea.find(role => role.label === this.area)?.value || ''
 				}
 
-				if (!this.puesto.value) {
+				if (!this.puesto?.value) {
 					this.puestoSend = this.optionspuesto.find(role => role.label === this.puesto)?.value || ''
 				}
 
@@ -594,31 +578,24 @@ export default {
 				this.GetAllEquipo(this.Equipo.value)
 				this.$bus.emit('getall')
 				this.$bus.emit('show', false)
-				showSuccess('Datos actualizados')
+				showSuccess(t('empleados', 'Datos actualizados'))
 			} catch (err) {
-				showError(t('empleados', 'Se ha producido una excepcion [03] [' + err + ']'))
+				showError(t('empleados', 'Se ha producido una excepción [03] [{error}]', { error: String(err) }))
 			}
 		},
 
 		async CalcularVacaciones() {
 			try {
-				try {
-					const response = await axios.post(generateUrl('/apps/empleados/GetAniversarioByDate'), {
-						ingreso: this.checknull(this.Ingreso),
-					})
-
-					// eslint-disable-next-line no-console
-					console.log(response.data)
-					this.Aniversario = response.data[0]?.numero_aniversario
-					this.Vacaciones = response.data[0]?.dias
-					// this.peopleEquipo = response.data
-				} catch (err) {
-					showError(err)
-				}
+				const response = await axios.post(generateUrl('/apps/empleados/GetAniversarioByDate'), {
+					ingreso: this.checknull(this.Ingreso),
+				})
+				this.Aniversario = response.data[0]?.numero_aniversario
+				this.Vacaciones = response.data[0]?.dias
 			} catch (err) {
-				showError(t('empleados', 'Se ha producido una excepcion [03] [' + err + ']'))
+				showError(err)
 			}
 		},
+
 		async cambioEstado(state) {
 			try {
 				await axios.post(generateUrl('/apps/empleados/ActualizarEstadoAhorro'), {
@@ -634,181 +611,48 @@ export default {
 </script>
 
 <style>
-.box-chart {
-	margin-top: 10px;
-}
-.box{
-	display: flex;
-}
-.box1 {
-	flex: 3;
-	padding-right: 2%;
-}
-.box1Inside {
-	flex: 3;
-}
-.MarginRight {
-	padding-right: 5px;
-}
-.box2 {
-	flex: 2;
-}
-.main {
-	display: flex;
-	flex-wrap: wrap; /* Permite que los elementos bajen si no caben */
-}
+.box-chart { margin-top: 10px; }
+.box{ display: flex; }
+.box1 { flex: 3; padding-right: 2%; }
+.box1Inside { flex: 3; }
+.MarginRight { padding-right: 5px; }
+.box2 { flex: 2; }
+.main { display: flex; flex-wrap: wrap; }
 
-/* Que .box1 y .box2 ocupen el 100% en pantallas pequeñas */
+/* Responsive */
 @media (max-width: 768px) {
-	.box1, .box2 {
-		flex: 1 1 100%;
-	}
+	.box1, .box2 { flex: 1 1 100%; }
 }
-
-/* En pantallas grandes, box1 y box2 se distribuyen como lo hacías */
 @media (min-width: 769px) {
-	.box1 {
-		flex: 3;
-	}
-	.box2 {
-		flex: 2;
-	}
+	.box1 { flex: 3; }
+	.box2 { flex: 2; }
 }
 
-.label-input-trabajo {
-	display: grid;
-	align-items: center;
-	width: 100%;
-}
-.wrapper {
-	display: flex;
-	gap: 4px;
-	align-items: flex-end;
-	flex-wrap: wrap;
-}
-.external-label {
-	display: flex;
-	align-items: center;
-	gap: 10px;
-	margin-top: 2px;
-}
-.labelEmpleado {
-	font-weight: bold;
-	display: inline-flex;
-	align-items: center;
-	gap: 5px;
-	min-width: 150px;
-}
-.inputtype {
-	flex: 1;
-	height: 40px;
-	padding: 8px 12px;
-	font-size: 14px;
-	border-radius: 5px;
-	border: 1px solid #ccc;
-	width: 100%;
-}
+.label-input-trabajo { display: grid; align-items: center; width: 100%; }
+.wrapper { display: flex; gap: 4px; align-items: flex-end; flex-wrap: wrap; }
+.external-label { display: flex; align-items: center; gap: 10px; margin-top: 2px; }
+.labelEmpleado { font-weight: bold; display: inline-flex; align-items: center; gap: 5px; min-width: 150px; }
+.inputtype { flex: 1; height: 40px; padding: 8px 12px; font-size: 14px; border-radius: 5px; border: 1px solid #ccc; width: 100%; }
 
-.divider {
-  position: relative;
-  text-align: center;
-  margin: 1rem 0;
-}
+.divider { position: relative; text-align: center; margin: 1rem 0; }
+.divider::before { content: ""; position: absolute; top: 50%; left: 0; width: 100%; height: 1px; background: #ccc; z-index: 0; }
+.divider span { position: relative; background: #fff; padding: 0 1rem; z-index: 1; font-weight: 500; }
 
-.divider::before {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 0;
-  width: 100%;
-  height: 1px;
-  background: #ccc;
-  z-index: 0;
-}
+.label-input-puesto { display: grid; margin-top: 5px; align-items: center; width: 100%; }
 
-.divider span {
-  position: relative;
-  background: #fff; /* o el color del fondo */
-  padding: 0 1rem;
-  z-index: 1;
-  font-weight: 500;
-}
+.rst { padding-top: 5px; padding-bottom: 5px; border: 1px solid rgb(232, 232, 232); border-radius: 3px; }
+.rst-title { background-color: rgba(240, 240, 240, 0.37); border: 1px solid rgb(232, 232, 232); border-radius: 3px; width: auto; margin-top: 20px; }
+.item { box-shadow: rgba(0, 41, 0, 0.15) 0px 0px 11px 1px; width: 100px; margin: 10px; border-radius: 15px; }
 
-.label-input-puesto {
-	display: grid;
-	margin-top: 5px;
-	align-items: center;
-	width: 100%;
-}
-
-.rst {
-	padding-top: 5px;
-	padding-bottom: 5px;
-	border: 1px solid rgb(232, 232, 232);
-	border-radius: 3px;
-}
-.rst-title {
-	background-color: rgba(240, 240, 240, 0.37);
-	border: 1px solid rgb(232, 232, 232);
-	border-radius: 3px;
-	width: auto;
-	margin-top: 20px;
-}
-
-.item {
-  box-shadow: rgba(0, 41, 0, 0.15) 0px 0px 11px 1px;
-  width: 100px;
-  margin: 10px;
-  border-radius: 15px;
-}
-
-/*float layout*/
-.float {
-  max-width: 1200px;
-  margin: 0 auto;
-}
-.float:after {
-  content: ".";
-  display: block;
-  height: 0;
-  clear: both;
-  visibility: hidden;
-}
-.float-item {
-  float: left;
-}
-
-/*inline-block*/
-.inline-b {
-  max-width:1200px;
-  margin:0 auto;
-}
-.inline-b-item {
-  display: inline-block;
-}
-.title_flex {
-	display: flex;
-	justify-content: center;
-}
-.subtitle_flex {
-	padding-top: 5px;
-	margin-right: 20px;
-}
-#nodo-oculto {
-  display: none;
-  height: 0;
-  padding: 0;
-  margin: 0;
-}
-.orgchart{
-	min-height: 10px;
-}
-.flexible {
-	display: flex;
-	align-items: center;
-	gap: 10px;
-}
-.topRefresh {
-	margin-top: 26px;
-}
+.float { max-width: 1200px; margin: 0 auto; }
+.float:after { content: "."; display: block; height: 0; clear: both; visibility: hidden; }
+.float-item { float: left; }
+.inline-b { max-width:1200px; margin:0 auto; }
+.inline-b-item { display: inline-block; }
+.title_flex { display: flex; justify-content: center; }
+.subtitle_flex { padding-top: 5px; margin-right: 20px; }
+#nodo-oculto { display: none; height: 0; padding: 0; margin: 0; }
+.orgchart{ min-height: 10px; }
+.flexible { display: flex; align-items: center; gap: 10px; }
+.topRefresh { margin-top: 26px; }
 </style>

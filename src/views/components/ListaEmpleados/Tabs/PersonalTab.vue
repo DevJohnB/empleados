@@ -1,142 +1,168 @@
 <template>
 	<div class="top">
-		<!-- Estado Civil -->
+		<!-- Marital status -->
 		<div class="label-input-trabajo">
-			<NcSelect v-model="Estado_civil"
+			<NcSelect
+				v-model="Estado_civil"
 				class="select"
 				:disabled="!show"
-				input-label="Estado Civil"
+				:input-label="t('empleados', 'Marital status')"
 				:options="EstadoCiviloptions" />
 		</div>
-		<!-- Genero -->
+
+		<!-- Gender -->
 		<div class="label-input-trabajo">
-			<NcSelect v-model="Genero"
+			<NcSelect
+				v-model="Genero"
 				class="select"
 				:disabled="!show"
-				input-label="Genero"
+				:input-label="t('empleados', 'Gender')"
 				:options="GeneroOptions" />
 		</div>
-		<!-- Telefono de Contacto -->
+
+		<!-- Contact phone -->
 		<div class="external-label">
 			<label for="Telefono_contacto" class="labeltype">
 				<Badgeaccountoutline :size="20" />
-				Num. Contacto
+				{{ t('empleados', 'Contact number') }}
 			</label>
-			<input id="Telefono_contacto"
+			<input
+				id="Telefono_contacto"
 				v-model="Telefono_contacto"
 				type="text"
 				:disabled="!show"
 				class="inputtype">
 		</div>
+
 		<br>
-		<!-- Direccion -->
+
+		<!-- Address -->
 		<div class="external-label">
 			<label for="Direccion" class="labeltype">
 				<MapMarkerOutline :size="20" />
-				Direccion
+				{{ t('empleados', 'Address') }}
 			</label>
-			<input id="Direccion"
+			<input
+				id="Direccion"
 				v-model="Direccion"
 				type="text"
 				:disabled="!show"
 				class="inputtype">
 		</div>
-		<!-- Rfc -->
+
+		<!-- RFC -->
 		<div class="external-label">
 			<label for="Rfc" class="labeltype">
 				<Badgeaccountoutline :size="20" />
-				Rfc
+				{{ t('empleados', 'RFC') }}
 			</label>
-			<input id="Rfc"
+			<input
+				id="Rfc"
 				v-model="Rfc"
 				type="text"
 				:disabled="!show"
 				class="inputtype">
 		</div>
-		<!-- Imss -->
+
+		<!-- IMSS -->
 		<div class="external-label">
 			<label for="Imss" class="labeltype">
 				<Badgeaccountoutline :size="20" />
-				Imss
+				{{ t('empleados', 'IMSS') }}
 			</label>
-			<input id="Imss"
+			<input
+				id="Imss"
 				v-model="Imss"
 				type="text"
 				:disabled="!show"
 				class="inputtype">
 		</div>
-		<!-- Curp -->
+
+		<!-- CURP -->
 		<div class="external-label">
 			<label for="Curp" class="labeltype">
 				<Badgeaccountoutline :size="20" />
-				Curp
+				{{ t('empleados', 'CURP') }}
 			</label>
-			<input id="Curp"
+			<input
+				id="Curp"
 				v-model="Curp"
 				type="text"
 				:disabled="!show"
 				class="inputtype">
 		</div>
-		<!-- Fecha de Nacimiento -->
+
+		<!-- Birth date -->
 		<div class="external-label">
 			<label for="Fecha_nacimiento" class="labeltype">
 				<CakeVariantOutline :size="20" />
-				Nacimiento
+				{{ t('empleados', 'Birth date') }}
 			</label>
-			<input id="Fecha_nacimiento"
+			<input
+				id="Fecha_nacimiento"
 				v-model="Fecha_nacimiento"
 				type="date"
 				:disabled="!show"
 				class="inputtype">
 		</div>
-		<!-- Correo -->
+
+		<!-- Email -->
 		<div class="external-label">
 			<label for="Correo_contacto" class="labeltype">
 				<EmailOutline :size="20" />
-				Correo
+				{{ t('empleados', 'Email') }}
 			</label>
-			<input id="Correo_contacto"
+			<input
+				id="Correo_contacto"
 				v-model="Correo_contacto"
 				type="email"
 				:disabled="!show"
 				class="inputtype">
 		</div>
+
 		<br>
-		<!-- Contacto de Emergencia -->
+
+		<!-- Emergency contact -->
 		<div class="emergency-contact">
 			<div class="external-label">
 				<label for="Contacto_emergencia" class="labeltype">
 					<Badgeaccountoutline :size="20" />
-					Nombre Contacto emergencia
+					{{ t('empleados', 'Emergency contact name') }}
 				</label>
-				<input id="Contacto_emergencia"
+				<input
+					id="Contacto_emergencia"
 					v-model="Contacto_emergencia"
 					type="text"
 					:disabled="!show"
 					class="inputtype">
 			</div>
+
 			<div class="external-label">
 				<label for="Numero_emergencia" class="labeltype">
 					<Badgeaccountoutline :size="20" />
-					Numero Contacto emergencia
+					{{ t('empleados', 'Emergency contact number') }}
 				</label>
-				<input id="Numero_emergencia"
+				<input
+					id="Numero_emergencia"
 					v-model="Numero_emergencia"
 					type="text"
 					:disabled="!show"
 					class="inputtype">
 			</div>
+
 			<br>
 		</div>
+
 		<br>
-		<!-- Boton para aplicar cambios -->
+
+		<!-- Apply changes -->
 		<div class="div-center">
 			<NcButton
 				v-if="show"
-				aria-label="Guardar"
+				:aria-label="t('empleados', 'Apply changes')"
 				type="primary"
-				@click="CambiosPersonal()">
-				Aplicar cambios
+				@click="CambiosPersonal">
+				{{ t('empleados', 'Apply changes') }}
 			</NcButton>
 		</div>
 	</div>
@@ -147,6 +173,7 @@ import { showError, showSuccess } from '@nextcloud/dialogs'
 import { generateUrl } from '@nextcloud/router'
 import 'vue-nav-tabs/themes/vue-tabs.css'
 import axios from '@nextcloud/axios'
+import { translate as t } from '@nextcloud/l10n'
 
 // ICONOS
 import EmailOutline from 'vue-material-design-icons/EmailOutline.vue'
@@ -199,8 +226,15 @@ export default {
 			Fecha_nacimiento: '',
 			Correo_contacto: '',
 			Genero: '',
-			GeneroOptions: ['Masculino', 'Femenino'],
-			EstadoCiviloptions: ['soltero', 'casado', 'divorciado', 'viudo', 'union libre'],
+			// Opciones traducidas (keys en inglés)
+			GeneroOptions: [t('empleados', 'Male'), t('empleados', 'Female')],
+			EstadoCiviloptions: [
+				t('empleados', 'Single'),
+				t('empleados', 'Married'),
+				t('empleados', 'Divorced'),
+				t('empleados', 'Widowed'),
+				t('empleados', 'Domestic partnership'),
+			],
 		}
 	},
 
@@ -217,6 +251,8 @@ export default {
 	},
 
 	methods: {
+		t,
+
 		setAttr(data) {
 			this.Direccion = this.checknull(data.Direccion)
 			this.Estado_civil = this.checknull(data.Estado_civil)
@@ -241,7 +277,7 @@ export default {
 					Id_empleados: this.data.Id_empleados,
 					Direccion: this.checknull(this.Direccion),
 					Estado_civil: this.checknull(this.Estado_civil),
-					Telefono_contacto: this.checknull(this.Teléfono_contacto),
+					Telefono_contacto: this.checknull(this.Telefono_contacto), // fix: sin tilde
 					Rfc: this.checknull(this.Rfc),
 					Imss: this.checknull(this.Imss),
 					Contacto_emergencia: this.checknull(this.Contacto_emergencia),
@@ -253,9 +289,9 @@ export default {
 				})
 				this.$bus.emit('getall')
 				this.$bus.emit('show', false)
-				showSuccess('Datos actualizados')
+				showSuccess(t('empleados', 'Data updated'))
 			} catch (err) {
-				showError(`Se ha producido una excepcion [03] [${err}]`)
+				showError(t('empleados', 'An exception has occurred [03] [{error}]', { error: String(err) }))
 			}
 		},
 	},

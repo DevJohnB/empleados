@@ -11,17 +11,17 @@
 				{{ source.Nombre }}
 			</template>
 			<template v-if="source.Id_padre" #subname>
-				<small>Area padre: {{ source.Id_padre }}</small>
+				<small>{{ t('empleados', 'Parent area') }}: {{ source.Id_padre }}</small>
 			</template>
 		</ListItem>
 	</div>
 </template>
 
 <script>
-
 import {
 	NcListItem as ListItem,
 } from '@nextcloud/vue'
+import { translate as t } from '@nextcloud/l10n'
 
 export default {
 	name: 'AreasListItem',
@@ -46,6 +46,7 @@ export default {
 	},
 
 	methods: {
+		t, // exponer i18n a la plantilla
 		showDetails(data) {
 			this.$root.$emit('send-data-areas', data)
 			this.$root.$emit('show', false)
@@ -53,11 +54,11 @@ export default {
 	},
 }
 </script>
-<style lang="scss" scoped>
 
+<style lang="scss" scoped>
 .envelope {
 	.app-content-list-item-icon {
-		height: 40px; // To prevent some unexpected spacing below the avatar
+		height: 40px; // evita espacio extra bajo el avatar
 	}
 
 	&__subtitle {
@@ -76,8 +77,8 @@ export default {
 .list-item-style {
 	list-style: none;
 }
-
 </style>
+
 <style lang="scss">
 .contacts-list__item-wrapper {
 	&[draggable='true'] .avatardiv * {

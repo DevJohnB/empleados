@@ -1,11 +1,12 @@
 <template id="EmployeeList">
 	<NcAppContent v-if="loading" name="Loading">
-		<NcEmptyContent class="empty-content" name="Cargando">
+		<NcEmptyContent class="empty-content" :name="t('empleados', 'Loading')">
 			<template #icon>
 				<NcLoadingIcon :size="20" />
 			</template>
 		</NcEmptyContent>
 	</NcAppContent>
+
 	<NcAppContent v-else name="Loading">
 		<!-- contacts list -->
 		<template #list>
@@ -17,7 +18,9 @@
 		</template>
 
 		<!-- main contacts details -->
-		<EquiposDetails :data="data_Equipos" :people-area="peopleArea" />
+		<EquiposDetails
+			:data="data_Equipos"
+			:people-area="peopleArea" />
 	</NcAppContent>
 </template>
 
@@ -30,6 +33,7 @@ import { showError /* showSuccess */ } from '@nextcloud/dialogs'
 import { generateUrl } from '@nextcloud/router'
 import axios from '@nextcloud/axios'
 import mitt from 'mitt'
+import { translate as t } from '@nextcloud/l10n'
 
 import {
 	NcEmptyContent,
@@ -45,7 +49,6 @@ export default {
 		NcAppContent,
 		NcLoadingIcon,
 		EquiposDetails,
-		// ContactsList,
 	},
 
 	data() {
@@ -62,56 +65,53 @@ export default {
 
 	async mounted() {
 		this.getall()
+
 		this.$root.$on('send-data-equipos', (data) => {
-			this.data_Equipos = data
-			this.getallequipo(data.Id_equipo)
+			this.data_Equipos = data || {}
+			if (data && data.Id_equipo) {
+				this.getallequipo(data.Id_equipo)
+			} else {
+				this.peopleArea = {}
+			}
 		})
-		this.$root.$on('delete-Equipos', (data) => {
+
+		this.$root.$on('delete-Equipos', () => {
 			this.getall()
 		})
+
 		this.$root.$on('reload', () => {
 			this.getall()
 		})
 	},
 
 	methods: {
+		// Exponer t a la plantilla
+		t,
+
 		async getallequipo(equipo) {
 			try {
-				await axios.get(generateUrl('/apps/empleados/GetEmpleadosEquipo/' + equipo))
-					.then(
-						(response) => {
-							this.peopleArea = response.data
-						},
-						(err) => {
-							showError(err)
-						},
-					)
+				const response = await axios.get(generateUrl('/apps/empleados/GetEmpleadosEquipo/' + encodeURIComponent(equipo)))
+				this.peopleArea = response.data
 			} catch (err) {
-				showError(t('empleados', 'Se ha producido una excepcion [01] [' + err + ']'))
+				showError(t('empleados', 'Se ha producido una excepcion [01] [{error}]', { error: String(err) }))
 			}
 		},
 
 		async getall() {
 			try {
-				await axios.get(generateUrl('/apps/empleados/GetEquiposList'))
-					.then(
-						(response) => {
-							this.Equipos = response.data
-							this.loading = false
-						},
-						(err) => {
-							showError(err)
-						},
-					)
+				const response = await axios.get(generateUrl('/apps/empleados/GetEquiposList'))
+				this.Equipos = response.data
+				this.loading = false
 			} catch (err) {
-				showError(t('empleados', 'Se ha producido una excepcion [01] [' + err + ']'))
+				this.loading = false
+				showError(t('empleados', 'Se ha producido una excepcion [01] [{error}]', { error: String(err) }))
 			}
 		},
 	},
 }
 </script>
-<style scoped lang="scss">
 
+<style scoped lang="scss">
 	.container {
 		padding-left: 60px;
 	}
@@ -123,9 +123,9 @@ export default {
 		display: flex;
 		align-items: center;
 		font-weight: bold;
+
 		.icon {
 			margin-right: 8px;
 		}
 	}
-
 </style>

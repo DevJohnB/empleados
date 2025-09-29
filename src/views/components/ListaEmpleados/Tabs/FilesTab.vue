@@ -14,26 +14,26 @@
 					</template>
 				</NcButton>
 				<div v-if="showLoading" style="display: flex; align-items: center; gap: 8px;">
-					<NcLoadingIcon :size="25" message="Procesando archivos..." />
-					<p>Subiendo archivo | espere</p>
+					<NcLoadingIcon :size="25" :message="t('empleados', 'Processing files…')" />
+					<p>{{ t('empleados', 'Uploading file, please wait') }}</p>
 				</div>
 				<NcButton style="margin-left: auto;" @click="OpenFolder()">
 					<template #icon>
 						<FolderMoveOutline :size="20" />
 					</template>
-					Abrir
+					{{ t('empleados', 'Open') }}
 				</NcButton>
 				<NcButton @click="CreateFolder()">
 					<template #icon>
 						<FolderPlusOutline :size="20" />
 					</template>
-					Crear
+					{{ t('empleados', 'Create') }}
 				</NcButton>
 				<NcButton @click="$refs.fileInput.click()">
 					<template #icon>
 						<CloudUpload :size="20" />
 					</template>
-					Subir
+					{{ t('empleados', 'Upload') }}
 				</NcButton>
 				<NcButton @click="reloadFiles()">
 					<template #icon>
@@ -45,9 +45,9 @@
 			<table v-if="files.length > 0" class="file-table">
 				<thead>
 					<tr>
-						<th>📄 Archivo</th>
-						<th>Tamaño</th>
-						<th>Última modificación</th>
+						<th>📄 {{ t('empleados', 'File') }}</th>
+						<th>{{ t('empleados', 'Size') }}</th>
+						<th>{{ t('empleados', 'Last modified') }}</th>
 					</tr>
 				</thead>
 				<tbody>
@@ -56,7 +56,7 @@
 							<div class="file-item">
 								<FolderOutline v-if="file.isFolder" :size="20" />
 								<FilePdfBox v-else-if="file.name.endsWith('.pdf')" :size="20" />
-								<ImageIcon v-else-if="file.name.match(/\\.(jpg|png|jpeg|gif)$/i)" :size="20" />
+								<ImageIcon v-else-if="file.name.match(/\.(jpg|png|jpeg|gif)$/i)" :size="20" />
 								<FileOutline v-else :size="20" />
 								<span class="file-name">{{ truncateText(file.name) }}</span>
 							</div>
@@ -68,16 +68,17 @@
 			</table>
 
 			<p v-if="files.length === 0 && !showLoading" class="empty-msg">
-				No hay archivos disponibles.
+				{{ t('empleados', 'No files available.') }}
 			</p>
 		</div>
 
-		<NcDialog :open.sync="showDialogFolder"
+		<NcDialog
+			:open.sync="showDialogFolder"
 			is-form
 			:buttons="buttons"
-			name="Crear Carpeta"
+			:name="t('empleados', 'Create folder')"
 			@submit="FolderAction()">
-			<NcTextField v-model="Folder" label="Nuevo nombre" required />
+			<NcTextField v-model="Folder" :label="t('empleados', 'New name')" required />
 		</NcDialog>
 	</div>
 </template>
@@ -97,6 +98,8 @@ import { getClient, defaultRootPath } from '@nextcloud/files/dav'
 import { upload as Upload } from '@nextcloud/upload'
 import { showError, showSuccess } from '@nextcloud/dialogs'
 import { NcButton, NcDialog, NcTextField, NcLoadingIcon } from '@nextcloud/vue'
+
+import { translate as t } from '@nextcloud/l10n'
 
 export default {
 	name: 'FilesTab',
@@ -129,7 +132,7 @@ export default {
 			showDialogFolder: false,
 			showLoading: false,
 			Folder: '',
-			buttons: [{ label: 'Crear', type: 'primary', nativeType: 'submit' }],
+			buttons: [{ label: t('empleados', 'Crear'), type: 'primary', nativeType: 'submit' }],
 		}
 	},
 	watch: {

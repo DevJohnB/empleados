@@ -1,13 +1,13 @@
 <template id="EmployeeList">
-	<NcAppContent v-if="loadingProp" name="Loading">
-		<NcEmptyContent class="empty-content">
+	<NcAppContent v-if="loadingProp" :name="t('empleados', 'Loading')">
+		<NcEmptyContent class="empty-content" :name="t('empleados', 'Loading')">
 			<template #icon>
 				<NcLoadingIcon :size="20" />
 			</template>
 		</NcEmptyContent>
 	</NcAppContent>
 
-	<NcAppContent v-else name="Loading">
+	<NcAppContent v-else :name="t('empleados', 'Loading')">
 		<!-- contacts list -->
 		<template #list>
 			<ContentList
@@ -30,6 +30,7 @@ import {
 	NcAppContent,
 	NcLoadingIcon,
 } from '@nextcloud/vue'
+import { translate as t } from '@nextcloud/l10n'
 
 export default {
 	name: 'EmployeeList',
@@ -63,6 +64,10 @@ export default {
 		this.$bus.on('send-data', (data) => {
 			this.data_empleado = data
 		})
+	},
+
+	methods: {
+		t,
 	},
 }
 </script>

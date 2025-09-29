@@ -9,6 +9,7 @@ import AreasList from './AreasList.vue'
 import { showError /* showSuccess */ } from '@nextcloud/dialogs'
 import { generateUrl } from '@nextcloud/router'
 import axios from '@nextcloud/axios'
+import { translate as t } from '@nextcloud/l10n'
 
 export default {
 	name: 'Areas',
@@ -42,7 +43,7 @@ export default {
 						},
 					)
 			} catch (err) {
-				showError(t('empleados', 'Se ha producido una excepcion [01] [' + err + ']'))
+				showError(t('empleados', 'Se ha producido una excepcion [01] [{error}]', { error: String(err) }))
 			}
 		},
 	},

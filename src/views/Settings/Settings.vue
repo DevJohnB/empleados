@@ -2,13 +2,15 @@
 <template>
 	<div class="container">
 		<VueTabs>
-			<VTab title="Empleados">
+			<VTab :title="t('empleados', 'Employees')">
 				<EmpleadosSettings />
 			</VTab>
-			<VTab title="Tiempo laboral">
+
+			<VTab :title="t('empleados', 'Working time')">
 				<TiempoLaboralSettings />
 			</VTab>
-			<VTab title="Configuraciones">
+
+			<VTab :title="t('empleados', 'Settings')">
 				<ListSettings />
 			</VTab>
 		</VueTabs>
@@ -19,23 +21,9 @@
 import TiempoLaboralSettings from './TiempoLaboralSettings.vue'
 import EmpleadosSettings from './EmpleadosSettings.vue'
 import ListSettings from './ListSettings.vue'
-// global registration
 
 import { VueTabs, VTab } from 'vue-nav-tabs/dist/vue-tabs.js'
 import 'vue-nav-tabs/themes/vue-tabs.css'
-// iconos
-// import AccountGroup from 'vue-material-design-icons/AccountGroup.vue'
-// import Delete from 'vue-material-design-icons/Delete.vue'
-// import Plus from 'vue-material-design-icons/Plus.vue'
-// import WalletPlus from 'vue-material-design-icons/WalletPlus'
-// import Cog from 'vue-material-design-icons/Cog'
-// import Check from 'vue-material-design-icons/Check'
-
-// imports
-// import { NcActions, NcActionButton, NcLoadingIcon, NcAvatar } from '@nextcloud/vue'
-// import { showError /* showSuccess */ } from '@nextcloud/dialogs'
-// import { generateUrl } from '@nextcloud/router'
-//  import axios from '@nextcloud/axios'
 
 export default {
 	name: 'Settings',
@@ -46,20 +34,10 @@ export default {
 		VueTabs,
 		VTab,
 	},
-
-	data() {
-		return {
-		}
-	},
-
-	mounted() {},
-
-	methods: {},
 }
 </script>
 
 <style>
-
 .board-title {
 	padding-left: 20px;
 	margin-right: 10px;
@@ -68,9 +46,9 @@ export default {
 	display: flex;
 	align-items: center;
 	font-weight: bold;
-	.icon {
-		margin-right: 8px;
-	}
+}
+.board-title .icon {
+	margin-right: 8px;
 }
 
 .center-screen {
@@ -87,10 +65,11 @@ export default {
 	font-size: 17px;
 	display: flex;
 	align-items: center;
-	.icon {
-		margin-right: 8px;
-	}
 }
+.titles .icon {
+	margin-right: 8px;
+}
+
 .container {
 	padding-left: 20px;
 	padding-right: 20px;

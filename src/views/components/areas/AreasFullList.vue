@@ -4,77 +4,79 @@
 			<div class="search-contacts-field">
 				<div class="container-search">
 					<div class="input-container">
-						<input v-model="query" type="text" :placeholder="t('empleados', 'Buscar empleados...')">
+						<input v-model="query" type="text" :placeholder="t('empleados', 'Search employees...')">
 					</div>
 					<div class="button-container">
-						<NcActions
-							:open="button"
-							@click="toggle">
+						<NcActions :open="button" @click="toggle">
 							<template #icon>
 								<Cog :size="20" />
 							</template>
+
 							<NcActionButton @click="AgregarNuevo()">
 								<template #icon>
 									<AccountMultiplePlusOutline :size="20" />
 								</template>
-								Agregar area nueva
+								{{ t('empleados', 'Add new department') }}
 							</NcActionButton>
+
 							<NcActionButton @click="Exportar()">
 								<template #icon>
 									<DatabaseExport :size="20" />
 								</template>
-								Exportar listado
+								{{ t('empleados', 'Export list') }}
 							</NcActionButton>
+
 							<NcActionSeparator />
-							<!--NcActionButton @click="showMessage('Delete')">
-								<template #icon>
-									<Download :size="20" />
-								</template>
-								Exportar plantilla vacia
-							</NcActionButton-->
+
 							<NcActionButton @click="$refs.file.click()">
 								<template #icon>
 									<Upload :size="20" />
 								</template>
-								Importar datos desde plantilla
+								{{ t('empleados', 'Import data from template') }}
 							</NcActionButton>
 						</NcActions>
 					</div>
 				</div>
 			</div>
 		</div>
-		<VirtualList ref="scroller"
+
+		<VirtualList
+			ref="scroller"
 			class="contacts-list"
 			data-key="Id_departamento"
 			:data-sources="filteredList"
 			:data-component="AreasListItem"
 			:estimate-size="60"
 			:extra-props="{reloadBus}" />
+
 		<input
 			ref="file"
 			type="file"
 			style="display: none"
 			accept=".xlsx"
 			@change="importar()">
+
 		<NcModal
 			v-if="modal"
 			ref="modalRef"
-			name="Agregar nueva area"
+			:name="t('empleados', 'Add new department')"
 			@close="closeModal">
 			<div class="modal__content">
 				<div class="form-group center">
-					<NcTextField :value.sync="nombre_area"
-						label="Nombre del area" />
-					<NcSelect v-model="padre"
-						input-label="Area Padre"
+					<NcTextField
+						:value.sync="nombre_area"
+						:label="t('empleados', 'Department name')" />
+					<NcSelect
+						v-model="padre"
+						:input-label="t('empleados', 'Parent department')"
 						:options="options" />
 					<br>
 					<NcButton
 						class="center"
-						aria-label="Guardar cambios"
+						:aria-label="t('empleados', 'Save changes')"
 						type="primary"
 						@click="crearArea()">
-						Guardar cambios
+						{{ t('empleados', 'Save changes') }}
 					</NcButton>
 				</div>
 			</div>
@@ -86,11 +88,11 @@
 import { showError, showSuccess } from '@nextcloud/dialogs'
 import { generateUrl } from '@nextcloud/router'
 import axios from '@nextcloud/axios'
+import { translate as t } from '@nextcloud/l10n'
 
 // Iconos
 import DatabaseExport from 'vue-material-design-icons/DatabaseExport.vue'
 import AccountMultiplePlusOutline from 'vue-material-design-icons/AccountMultiplePlusOutline.vue'
-// import Download from 'vue-material-design-icons/Download.vue'
 import Upload from 'vue-material-design-icons/Upload.vue'
 import Cog from 'vue-material-design-icons/Cog.vue'
 
@@ -98,6 +100,7 @@ import {
 	NcAppContentList as AppContentList,
 	NcActions,
 	NcActionButton,
+	NcActionSeparator,
 	NcModal,
 	NcTextField,
 	NcSelect,
@@ -114,6 +117,7 @@ export default {
 		VirtualList,
 		NcActions,
 		NcActionButton,
+		NcActionSeparator,
 		Cog,
 		Upload,
 		DatabaseExport,
@@ -125,22 +129,10 @@ export default {
 	},
 
 	props: {
-		list: {
-			type: Array,
-			required: true,
-		},
-		contacts: {
-			type: Array,
-			required: true,
-		},
-		searchQuery: {
-			type: String,
-			default: '',
-		},
-		reloadBus: {
-			type: Object,
-			required: true,
-		},
+		list: { type: Array, required: true },
+		contacts: { type: Array, required: true },
+		searchQuery: { type: String, default: '' },
+		reloadBus: { type: Object, required: true },
 	},
 
 	data() {
@@ -157,14 +149,13 @@ export default {
 
 	computed: {
 		filteredList() {
-			return this.contacts
-				.filter(item => this.matchSearch(item.Nombre))
+			return this.contacts.filter(item => this.matchSearch(item.Nombre))
 		},
 	},
 
 	watch: {
-		modal(news, olds) {
-			if (olds !== news) {
+		modal(newVal, oldVal) {
+			if (oldVal !== newVal && newVal === true) {
 				this.getallsAreas()
 			}
 		},
@@ -175,9 +166,12 @@ export default {
 	},
 
 	methods: {
-		matchSearch(areas) {
+		// Exponer i18n a la plantilla
+		t,
+
+		matchSearch(nombre) {
 			if (this.query.trim() !== '') {
-				return areas.toString().toLowerCase().search(this.query.trim().toLowerCase()) !== -1
+				return nombre.toString().toLowerCase().includes(this.query.trim().toLowerCase())
 			}
 			return true
 		},
@@ -186,105 +180,86 @@ export default {
 			try {
 				await axios.get(generateUrl('/apps/empleados/GetAreasFix'))
 					.then(
-						(response) => {
-							this.options = response.data
-						},
-						(err) => {
-							showError(err)
-						},
+						(response) => { this.options = response.data },
+						(err) => { showError(err) },
 					)
 			} catch (err) {
-				showError(t('empleados', 'Se ha producido una excepcion [01] [' + err + ']'))
+				showError(t('empleados', 'Se ha producido una excepcion [01] [{error}]', { error: String(err) }))
 			}
 		},
 
 		Exportar() {
 			this.toggle()
-			axios.get(
-				generateUrl('/apps/empleados/ExportListAreas'),
-				{
-					responseType: 'blob',
-				},
-			).then(
-				(response) => {
-					const url = URL.createObjectURL(new Blob([response.data], {
-						type: 'application/vnd.ms-excel',
-					}))
-
-					const link = document.createElement('a')
-					link.href = url
-					link.setAttribute('download', 'historial.xlsx')
-					document.body.appendChild(link)
-					link.click()
-				},
-				(err) => {
-					showError(t('ahorrosgossler', 'Se ha producido un error ' + err + ', reporte al administrador'))
-					this.exportardata = false
-				},
-			)
+			axios.get(generateUrl('/apps/empleados/ExportListAreas'), { responseType: 'blob' })
+				.then(
+					(response) => {
+						const url = URL.createObjectURL(new Blob([response.data], {
+							type: 'application/vnd.ms-excel',
+						}))
+						const link = document.createElement('a')
+						link.href = url
+						link.setAttribute('download', 'areas.xlsx')
+						document.body.appendChild(link)
+						link.click()
+					},
+					(err) => {
+						showError(t('empleados', 'Se ha producido un error {error}, reporte al administrador', { error: String(err) }))
+					},
+				)
 		},
+
 		async importar() {
 			this.toggle()
 			const formData = new FormData()
 			formData.append('AreafileXLSX', this.$refs.file.files[0])
 			try {
-				await axios.post(generateUrl('/apps/empleados/ImportListAreas'), formData,
-					{
-						headers: {
-							'Content-Type': 'multipart/form-data',
-						},
-					})
-					.then(
-						(response) => {
-							this.$root.$emit('getall')
-							this.$root.$emit('reload')
-							this.$root.$emit('send-data-areas', [])
-							showSuccess(t('empleados', 'Se actualizo la base de datos exitosamente'))
-						},
-						(err) => {
-							showError(err)
-						},
-					)
+				await axios.post(generateUrl('/apps/empleados/ImportListAreas'), formData, {
+					headers: { 'Content-Type': 'multipart/form-data' },
+				}).then(
+					() => {
+						this.$root.$emit('getall')
+						this.$root.$emit('reload')
+						this.$root.$emit('send-data-areas', [])
+						showSuccess(t('empleados', 'Se actualizó la base de datos exitosamente'))
+					},
+					(err) => { showError(err) },
+				)
 			} catch (err) {
-				showError(t('empleados', 'Se ha producido una excepcion [03] [' + err + ']'))
+				showError(t('empleados', 'Se ha producido una excepcion [03] [{error}]', { error: String(err) }))
 			}
 		},
+
 		AgregarNuevo() {
 			this.toggle()
 			this.modal = true
 		},
+
 		closeModal() {
 			this.modal = false
 		},
+
 		toggle() {
 			this.button = !this.button
 		},
+
 		async crearArea() {
-			if (this.padre.label) {
-				this.padre = this.padre.label
-			} else {
-				this.padre = ''
-			}
+			const padreValor = (this.padre && this.padre.label) ? this.padre.label : ''
 			try {
-				await axios.post(generateUrl('/apps/empleados/crearArea'),
-					{
-						padre: this.padre,
-						nombre: this.nombre_area,
-					})
-					.then(
-						(response) => {
-							showSuccess('Area creada exitosamente')
-							this.$root.$emit('reload')
-							this.nombre_area = ''
-							this.padre = null
-							this.modal = false
-						},
-						(err) => {
-							showError(err)
-						},
-					)
+				await axios.post(generateUrl('/apps/empleados/crearArea'), {
+					padre: padreValor,
+					nombre: this.nombre_area,
+				}).then(
+					() => {
+						showSuccess(t('empleados', 'Área creada exitosamente'))
+						this.$root.$emit('reload')
+						this.nombre_area = ''
+						this.padre = null
+						this.modal = false
+					},
+					(err) => { showError(err) },
+				)
 			} catch (err) {
-				showError(t('empleados', 'Se ha producido una excepcion [03] [' + err + ']'))
+				showError(t('empleados', 'Se ha producido una excepcion [03] [{error}]', { error: String(err) }))
 			}
 		},
 	},
@@ -319,27 +294,25 @@ export default {
 }
 
 .container-search {
-    display: flex;
+	display: flex;
 }
 .input-container {
-    flex: 1;
-    margin-right: 5px;
+	flex: 1;
+	margin-right: 5px;
 }
 .input-container input {
-    width: 100%;
+	width: 100%;
 }
 .button-container button {
-    width: 100%;
+	width: 100%;
 }
 
 .modal__content {
 	margin: 50px;
 }
-
 .modal__content h2 {
 	text-align: center;
 }
-
 .form-group {
 	margin: calc(var(--default-grid-baseline) * 4) 0;
 	display: flex;
