@@ -33,8 +33,11 @@ final class RepairEmpleadosTables implements IRepairStep {
         $this->ensureTableUserAhorro($output, $platform);
         $this->ensureTableHistorialAhorro($output, $platform);
         $this->ensureTableCapitalHumano($output, $platform);
-        $this->ensureTimestampDefault($output, 'ausencias');
 
+        // 1.1) Asegurar DEFAULT de timestamp (idempotente; y rellena NULLs antes de NOT NULL)
+        $this->ensureTimestampDefault($output, 'aniversarios');
+        $this->ensureTimestampDefault($output, 'ausencias');
+        $this->ensureTimestampDefault($output, 'historial_ausencias');
 
         // 2) Índices no destructivos (si faltan)
         $this->ensureIndex($output, $platform, 'empleados', 'idx_id_gerente', 'Id_gerente');
@@ -724,32 +727,42 @@ final class RepairEmpleadosTables implements IRepairStep {
     }
 
     private function ensureTimestampDefault(\OCP\Migration\IOutput $out, string $tableBase, string $col = 'timestamp'): void {
-    $platform = $this->db->getDatabasePlatform()->getName(); // mysql|postgresql|sqlite
-    $prefix = $this->config->getSystemValueString('dbtableprefix', 'oc_');
-    $phys = $prefix . $tableBase;
+        $platform = $this->db->getDatabasePlatform()->getName(); // mysql|postgresql|sqlite
 
-    if (!$this->tableExistsExact($phys)) {
-        $out->info("Tabla $phys no existe; omito default $col.");
-        return;
-    }
+        $prefix = 'oc_';
+        try {
+            $prefix = $this->config->getSystemValueString('dbtableprefix', 'oc_');
+        } catch (\Throwable) {
+            // usa 'oc_' si falla
+        }
+        $phys = $prefix . $tableBase;
 
-    try {
-        if ($platform === 'mysql') {
-            // Requiere MySQL ≥5.6 o MariaDB ≥10.2 para DEFAULT en DATETIME
-            $this->db->executeStatement("ALTER TABLE `$phys` MODIFY `$col` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP");
-        } elseif ($platform === 'postgresql') {
-            $this->db->executeStatement("ALTER TABLE \"$phys\" ALTER COLUMN \"$col\" SET DEFAULT NOW()");
-            $this->db->executeStatement("ALTER TABLE \"$phys\" ALTER COLUMN \"$col\" SET NOT NULL");
-        } else { // sqlite
-            // SQLite no soporta ALTER COLUMN fácilmente: deja nota
-            $out->warning("SQLite: no puedo alterar $phys.$col; se aplica sólo en CREATE.");
+        if (!$this->tableExistsExact($phys)) {
+            $out->info("Tabla $phys no existe; omito default $col.");
             return;
         }
-        $out->info("Default de $phys.$col asegurado.");
-    } catch (\Throwable $e) {
-        $out->warning("No fue posible asegurar default en $phys.$col: " . $e->getMessage());
+
+        try {
+            // 1) Prefill NULLs para no fallar al poner NOT NULL
+            if ($platform === 'mysql') {
+                $this->db->executeStatement("UPDATE `$phys` SET `$col` = CURRENT_TIMESTAMP WHERE `$col` IS NULL");
+                // 2) DEFAULT + NOT NULL (MariaDB ≥10.2 / MySQL ≥5.6)
+                $this->db->executeStatement("ALTER TABLE `$phys` MODIFY `$col` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP");
+            } elseif ($platform === 'postgresql') {
+                $this->db->executeStatement("UPDATE \"$phys\" SET \"$col\" = CURRENT_TIMESTAMP WHERE \"$col\" IS NULL");
+                $this->db->executeStatement("ALTER TABLE \"$phys\" ALTER COLUMN \"$col\" SET DEFAULT CURRENT_TIMESTAMP");
+                $this->db->executeStatement("ALTER TABLE \"$phys\" ALTER COLUMN \"$col\" SET NOT NULL");
+            } else { // sqlite
+                // No ALTER COLUMN real: al menos prefill y avisar
+                $this->db->executeStatement("UPDATE \"$phys\" SET \"$col\" = datetime('now') WHERE \"$col\" IS NULL");
+                $out->warning("SQLite: no puedo fijar DEFAULT en $phys.$col; solo se aplica en CREATE.");
+                return;
+            }
+            $out->info("Default de $phys.$col asegurado.");
+        } catch (\Throwable $e) {
+            $out->warning("No fue posible asegurar default en $phys.$col: " . $e->getMessage());
+        }
     }
-}
 
     private function ensureTableHistorialAhorro(IOutput $output, string $p): void {
         $base='historial_ahorro'; $phys=$this->tn($base);

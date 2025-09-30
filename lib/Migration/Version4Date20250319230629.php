@@ -15,8 +15,8 @@ use OCP\Migration\IOutput;
 use OCP\Migration\SimpleMigrationStep;
 
 /**
- * Migración estable e idempotente (sin defaults no portables en Schema).
- * Los DEFAULT de timestamp se aplican vía reparador específico por motor.
+ * Migración estable e idempotente.
+ * NOTA: No se declaran DEFAULTs de timestamp en el Schema; se aplican vía reparador específico por motor.
  */
 class Version4Date20250319230629 extends SimpleMigrationStep {
 
@@ -69,7 +69,7 @@ class Version4Date20250319230629 extends SimpleMigrationStep {
 				'notnull' => true,
 			]);
 
-			// Sin DEFAULT aquí; se asegura vía reparador por motor
+			// Sin DEFAULT aquí; se asegura por reparador
 			$table->addColumn('timestamp', 'datetime', [
 				'notnull' => true,
 			]);
@@ -145,13 +145,12 @@ class Version4Date20250319230629 extends SimpleMigrationStep {
 				'default' => false,
 			]);
 
-			// Sin DEFAULT aquí; se asegura vía reparador por motor
+			// Sin DEFAULT aquí; se asegura por reparador
 			$table->addColumn('timestamp', 'datetime', [
 				'notnull' => true,
 			]);
 
 			$table->setPrimaryKey(['id_ausencias']);
-			// Nombre consistente con tu reparador
 			$table->addUniqueIndex(['id_empleado'], 'uniq_aus_empleado');
 			$table->addIndex(['id_aniversario'], 'aus_idx_aniv');
 		}
@@ -201,7 +200,7 @@ class Version4Date20250319230629 extends SimpleMigrationStep {
 				'notnull' => false,
 			]);
 
-			// Sin DEFAULT aquí; se asegura vía reparador por motor
+			// Sin DEFAULT aquí; se asegura por reparador
 			$table->addColumn('timestamp', 'datetime', [
 				'notnull' => true,
 			]);
