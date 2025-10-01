@@ -225,7 +225,6 @@ class AusenciasController extends Controller {
 
         foreach ($ausencias as $area) {
             $books[] = [
-                $area['id_ausencias'],
                 $area['numero_ausencias'],
                 $area['dias'],
             ];
@@ -242,14 +241,10 @@ class AusenciasController extends Controller {
         $file = $this->getUploadedFile('fileXLSX');
         if ($xlsx = \Shuchkin\SimpleXLSX::parse($file['tmp_name'])) {
             foreach ($xlsx->rows() as $row) {
-                if (!empty($row[0])) {
-                    $this->ausenciasMapper->updateAusencias((int) $row[0], (int) $row[1], (float) $row[2]);
-                } else {
-                    $area = new ausencias();
-                    $area->setnumero_ausencias($row[1]);
-                    $area->setdias($row[2]);
+                $area = new ausencias();
+                    $area->setnumero_ausencias($row[0]);
+                    $area->setdias($row[1]);
                     $this->ausenciasMapper->insert($area);
-                }
             }
         }
     }

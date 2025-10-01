@@ -137,6 +137,11 @@
 						{{ t('empleados', 'Request file') }}
 					</NcCheckboxRadioSwitch>
 				</div>
+				<div class="form-group">
+					<NcCheckboxRadioSwitch v-model="solicitar_prima_vacacional">
+						{{ t('empleados', 'Vacation Bonus') }}
+					</NcCheckboxRadioSwitch>
+				</div>
 
 				<NcButton :disabled="!NombreTipo || !DescripcionTipo" @click="AgregarNuevoTipo">
 					{{ t('empleados', 'Submit') }}
@@ -209,6 +214,7 @@ export default {
 			NombreTipo: null,
 			DescripcionTipo: null,
 			SolicitarArchivoTipo: false,
+			solicitar_prima_vacacional: false,
 		}
 	},
 
@@ -278,6 +284,7 @@ export default {
 					nombre: this.NombreTipo,
 					descripcion: this.DescripcionTipo,
 					solicitar_archivo: this.SolicitarArchivoTipo,
+					solicitar_prima_vacacional: this.solicitar_prima_vacacional,
 				})
 				showSuccess(t('empleados', 'Note has been updated'))
 				this.getTipo()

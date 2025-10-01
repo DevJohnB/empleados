@@ -306,7 +306,8 @@
     "You cannot start or end your absence on a weekend": "You cannot start or end your absence on a weekend",
     "Unknown employee": "Unknown employee",
     "Thanks!": "Thanks!",
-    "Worked days": "Worked days"
+    "Worked days": "Worked days",
+    "Vacation Bonus": "Vacation Bonus"
   },
   "pluralForm": "nplurals=2; plural=(n != 1);"
 }

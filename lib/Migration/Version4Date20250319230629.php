@@ -105,6 +105,7 @@ class Version4Date20250319230629 extends SimpleMigrationStep {
 
 			$table->addColumn('solicitar_prima_vacacional', 'integer', [
 				'notnull' => true,
+				'default' => 0,
 			]);
 
 			$table->setPrimaryKey(['id_tipo_ausencia']);

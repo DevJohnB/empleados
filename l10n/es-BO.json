@@ -335,7 +335,8 @@
     "You cannot start or end your absence on a weekend": "No puedes iniciar o finalizar tu ausencia en fin de semana",
     "Unknown employee": "Empleado desconocido",
     "Thanks!": "¡Gracias!",
-    "Worked days": "Días trabajados"
+    "Worked days": "Días trabajados",
+    "Vacation Bonus": "Prima vacacional"
   },
   "pluralForm": "nplurals=2; plural=(n != 1);"
 }

@@ -132,11 +132,12 @@ class TipoAusenciasController extends Controller {
      */
     #[UseSession]
     #[NoAdminRequired]
-    public function AgregarNuevoTipo(string $nombre, string $descripcion, int $solicitar_archivo): void {
+    public function AgregarNuevoTipo(string $nombre, string $descripcion, int $solicitar_archivo, int $solicitar_prima_vacacional): void {
         $tipo = new tipoausencia();
         $tipo->setnombre($nombre);
         $tipo->setdescripcion($descripcion);
         $tipo->setsolicitar_archivo($solicitar_archivo);
+        $tipo->setsolicitar_prima_vacacional($solicitar_prima_vacacional);
         $this->tipoausenciaMapper->insert($tipo);
     }
 
