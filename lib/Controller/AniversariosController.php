@@ -53,11 +53,10 @@ class AniversariosController extends Controller {
      */
     public function ExportListAniversarios(): array {
         $aniversarios = $this->aniversarioMapper->Getaniversarios();
-        $books = [['id_universario', 'numero_aniversario', 'dias']];
+        $books = [['numero_aniversario', 'dias']];
 
         foreach ($aniversarios as $area) {
             $books[] = [
-                $area['id_aniversario'],
                 $area['numero_aniversario'],
                 $area['dias'],
             ];
@@ -74,14 +73,10 @@ class AniversariosController extends Controller {
         $file = $this->getUploadedFile('fileXLSX');
         if ($xlsx = \Shuchkin\SimpleXLSX::parse($file['tmp_name'])) {
             foreach ($xlsx->rows() as $row) {
-                if (!empty($row[0])) {
-                    $this->aniversarioMapper->updateAniversarios((int) $row[0], (int) $row[1], (float) $row[2]);
-                } else {
-                    $area = new aniversario();
-                    $area->setnumero_aniversario($row[1]);
-                    $area->setdias($row[2]);
-                    $this->aniversarioMapper->insert($area);
-                }
+                $area = new aniversario();
+                $area->setnumero_aniversario($row[0]);
+                $area->setdias($row[1]);
+                $this->aniversarioMapper->insert($area);
             }
         }
     }
