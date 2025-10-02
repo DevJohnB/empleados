@@ -1,11 +1,45 @@
-/.idea/
-/*.iml
+# IDE
+.idea/
+.vscode/
+*.iml
+.DS_Store
 
+# Node / build
+node_modules/
+.eslintcache
+.stylelintcache
+.cache/
+coverage/
+dist/
+
+# Mantén bundles pero ignora artefactos
+js/**/*.map
+js/**/.hot-update.*
+js/**/hot/*.json
+js/**/*.LICENSE.txt
+
+# Bundles en raíz (si tu build los deja ahí)
+*.map
+*.LICENSE.txt
+
+# Composer / tests
 /vendor/
 /vendor-bin/*/vendor/
-
 /.php-cs-fixer.cache
+/phpunit.result.cache
 /tests/.phpunit.cache
 
-node_modules
-/js/**/*.map
+# L10n tooling
+l10n/.tx/
+l10n/templates/
+l10n/*.pot
+
+# Releases / empaquetado
+/appstore/
+*.tar.gz
+*.zip
+
+# Entorno
+.env
+.env.local
+docker-compose.override.yml
