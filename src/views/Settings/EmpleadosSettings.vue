@@ -20,7 +20,7 @@
 			<VueTabs>
 				<!-- Active employees -->
 				<VTab :title="t('empleados', 'Active employees')">
-					<div v-if="Empleados.length > 0" class="container">
+					<div v-if="Empleados.length > 0" class="container" style="max-height:  calc(80vh - 4rem); overflow-y: auto;">
 						<table class="grid">
 							<tr>
 								<th class="header__cell header__cell--avatar">
@@ -68,7 +68,7 @@
 
 				<!-- Deactivated employees -->
 				<VTab :title="t('empleados', 'Deactivated employees')">
-					<div v-if="Desactivados.length > 0" class="container">
+					<div v-if="Desactivados.length > 0" class="container" style="max-height: calc(80vh - 4rem); overflow-y: auto;">
 						<table class="grid">
 							<tr>
 								<th class="header__cell header__cell--avatar">
@@ -122,36 +122,41 @@
 
 				<!-- Users without employee record -->
 				<VTab :title="t('empleados', 'Users without employee record')">
-					<div v-if="Usuarios.length > 0" class="container">
-						<table class="grid">
-							<tr>
-								<th class="header__cell header__cell--avatar">
-									&nbsp;
-								</th>
-								<th>{{ t('empleados', 'Name') }}</th>
-								<th>{{ t('empleados', 'Options') }}</th>
-							</tr>
-							<tr v-for="(item, index) in Usuarios" v-bind="$attrs">
-								<td class="row__cell row__cell--avatar">
-									<NcAvatar
-										:user="item.uid"
-										:display-name="item.displayname"
-										:show-user-status-compact="false"
-										:show-user-status="false" />
-								</td>
-								<td>{{ JSON.parse(item.data).displayname.value }}</td>
-								<td>
-									<NcActions>
-										<NcActionButton @click="ActivarUser(index)">
-											<template #icon>
-												<Plus :size="20" />
-											</template>
-											{{ t('empleados', 'Activate') }}
-										</NcActionButton>
-									</NcActions>
-								</td>
-							</tr>
-						</table>
+					<div v-if="loadingEmployees" class="loader-settings">
+						<NcLoadingIcon :size="70" />
+					</div>
+					<div v-else>
+						<div v-if="Usuarios.length > 0" class="container" style="max-height: calc(80vh - 4rem); overflow-y: auto;">
+							<table class="grid">
+								<tr>
+									<th class="header__cell header__cell--avatar">
+										&nbsp;
+									</th>
+									<th>{{ t('empleados', 'Name') }}</th>
+									<th>{{ t('empleados', 'Options') }}</th>
+								</tr>
+								<tr v-for="(item, index) in Usuarios" v-bind="$attrs">
+									<td class="row__cell row__cell--avatar">
+										<NcAvatar
+											:user="item.uid"
+											:display-name="item.displayname"
+											:show-user-status-compact="false"
+											:show-user-status="false" />
+									</td>
+									<td>{{ JSON.parse(item.data).displayname.value }}</td>
+									<td>
+										<NcActions>
+											<NcActionButton @click="ActivarUser(index)">
+												<template #icon>
+													<Plus :size="20" />
+												</template>
+												{{ t('empleados', 'Activate') }}
+											</NcActionButton>
+										</NcActions>
+									</td>
+								</tr>
+							</table>
+						</div>
 					</div>
 				</VTab>
 			</VueTabs>
@@ -231,6 +236,7 @@ export default {
 					callback: () => { this.DeactiveUser(this.selected.index) },
 				},
 			],
+			loadingEmployees: false,
 		}
 	},
 
@@ -326,11 +332,18 @@ export default {
 
 		async ActivarUser(index) {
 			try {
+				this.loadingEmployees = true
 				await axios.post(generateUrl('/apps/empleados/ActivarEmpleado'), {
 					id_user: this.Usuarios[index].uid,
 				}).then(
-					() => { this.getall() },
-					(err) => { showError(err) },
+					() => {
+						this.getall()
+						this.loadingEmployees = false
+					 },
+					(err) => {
+						showError(err)
+						this.loadingEmployees = false
+					},
 				)
 			} catch (err) {
 				showError(t('empleados', 'An exception occurred [02] [{error}]', { error: String(err) }))

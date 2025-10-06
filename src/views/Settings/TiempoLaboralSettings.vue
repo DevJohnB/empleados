@@ -6,7 +6,10 @@
 				<!-- Anniversaries table -->
 				<div class="mitad">
 					<div>
-						<div class="table_component" role="region" tabindex="0">
+						<div class="table_component"
+							role="region"
+							tabindex="0"
+							style="max-height:  calc(90vh - 4rem); overflow-y: auto;">
 							<table>
 								<caption>
 									<span class="caption-title">{{ t('empleados', 'Anniversaries table') }}</span>
@@ -51,7 +54,11 @@
 				<!-- Absence types table -->
 				<div class="mitad">
 					<div>
-						<div class="table_component" role="region" tabindex="0">
+						<div
+							class="table_component"
+							style="max-height:  calc(80vh - 4rem); overflow-y: auto;"
+							role="region"
+							tabindex="0">
 							<table>
 								<caption>
 									<span class="caption-title">{{ t('empleados', 'Absence types') }}</span>
