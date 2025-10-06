@@ -76,10 +76,10 @@ class TipoAusenciasController extends Controller {
         if ($xlsx = \Shuchkin\SimpleXLSX::parse($file['tmp_name'])) {
             foreach ($xlsx->rows() as $row) {
                 $tipo = new tipoausencia();
-                $tipo->setnombre($row[1]);
-                $tipo->setdescripcion($row[2]);
-                $tipo->setsolicitar_archivo($row[3]);
-                $tipo->setsolicitar_prima_vacacional($row[4]);
+                $tipo->setnombre($row[0]);
+                $tipo->setdescripcion($row[1]);
+                $tipo->setsolicitar_archivo($row[2]);
+                $tipo->setsolicitar_prima_vacacional($row[3]);
                 $this->tipoausenciaMapper->insert($tipo);
             }
         }
