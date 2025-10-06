@@ -244,6 +244,7 @@ export default {
 					id_gestor: this.selected_user.id,
 				})
 				showSuccess(t('empleados', 'Manager updated'))
+				this.$bus?.emit('GetDataManager') // Notify other components
 			} catch (err) {
 				showError(t('empleados', 'Error updating manager: {error}', { error: String(err) }))
 				console.error(err)
@@ -276,6 +277,7 @@ export default {
 					data: this.guardado_notas.toString(),
 				})
 				showSuccess(t('empleados', 'Configuration updated'))
+				this.$bus?.emit('GetDataManager') // Notify other components
 			} catch (err) {
 				showError(t('empleados', 'Exception [UpdateConfiguration]: {error}', { error: String(err) }))
 				console.error(err)

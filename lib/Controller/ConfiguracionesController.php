@@ -141,6 +141,27 @@ class ConfiguracionesController extends Controller {
         return $data;
 	}
 
+    	#[NoCSRFRequired]
+	#[NoAdminRequired]    
+	public function GetDataManager(): array {
+        $configuraciones = $this->configuracionesMapper->GetConfig();
+        if($configuraciones[0]['Data']) {
+            $gestor_datos = $this->userManager->get($configuraciones[0]['Data']);
+            $gestor[] = [
+                'id' => $gestor_datos->getUID(),
+                'displayName' => $gestor_datos->getDisplayName(),
+                'icon' => $gestor_datos->getUID(),
+                'user' => $gestor_datos->getUID(),
+                'showUserStatus' => false,
+            ];
+        }
+        else{
+            $gestor = [null];
+        }
+
+        return $gestor;
+	}
+
     #[NoCSRFRequired]
 	#[NoAdminRequired]    
 	public function ActualizarGestor(string $id_gestor): void{

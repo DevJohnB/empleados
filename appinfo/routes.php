@@ -70,6 +70,7 @@ return [
 
 		/***************************** CONFIGURACIONES ***************************************/
 		['name' => 'configuraciones#GetConfigurations', 'url' => '/GetConfigurations', 'verb' => 'GET'],
+		['name' => 'configuraciones#GetDataManager', 'url' => '/GetDataManager', 'verb' => 'GET'],
 
 		['name' => 'configuraciones#ActualizarGestor', 'url' => '/ActualizarGestor', 'verb' => 'POST'],
 		['name' => 'configuraciones#ActualizarConfiguracion', 'url' => '/ActualizarConfiguracion', 'verb' => 'POST'],

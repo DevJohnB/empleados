@@ -307,7 +307,8 @@
     "Unknown employee": "Unknown employee",
     "Thanks!": "Thanks!",
     "Worked days": "Worked days",
-    "Vacation Bonus": "Vacation Bonus"
+    "Vacation Bonus": "Vacation Bonus",
+    "Go to global settings and select the data manager.": "Go to global settings and select the data manager."
   },
   "pluralForm": "nplurals=2; plural=(n != 1);"
 }
