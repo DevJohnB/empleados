@@ -9,7 +9,11 @@
 			<NcAppNavigationItem
 				:name="t('empleados', 'Home')"
 				:to="{ name: 'Home' }"
-				exact />
+				exact>
+				<template #icon>
+					<ViewDashboard :size="20" />
+				</template>
+			</NcAppNavigationItem>
 		</NcAppNavigationList>
 
 		<!-- Capital Humano (solo admin / RH) -->
@@ -21,16 +25,33 @@
 			<NcAppNavigationList :aria-labelledby="t('empleados', 'Human Resources')">
 				<NcAppNavigationItem
 					:name="t('empleados', 'Employees')"
-					:to="{ name: 'Empleados' }" />
+					:to="{ name: 'Empleados' }">
+					<template #icon>
+						<BadgeAccountAlert :size="20" />
+					</template>
+				</NcAppNavigationItem>
+
 				<NcAppNavigationItem
 					:name="t('empleados', 'Areas / Departments')"
-					:to="{ name: 'Areas' }" />
+					:to="{ name: 'Areas' }">
+					<template #icon>
+						<OfficeBuilding :size="20" />
+					</template>
+				</NcAppNavigationItem>
 				<NcAppNavigationItem
 					:name="t('empleados', 'Positions')"
-					:to="{ name: 'Puestos' }" />
+					:to="{ name: 'Puestos' }">
+					<template #icon>
+						<AccountTieOutline :size="20" />
+					</template>
+				</NcAppNavigationItem>
 				<NcAppNavigationItem
 					:name="t('empleados', 'Teams')"
-					:to="{ name: 'Equipos' }" />
+					:to="{ name: 'Equipos' }">
+					<template #icon>
+						<AccountGroup :size="20" />
+					</template>
+				</NcAppNavigationItem>
 			</NcAppNavigationList>
 		</div>
 
@@ -43,12 +64,20 @@
 			<NcAppNavigationList :aria-labelledby="t('empleados', 'Savings module')">
 				<NcAppNavigationItem
 					:name="t('empleados', 'Request')"
-					:to="{ name: 'Ahorros' }" />
+					:to="{ name: 'Ahorros' }">
+					<template #icon>
+						<FileSign :size="20" />
+					</template>
+				</NcAppNavigationItem>
 			</NcAppNavigationList>
 			<NcAppNavigationList v-if="isAdmin()" :aria-labelledby="t('empleados', 'Savings module')">
 				<NcAppNavigationItem
 					:name="t('empleados', 'Admin panel')"
-					:to="{ name: 'PanelAhorros' }" />
+					:to="{ name: 'PanelAhorros' }">
+					<template #icon>
+						<Bank :size="20" />
+					</template>
+				</NcAppNavigationItem>
 			</NcAppNavigationList>
 		</div>
 
@@ -61,13 +90,27 @@
 			<NcAppNavigationList :aria-labelledby="t('empleados', 'Working time')">
 				<NcAppNavigationItem
 					:name="t('empleados', 'Calendar')"
-					:to="{ name: 'Calendario' }" />
+					:to="{ name: 'Calendario' }">
+					<template #icon>
+						<CalendarBlank :size="20" />
+					</template>
+				</NcAppNavigationItem>
 			</NcAppNavigationList>
 		</div>
 	</NcAppNavigation>
 </template>
 
 <script>
+// ICONOS
+import AccountGroup from 'vue-material-design-icons/AccountGroup.vue'
+import BadgeAccountAlert from 'vue-material-design-icons/BadgeAccountAlert.vue'
+import OfficeBuilding from 'vue-material-design-icons/OfficeBuilding.vue'
+import AccountTieOutline from 'vue-material-design-icons/AccountTieOutline.vue'
+import ViewDashboard from 'vue-material-design-icons/ViewDashboard.vue'
+import FileSign from 'vue-material-design-icons/FileSign.vue'
+import Bank from 'vue-material-design-icons/Bank.vue'
+import CalendarBlank from 'vue-material-design-icons/CalendarBlank.vue'
+
 import {
 	NcAppNavigation,
 	NcAppNavigationItem,
@@ -83,6 +126,14 @@ export default {
 		NcAppNavigationItem,
 		NcAppNavigationList,
 		NcAppNavigationCaption,
+		AccountGroup,
+		BadgeAccountAlert,
+		OfficeBuilding,
+		AccountTieOutline,
+		ViewDashboard,
+		FileSign,
+		Bank,
+		CalendarBlank,
 	},
 	inject: ['groupuser', 'configuraciones'],
 	methods: {
