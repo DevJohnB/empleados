@@ -196,6 +196,10 @@ export default {
 		this.$bus.on('show', (data) => {
 			this.show = data
 		})
+
+		if (this.automatic_save_note === undefined || this.automatic_save_note === null) {
+			this.automatic_save_note = 'true'
+		}
 	},
 	methods: {
 		t,

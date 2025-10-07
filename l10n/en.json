@@ -308,7 +308,9 @@
     "Thanks!": "Thanks!",
     "Worked days": "Worked days",
     "Vacation Bonus": "Vacation Bonus",
-    "Go to global settings and select the data manager.": "Go to global settings and select the data manager."
+    "Go to global settings and select the data manager.": "Go to global settings and select the data manager.",
+    "This employee doesn’t belong to a team — assign them to one.": "This employee doesn’t belong to a team — assign them to one.",
+    "Boss": "Boss"
   },
   "pluralForm": "nplurals=2; plural=(n != 1);"
 }

@@ -59,7 +59,7 @@ class empleadosMapper extends QBMapper {
     public function GetUserLists(): array {
 		$qb = $this->db->getQueryBuilder();
 
-		$qb->select('e.*', 'u.displayname', 'u.uid', 'a.*', 'i.*', 'e.Id_empleados') // Solo traemos empleados sin duplicar
+		$qb->select('u.uid', 'e.*', 'u.displayname', 'a.*', 'i.*', 'e.Id_empleados') // Solo traemos empleados sin duplicar
 			->from('empleados', 'e')
 			->innerJoin('e', 'users', 'u', $qb->expr()->eq('u.uid', 'e.Id_user'))
 			->innerJoin('e', 'ausencias', 'a', $qb->expr()->eq('a.id_empleado', 'e.Id_empleados'))
@@ -280,11 +280,13 @@ class empleadosMapper extends QBMapper {
 	public function GetEmpleadosEquipo(string $id_equipo): array {
 		$qb = $this->db->getQueryBuilder();
 
-		$qb->select('*')
-			->from($this->getTableName(), 'e')
+		$qb->select('u.uid', 'e.*', 'u.displayname', 'a.*', 'i.*', 'e.Id_empleados') // Solo traemos empleados sin duplicar
+			->from('empleados', 'e')
 			->innerJoin('e', 'users', 'u', $qb->expr()->eq('u.uid', 'e.Id_user'))
+			->innerJoin('e', 'ausencias', 'a', $qb->expr()->eq('a.id_empleado', 'e.Id_empleados'))
+			->innerJoin('e', 'user_ahorro', 'i', $qb->expr()->eq('i.id_user', 'e.Id_empleados'))
 			->where($qb->expr()->eq('Id_equipo', $qb->createNamedParameter($id_equipo)));
-		
+
 		$result = $qb->execute();
 		$users = $result->fetchAll();
 		$result->closeCursor();

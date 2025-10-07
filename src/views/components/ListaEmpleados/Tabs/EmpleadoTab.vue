@@ -180,7 +180,7 @@
 										<div class="content">
 											<div class="center">
 												<div class="avatar-chart mini-top">
-													<NcAvatar v-if="nodeData.name == 'Sin Asignar'"
+													<NcAvatar v-if="nodeData.name == '?'"
 														display-name="?"
 														:size="40" />
 													<NcAvatar v-else
@@ -251,30 +251,33 @@
 							</div>
 						</div>
 						<div v-else class="">
-							<div class="rst-title">
-								<div class="title_flex">
-									<div class="subtitle_flex">
-										<NcAvatar :user="Equipo.jefe" :display-name="Equipo.jefe" :size="20" />
-									</div>
-									<div>
-										<h1> {{ Equipo.label }} </h1>
+							<div v-if="!Equipo == '' || !Equipo == null">
+								<div class="rst-title">
+									<div class="title_flex">
+										<div class="subtitle_flex">
+											<NcAvatar :user="Equipo.jefe" :display-name="Equipo.jefe" :size="20" />
+										</div>
+										<div>
+											<h1> {{ Equipo.label }} </h1>
+										</div>
 									</div>
 								</div>
-							</div>
-							<div class="rst">
-								<ul>
-									<NcListItem
-										v-for="(item) in peopleEquipo.equipo"
-										:key="item.Id_empleados"
-										:name="item.displayname ? item.displayname : item.Id_user">
-										<template #icon>
-											<NcAvatar disable-menu
-												:size="44"
-												:user="item.Id_user"
-												:display-name="item.Id_user" />
-										</template>
-									</NcListItem>
-								</ul>
+								<div class="rst">
+									<ul style="max-height:  calc(45vh - 4rem); overflow-y: auto;">
+										<NcListItem
+											v-for="(item) in peopleEquipo.equipo"
+											:key="item.Id_empleados"
+											:name="item.displayname ? item.displayname : item.Id_user"
+											@click.prevent="showDetails(item)">
+											<template #icon>
+												<NcAvatar disable-menu
+													:size="44"
+													:user="item.Id_user"
+													:display-name="item.Id_user" />
+											</template>
+										</NcListItem>
+									</ul>
+								</div>
 							</div>
 						</div>
 					</div>
@@ -517,8 +520,12 @@ export default {
 
 		async GetAllEquipo(equipo) {
 			try {
-				const { data } = await axios.get(generateUrl('/apps/empleados/GetEmpleadosEquipo/' + equipo))
-				this.peopleEquipo = data
+				if (equipo === '' || equipo === null || equipo === undefined) {
+					showError(t('empleados', 'This employee doesn’t belong to a team — assign them to one.'))
+				} else {
+					const { data } = await axios.get(generateUrl('/apps/empleados/GetEmpleadosEquipo/' + equipo))
+					this.peopleEquipo = data
+				}
 			} catch (err) {
 				// eslint-disable-next-line no-console
 				console.log(err)
@@ -526,14 +533,14 @@ export default {
 		},
 
 		generateChar(user, gerente, socio) {
-			if (!gerente) gerente = 'Sin Asignar'
-			if (!socio) socio = 'Sin Asignar'
+			if (!gerente) gerente = '?'
+			if (!socio) socio = '?'
 			return {
 				id: 'nodo-oculto',
 				children: [
-					{ id: '1', name: socio, title: t('empleados', 'Socio') },
-					{ id: '2', name: gerente, title: t('empleados', 'Gerente') },
-					{ id: '3', name: user, title: t('empleados', 'Empleado') },
+					{ id: '1', name: socio, title: t('empleados', 'Boss') },
+					{ id: '2', name: gerente, title: t('empleados', 'Manager') },
+					{ id: '3', name: user, title: t('empleados', 'Employee') },
 				],
 			}
 		},
@@ -605,6 +612,12 @@ export default {
 			} catch (err) {
 				showError(err)
 			}
+		},
+		showDetails(data) {
+			// eslint-disable-next-line no-console
+			console.log(data)
+			this.$bus.emit('send-data', data)
+			this.$bus.emit('show', false)
 		},
 	},
 }
