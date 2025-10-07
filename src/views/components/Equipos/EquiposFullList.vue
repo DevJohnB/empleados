@@ -7,7 +7,7 @@
 						<input
 							v-model="query"
 							type="text"
-							:placeholder="t('empleados', 'Buscar equipos...')">
+							:placeholder="t('empleados', 'Search teams...')">
 					</div>
 					<div class="button-container">
 						<NcActions
@@ -21,14 +21,14 @@
 								<template #icon>
 									<AccountMultiplePlusOutline :size="20" />
 								</template>
-								{{ t('empleados', 'Agregar equipo nuevo') }}
+								{{ t('empleados', 'Add new team') }}
 							</NcActionButton>
 
 							<NcActionButton @click="Exportar()">
 								<template #icon>
 									<DatabaseExport :size="20" />
 								</template>
-								{{ t('empleados', 'Exportar listado') }}
+								{{ t('empleados', 'Export list / template') }}
 							</NcActionButton>
 
 							<NcActionSeparator />
@@ -37,7 +37,7 @@
 								<template #icon>
 									<Upload :size="20" />
 								</template>
-								{{ t('empleados', 'Importar datos desde plantilla') }}
+								{{ t('empleados', 'Import from template') }}
 							</NcActionButton>
 						</NcActions>
 					</div>
@@ -64,17 +64,17 @@
 		<NcModal
 			v-if="modal"
 			ref="modalRef"
-			:name="t('empleados', 'Agregar nuevo equipo')"
+			:name="t('empleados', 'Add new team')"
 			@close="closeModal">
 			<div class="modal__content">
 				<div class="form-group center">
 					<NcTextField
 						:value.sync="nombre_equipo"
-						:label="t('empleados', 'Nombre del equipo')" />
+						:label="t('empleados', 'Team name')" />
 					<br>
 					<NcSelect
 						v-model="selected_user"
-						:input-label="t('empleados', 'Jefe de equipo')"
+						:input-label="t('empleados', 'Manager team')"
 						:options="optionsGestor"
 						:user-select="true" />
 					<br>
@@ -83,7 +83,7 @@
 						aria-label="Guardar cambios"
 						type="primary"
 						@click="crearEquipo()">
-						{{ t('empleados', 'Guardar cambios') }}
+						{{ t('empleados', 'Save Changes') }}
 					</NcButton>
 				</div>
 			</div>

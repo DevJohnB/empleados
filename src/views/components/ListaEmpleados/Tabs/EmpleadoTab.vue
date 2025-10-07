@@ -263,7 +263,7 @@
 									</div>
 								</div>
 								<div class="rst">
-									<ul style="max-height:  calc(45vh - 4rem); overflow-y: auto;">
+									<ul style="max-height:  calc(30vh - 4rem); overflow-y: auto;">
 										<NcListItem
 											v-for="(item) in peopleEquipo.equipo"
 											:key="item.Id_empleados"

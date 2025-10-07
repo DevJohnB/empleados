@@ -4,7 +4,7 @@
 			<div class="search-contacts-field">
 				<div class="container-search">
 					<div class="input-container">
-						<input v-model="query" type="text" :placeholder="t('empleados', 'Search employees...')">
+						<input v-model="query" type="text" :placeholder="t('empleados', 'Search positions...')">
 					</div>
 					<div class="button-container">
 						<NcActions
@@ -17,7 +17,7 @@
 								<template #icon>
 									<AccountMultiplePlusOutline :size="20" />
 								</template>
-								{{ t('empleados', 'Add new area') }}
+								{{ t('empleados', 'Add new position') }}
 							</NcActionButton>
 							<NcActionButton @click="Exportar()">
 								<template #icon>

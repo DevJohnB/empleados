@@ -25,6 +25,8 @@ use OCA\Empleados\Db\departamentos;
 use OCA\Empleados\Db\configuraciones;
 use OCA\Empleados\Db\userahorro;
 
+use OCA\Empleados\Db\equiposMapper;
+
 use OCP\IAvatarManager;
 
 use OCP\IDBConnection;
@@ -54,6 +56,7 @@ class EmpleadosController extends BaseController {
     protected $userahorroMapper;
     protected $session;
     protected $l10n;
+    protected $equiposMapper;
 
     protected IRootFolder $rootFolder;
 
@@ -70,7 +73,8 @@ class EmpleadosController extends BaseController {
         IL10N $l10n,
         IGroupManager $groupManager,
         IRootFolder $rootFolder,
-        IAvatarManager $avatarManager
+        IAvatarManager $avatarManager,
+        equiposMapper $equiposMapper
     ) {
 		parent::__construct(Application::APP_ID, $request, $userSession, $groupManager, $empleadosMapper, $configuracionesMapper);
 
@@ -87,6 +91,8 @@ class EmpleadosController extends BaseController {
         $this->avatarManager = $avatarManager;
 
         $this->rootFolder = $rootFolder;
+
+        $this->equiposMapper = $equiposMapper;
         
         $this->AdminCheckAccess(); // 🔥 Validar accesos automáticamente
     }
@@ -378,6 +384,29 @@ class EmpleadosController extends BaseController {
             (int)$id_aniversario, 
             (float)$dias_disponibles
         );
+
+        // Añadir $equipoasignado al grupo del equipo (sin crear grupo)
+        $team = $this->equiposMapper->getById((string)$equipo); // siempre regresa algo
+        $groupName = $team['Nombre'] ?? $team['nombre'] ?? null;
+        if (!$groupName) {
+            throw new \RuntimeException("El equipo $equipo no tiene nombre de grupo");
+        }
+
+        $group = $this->groupManager->get($groupName); // asumimos que ya existe
+        if (!$group) {
+            throw new \RuntimeException("El grupo '$groupName' no existe");
+        }
+
+        if (!empty($equipoasignado)) {
+            $user = $this->userManager->get((string)$equipoasignado);
+            if (!$user) {
+                throw new \RuntimeException("Usuario '$equipoasignado' no existe");
+            }
+            if (!$group->inGroup($user)) {
+                $group->addUser($user);
+            }
+        }
+
 	}
 
     #[UseSession]

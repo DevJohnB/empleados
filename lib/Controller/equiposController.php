@@ -20,6 +20,11 @@ use OCA\Empleados\Db\equipos;
 use OCA\Empleados\Db\configuraciones;
 use OCA\Empleados\UploadException;
 use OCP\IGroupManager;
+use OCP\IConfig;
+
+use OCP\IURLGenerator;
+use OCP\Http\Client\IClientService;
+use OCP\Group\ISubAdmin;    
 
 require_once 'SimpleXLSXGen.php';
 require_once 'SimpleXLSX.php';
@@ -35,6 +40,12 @@ class equiposController extends Controller {
     protected $equiposMapper;
     protected $configuracionesMapper;
     protected $l10n;
+    protected $groupManager;
+    private IConfig $config;
+    private IClientService $clientService;
+    private ISubAdmin $subAdmin;   
+
+    private IURLGenerator $urlGenerator;
 
     public function __construct(
         IRequest $request,
@@ -44,7 +55,11 @@ class equiposController extends Controller {
         equiposMapper $equiposMapper,
         configuracionesMapper $configuracionesMapper,
         IL10N $l10n,
-		IGroupManager $groupManager
+        IConfig $config,
+		IGroupManager $groupManager,
+        IURLGenerator $urlGenerator,
+        IClientService $clientService,
+        ISubAdmin $subAdmin,
     ) {
 		parent::__construct(Application::APP_ID, $request, $userSession, $groupManager, $empleadosMapper, $configuracionesMapper);
 
@@ -54,6 +69,11 @@ class equiposController extends Controller {
         $this->equiposMapper = $equiposMapper;
         $this->configuracionesMapper = $configuracionesMapper;
         $this->l10n = $l10n;
+        $this->groupManager = $groupManager;
+        $this->config = $config;
+        $this->urlGenerator = $urlGenerator;
+        $this->clientService = $clientService;
+        $this->subAdmin = $subAdmin;
     }
 
     /**
@@ -203,20 +223,68 @@ class equiposController extends Controller {
     #[NoAdminRequired]
     public function EliminarEquipo(int $id_equipo): string {
         try {
-            $this->equiposMapper->EliminarEquipo((string) $id_equipo);
-            return "ok";
+            $row = $this->equiposMapper->deleteByIdReturningRow((string)$id_equipo);
+            if ($row) {
+                // ajusta el nombre de la columna al real en tu tabla
+                $nombreGrupo = $row['nombre_equipo'] ?? $row['Nombre'] ?? null;
+                if ($nombreGrupo) {
+                    $group = $this->groupManager->get($nombreGrupo);
+                    if ($group) {
+                        $group->delete($group);
+                    }
+                }
+            } else {
+                return 'no existe';
+            }
+            return 'ok';
         } catch (\Exception $e) {
             return $e->getMessage();
         }
     }
 
+
     /**
      * Guarda cambios en los equipos.
      */
     #[UseSession]
-    #[NoAdminRequired]
-    public function GuardarCambioEquipo(int $Id_Equipo, string $Id_jefe_equipo, string $Nombre): void {
-        $this->equiposMapper->updateEquipos((string) $Id_Equipo, $Id_jefe_equipo, $Nombre);
+    #[NoAdminRequired] // si aplica, cámbiala por #[AdminRequired]
+    public function GuardarCambioEquipo(int $Id_Equipo, string $Id_jefe_equipo): void {
+        // 1) leer estado actual
+        $old = $this->equiposMapper->getById((string)$Id_Equipo);
+        if (!$old) throw new \RuntimeException("Equipo $Id_Equipo no existe");
+
+        $groupName = $old['Nombre'] ?? $old['nombre'] ?? null;
+        if (!$groupName) throw new \RuntimeException("Equipo sin nombre");
+
+        $oldJefe = $old['Id_jefe_equipo'] ?? $old['id_jefe_equipo'] ?? null;
+
+        // 2) actualizar solo el jefe en BD
+        $this->equiposMapper->updateEquipos((string)$Id_Equipo, $Id_jefe_equipo);
+
+        // 3) asegurar grupo
+        $group = $this->groupManager->get($groupName);
+        if (!$group) {
+            $this->groupManager->createGroup($groupName);
+            $group = $this->groupManager->get($groupName);
+            if (!$group) throw new \RuntimeException("No se pudo crear/obtener el grupo '$groupName'");
+        }
+
+        // 4) nuevo jefe
+        $newBoss = $this->userManager->get($Id_jefe_equipo);
+        if (!$newBoss) throw new \RuntimeException("Usuario '$Id_jefe_equipo' no existe");
+
+        if (!$group->inGroup($newBoss)) $group->addUser($newBoss);
+
+        // 5) promover nuevo jefe
+        $this->subAdmin->createSubAdmin($newBoss, $group);
+
+        // 6) quitar subadmin anterior (si cambió)
+        if ($oldJefe && $oldJefe !== $Id_jefe_equipo) {
+            $oldUser = $this->userManager->get($oldJefe);
+            if ($oldUser) $this->subAdmin->deleteSubAdmin($oldUser, $group);
+            // opcional: también puedes removerlo del grupo:
+            // if ($oldUser && $group->inGroup($oldUser)) $group->removeUser($oldUser);
+        }
     }
 
     /**
@@ -232,6 +300,54 @@ class equiposController extends Controller {
         $equipo->setcreated_at($timestamp);
         $equipo->setupdated_at($timestamp);
         $this->equiposMapper->insert($equipo);
+
+        $group = $this->groupManager->get($nombre);
+            if (!$group) {
+                $this->groupManager->createGroup($nombre);
+                $group = $this->groupManager->get($nombre);
+            }
+
+        // después de crear equipo y grupo
+        $user = $this->userManager->get($jefe);
+        if (!$user) {
+            throw new \RuntimeException("Usuario $jefe no existe");
+        }
+
+        $group = $this->groupManager->get($nombre);
+        if (!$group) {
+            throw new \RuntimeException("No se pudo crear/obtener el grupo '$nombre'");
+        }
+
+        // 1) asegurar que sea miembro del grupo
+        if (!$group->inGroup($user)) {
+            $group->addUser($user);
+        }
+
+        $this->subAdmin->createSubAdmin($user, $group);
+    }
+
+    #[UseSession]
+    #[NoAdminRequired]
+    public function promoverJefeDeEquipo(string $uid, string $gid): string {
+        try {
+            $user  = $this->userManager->get($uid);
+            $group = $this->groupManager->get($gid);
+            if (!$user || !$group) {
+                return 'usuario_o_grupo_no_existe';
+            }
+
+            // Asegurar pertenencia al grupo (evita fallo de subadmin si no es miembro)
+            if (!$group->inGroup($user)) {
+                $group->addUser($user);
+            }
+
+            // Promover a subadmin SIN usar HTTP:
+            $this->subAdmin->createSubAdmin($user, $group);
+
+            return 'ok';
+        } catch (\Throwable $e) {
+            return 'error: ' . $e->getMessage();
+        }
     }
 
     /**

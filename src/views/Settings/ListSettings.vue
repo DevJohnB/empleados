@@ -126,6 +126,17 @@
 					{{ t('empleados','Apply changes') }}
 				</NcButton>
 			</div>
+			<br>
+			<NcPasswordField :value.sync="secrettoken"
+				label="Secret token to admin moves"
+				as-text />
+			<NcButton
+				:aria-label="t('empleados','Apply changes')"
+				type="primary"
+				@click="saveSecretToken">
+				{{ t('empleados','Apply changes') }}
+			</NcButton>
+			<br>
 		</div>
 	</div>
 </template>
@@ -141,6 +152,7 @@ import {
 	NcSelect,
 	NcNoteCard,
 	NcCheckboxRadioSwitch,
+	NcPasswordField,
 } from '@nextcloud/vue'
 
 // Nextcloud utils
@@ -157,6 +169,7 @@ export default {
 		NcNoteCard,
 		NcLoadingIcon,
 		NcCheckboxRadioSwitch,
+		NcPasswordField,
 	},
 
 	data() {
@@ -189,6 +202,7 @@ export default {
 
 			// From GetCapitalHumano (actual HR users)
 			capitalHumano: [],
+			secrettoken: null,
 		}
 	},
 
@@ -392,6 +406,22 @@ export default {
 			this.selectedUsers = this.propsCapitalHumano.options
 				.filter(opt => capitalHumanoIds.includes(opt.id))
 				.map(opt => opt.id)
+		},
+
+		/**
+		 * Save secret token for admin moves
+		 */
+		async saveSecretToken() {
+			this.modulo_ausencias = !this.modulo_ausencias
+			try {
+				await axios.post(generateUrl('/apps/empleados/provisioning'), {
+					secret: this.secrettoken,
+				})
+				showSuccess(t('empleados', 'Configuration updated'))
+			} catch (err) {
+				showError(t('empleados', 'Exception [UpdateConfiguration]: {error}', { error: String(err) }))
+				console.error(err)
+			}
 		},
 	},
 }

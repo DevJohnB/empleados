@@ -37,6 +37,8 @@ use OCP\IUserManager;
 use OCA\Empleados\Db\configuracionesMapper;
 use OCA\Empleados\Db\configuraciones;
 
+use OCP\IConfig;
+use OCP\AppFramework\Http\DataResponse;
 
 /**
  * @psalm-suppress UnusedClass
@@ -51,18 +53,28 @@ class ConfiguracionesController extends Controller {
 
 	private $session;
 	private IL10N $l10n;
-
+    private IConfig $config;
     
     private IUserManager $userManager;
 
 
-	public function __construct(IRequest $request, ISession $session, IUserSession $userSession, IUserManager $userManager, IL10N $l10n, IRootFolder $rootFolder, configuracionesMapper $configuracionesMapper ) {
+	public function __construct(
+            IRequest $request,
+            ISession $session,
+            IUserSession $userSession,
+            IUserManager $userManager,
+            IL10N $l10n,
+            IRootFolder $rootFolder,
+            configuracionesMapper $configuracionesMapper, 
+            IConfig $config
+        ) {
 		parent::__construct(Application::APP_ID, $request);
 
 		$this->userSession = $userSession;
 		$this->userManager = $userManager;
 		$this->configuracionesMapper = $configuracionesMapper;
 		$this->rootFolder = $rootFolder;
+        $this->config = $config;
 
 	}
     
@@ -192,5 +204,23 @@ class ConfiguracionesController extends Controller {
 
     public function ActualizarConfiguracion($id_configuracion, $data){
         $this->configuracionesMapper->ActualizarConfiguracion($id_configuracion, $data);
+    }
+
+    #[NoCSRFRequired]
+    #[AdminRequired]
+    public function provisioning(): DataResponse {
+        $password = $this->request->getParam('secret');
+        $user = $this->userSession->getUser();
+        $username = $user->getUID();
+
+        if (!$password) {
+            return new DataResponse(['status' => 'error', 'message' => 'Faltan parámetros'], Http::STATUS_BAD_REQUEST);
+        }
+
+        // Guardar los valores (equivalente a occ config:app:set)
+        $this->config->setAppValue('empleados', 'provisioning_admin_user', $username);
+        $this->config->setAppValue('empleados', 'provisioning_admin_pass', $password);
+
+        return new DataResponse(['status' => 'ok']);
     }
 }
