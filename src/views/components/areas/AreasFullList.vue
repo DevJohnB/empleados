@@ -4,7 +4,7 @@
 			<div class="search-contacts-field">
 				<div class="container-search">
 					<div class="input-container">
-						<input v-model="query" type="text" :placeholder="t('empleados', 'Search employees...')">
+						<input v-model="query" type="text" :placeholder="t('empleados', 'Search Areas/Departament...')">
 					</div>
 					<div class="button-container">
 						<NcActions :open="button" @click="toggle">
@@ -64,11 +64,12 @@
 			<div class="modal__content">
 				<div class="form-group center">
 					<NcTextField
+						required
 						:value.sync="nombre_area"
-						:label="t('empleados', 'Department name')" />
+						:label="t('empleados', 'Area / Department name')" />
 					<NcSelect
 						v-model="padre"
-						:input-label="t('empleados', 'Parent department')"
+						:input-label="t('empleados', 'Parent area / department')"
 						:options="options" />
 					<br>
 					<NcButton
@@ -244,6 +245,10 @@ export default {
 
 		async crearArea() {
 			const padreValor = (this.padre && this.padre.label) ? this.padre.label : ''
+			if (this.nombre_area.trim() === '') {
+				showError(t('empleados', 'The area/department name cannot be empty.'))
+				return
+			}
 			try {
 				await axios.post(generateUrl('/apps/empleados/crearArea'), {
 					padre: padreValor,

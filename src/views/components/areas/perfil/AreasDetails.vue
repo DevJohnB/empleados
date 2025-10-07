@@ -9,7 +9,7 @@
 		</div>
 		<div v-else>
 			<div>
-				<div class="container-search-profile">
+				<div class="container container-search-profile">
 					<div class="button-container-profile">
 						<NcActions>
 							<template #icon>
@@ -59,7 +59,7 @@
 					</div>
 				</div>
 				<div class="rsg-title">
-					<h3>{{ t('empleados', 'Employees in department') }}</h3>
+					<h3>{{ t('empleados', 'Employees in department / Area') }}</h3>
 				</div>
 				<div>
 					<div v-if="preferencias_areas" class="rsg">

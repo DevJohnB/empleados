@@ -70,6 +70,7 @@
     "Home": "Home",
     "Human Resources": "Human Resources",
     "Areas": "Areas",
+    "Areas / Departments": "Areas / Departments",
     "Positions": "Positions",
     "Teams": "Teams",
     "Request": "Request",
@@ -124,7 +125,7 @@
     "Delete department": "Delete department",
     "Confirm": "Confirm",
     "Do you want to delete {departamento}?": "Do you want to delete {departamento}?",
-    "Employees in department": "Employees in department",
+    "Employees in department / Area": "Employees in department / Area",
     "Edit": "Edit",
     "Department/area name": "Department/area name",
     "Parent area": "Parent area",
@@ -132,11 +133,12 @@
     "Department removed successfully": "Department removed successfully",
     "Department updated successfully": "Department updated successfully",
     "Search employees...": "Search employees...",
+    "Search Areas...": "Search Areas...",
     "Add new department": "Add new department",
     "Export list": "Export list",
     "Import data from template": "Import data from template",
-    "Department name": "Department name",
-    "Parent department": "Parent department",
+    "Area / Department name": "Area / Department name",
+    "Parent area / department": "Parent area / department",
     "Department created successfully": "Department created successfully",
     "Loading": "Loading",
     "Select a team for more details": "Select a team for more details",
@@ -310,7 +312,8 @@
     "Vacation Bonus": "Vacation Bonus",
     "Go to global settings and select the data manager.": "Go to global settings and select the data manager.",
     "This employee doesn’t belong to a team — assign them to one.": "This employee doesn’t belong to a team — assign them to one.",
-    "Boss": "Boss"
+    "Boss": "Boss",
+    "The area/department name cannot be empty.": "The area/department name cannot be empty."
   },
   "pluralForm": "nplurals=2; plural=(n != 1);"
 }

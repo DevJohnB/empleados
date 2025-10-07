@@ -23,7 +23,7 @@
 					:name="t('empleados', 'Employees')"
 					:to="{ name: 'Empleados' }" />
 				<NcAppNavigationItem
-					:name="t('empleados', 'Areas')"
+					:name="t('empleados', 'Areas / Departments')"
 					:to="{ name: 'Areas' }" />
 				<NcAppNavigationItem
 					:name="t('empleados', 'Positions')"
