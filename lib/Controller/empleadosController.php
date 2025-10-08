@@ -364,64 +364,83 @@ class EmpleadosController extends BaseController {
         $sueldo,
         $id_aniversario,
         $dias_disponibles): void {
-		$this->empleadosMapper->CambiosEmpleado(
-            $id_empleados, 
-            $numeroempleado, 
-            $ingreso, 
-            $area, 
-            $puesto, 
-            $socio, 
-            $gerente, 
-            $fondoclave, 
-            $fondoahorro, 
-            $numerocuenta, 
-            $equipoasignado, 
-            $equipo, 
-            $sueldo);
+		// 0) Lee el estado ANTES de actualizar (una sola fila)
+            $empBefore = $this->empleadosMapper->GetMyEmployeeInfoByIdEmpleado((string)$id_empleados);
+            if (!$empBefore) {
+                throw new \RuntimeException("Empleado $id_empleados no existe");
+            }
+            $oldUid    = $empBefore['Id_user'] ?? null;
+            $oldEquipo = $empBefore['Id_equipo'] ?? null;
 
-        $this->ausenciasMapper->updateAusenciasById(
-            (int)$id_empleados, 
-            (int)$id_aniversario, 
-            (float)$dias_disponibles
-        );
+            // 1) Aplica cambios en BD (empleado + ausencias)
+            $this->empleadosMapper->CambiosEmpleado(
+                $id_empleados, 
+                $numeroempleado, 
+                $ingreso, 
+                $area, 
+                $puesto, 
+                $socio, 
+                $gerente, 
+                $fondoclave, 
+                $fondoahorro, 
+                $numerocuenta, 
+                $equipoasignado, 
+                $equipo, 
+                $sueldo
+            );
 
-        // Añadir $equipoasignado al grupo del equipo (sin crear grupo)
-        $team = $this->equiposMapper->getById((string)$equipo); // siempre regresa algo
-        $groupName = $team['Nombre'] ?? $team['nombre'] ?? null;
-        if (!$groupName) {
-            throw new \RuntimeException("El equipo $equipo no tiene nombre de grupo");
-        }
+            $this->ausenciasMapper->updateAusenciasById(
+                (int)$id_empleados, 
+                (int)$id_aniversario, 
+                (float)$dias_disponibles
+            );
 
-        $group = $this->groupManager->get($groupName); // asumimos que ya existe
-        if (!$group) {
-            throw new \RuntimeException("El grupo '$groupName' no existe");
-        }
-
-        if (!empty($id_empleados)) {
-           $emp = $this->empleadosMapper->GetMyEmployeeInfoByIdEmpleado((string)$id_empleados);
-            if ($emp === null || !is_array($emp) || count($emp) === 0) {
-                throw new \RuntimeException("Empleado con ID " . json_encode($id_empleados) . " no existe o no devuelve datos");
+            // 2) Si NO cambió ni el uid ni el equipo → no toques grupos (early return)
+            if (($oldUid === $equipoasignado || empty($equipoasignado)) && (string)$oldEquipo === (string)$equipo) {
+                return;
             }
 
-            // 1) Extraer UID real (Id_user / id_user)
-            $uid = $emp[0]['Id_user'] ?? $emp[0]['id_user'] ?? null;
+            // 3) Resuelve datos actuales (uid y grupo destino)
+            $team = $this->equiposMapper->getById((string)$equipo); // siempre existe según tu comentario
+            $groupName = $team['Nombre'] ?? $team['nombre'] ?? null;
+            if (!$groupName) {
+                throw new \RuntimeException("El equipo $equipo no tiene nombre de grupo");
+            }
+
+            $group = $this->groupManager->get($groupName);
+            if (!$group) {
+                throw new \RuntimeException("El grupo '$groupName' no existe");
+            }
+
+            // uid final (si no se envió uno nuevo, usa el anterior)
+            $uid = $equipoasignado ?: $oldUid;
             if (empty($uid)) {
-                throw new \RuntimeException("El empleado con ID " . json_encode($id_empleados) . " no tiene uid vinculado");
+                // No hay uid ligado: no tocar grupos
+                return;
             }
 
-            // 2) Obtener el objeto IUser
             $user = $this->userManager->get($uid);
             if (!$user) {
                 throw new \RuntimeException("Usuario '$uid' no existe en Nextcloud");
             }
 
-            // 3) Agregar al grupo si no pertenece
-            if (!$group->inGroup($user)) {
+            // 4) Si cambió el equipo, quita del grupo anterior (opcional pero recomendable)
+            if ((string)$oldEquipo !== (string)$equipo && !empty($oldEquipo)) {
+                $oldTeam = $this->equiposMapper->getById((string)$oldEquipo);
+                $oldGroupName = $oldTeam['Nombre'] ?? $oldTeam['nombre'] ?? null;
+                if ($oldGroupName) {
+                    $oldGroup = $this->groupManager->get($oldGroupName);
+                    if ($oldGroup && $oldGroup->inGroup($user)) {
+                        $oldGroup->removeUser($user);
+                    }
+                }
+            }
+
+            // 5) Añade al grupo destino SOLO si realmente no pertenece (rápido)
+            $userGroups = $this->groupManager->getUserGroupIds($user); // array de gids
+            if (!in_array($groupName, $userGroups, true)) {
                 $group->addUser($user);
             }
-        }
-
-
 	}
 
     #[UseSession]

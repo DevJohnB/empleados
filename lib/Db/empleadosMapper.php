@@ -61,7 +61,8 @@ class empleadosMapper extends QBMapper {
 
 		$qb->select('*') // Solo traemos empleados sin duplicar
 			->from('empleados', 'e')
-			->where($qb->expr()->eq('e.Id_empleados', $qb->createNamedParameter($id)));
+			->where($qb->expr()->eq('e.Id_empleados', $qb->createNamedParameter($id)))
+			->setMaxResults(1);
 		
 		$result = $qb->execute();
 		$users = $result->fetchAll();

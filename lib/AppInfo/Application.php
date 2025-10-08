@@ -47,7 +47,7 @@ class Application extends App implements IBootstrap {
 
 		// Registrar cron job
 		$context->injectFn(function(IJobList $jobList) {
-			if (!$jobList->has(ActualizarAniversarios::class)) {
+			if (!$jobList->has(ActualizarAniversarios::class, '')) {
 				$jobList->add(ActualizarAniversarios::class);
 			}
 		});
