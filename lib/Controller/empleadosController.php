@@ -397,15 +397,30 @@ class EmpleadosController extends BaseController {
             throw new \RuntimeException("El grupo '$groupName' no existe");
         }
 
-        if (!empty($equipoasignado)) {
-            $user = $this->userManager->get((string)$equipoasignado);
-            if (!$user) {
-                throw new \RuntimeException("Usuario '$equipoasignado' no existe");
+        if (!empty($id_empleados)) {
+           $emp = $this->empleadosMapper->GetMyEmployeeInfoByIdEmpleado((string)$id_empleados);
+            if ($emp === null || !is_array($emp) || count($emp) === 0) {
+                throw new \RuntimeException("Empleado con ID " . json_encode($id_empleados) . " no existe o no devuelve datos");
             }
+
+            // 1) Extraer UID real (Id_user / id_user)
+            $uid = $emp[0]['Id_user'] ?? $emp[0]['id_user'] ?? null;
+            if (empty($uid)) {
+                throw new \RuntimeException("El empleado con ID " . json_encode($id_empleados) . " no tiene uid vinculado");
+            }
+
+            // 2) Obtener el objeto IUser
+            $user = $this->userManager->get($uid);
+            if (!$user) {
+                throw new \RuntimeException("Usuario '$uid' no existe en Nextcloud");
+            }
+
+            // 3) Agregar al grupo si no pertenece
             if (!$group->inGroup($user)) {
                 $group->addUser($user);
             }
         }
+
 
 	}
 

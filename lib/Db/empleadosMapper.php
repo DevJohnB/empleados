@@ -56,6 +56,20 @@ class empleadosMapper extends QBMapper {
 		return $users;
 	}
 
+	public function GetMyEmployeeInfoByIdEmpleado($id): array {
+		$qb = $this->db->getQueryBuilder();
+
+		$qb->select('*') // Solo traemos empleados sin duplicar
+			->from('empleados', 'e')
+			->where($qb->expr()->eq('e.Id_empleados', $qb->createNamedParameter($id)));
+		
+		$result = $qb->execute();
+		$users = $result->fetchAll();
+		$result->closeCursor();
+	
+		return $users;
+	}
+
     public function GetUserLists(): array {
 		$qb = $this->db->getQueryBuilder();
 
