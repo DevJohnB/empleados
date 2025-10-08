@@ -33,7 +33,7 @@ class Application extends App implements IBootstrap {
 			return new MailHelper(
 				$c->query(IMailer::class),
 				$c->query(IL10N::class),
-				'servicios.torreon@crowe.mx',
+				'servicios.torreon@mail.com', // Cambiar por el correo deseado
 				$c->query(IURLGenerator::class)
 			);
 		});
@@ -47,7 +47,9 @@ class Application extends App implements IBootstrap {
 
 		// Registrar cron job
 		$context->injectFn(function(IJobList $jobList) {
-			$jobList->add(ActualizarAniversarios::class);
+			if (!$jobList->has(ActualizarAniversarios::class)) {
+				$jobList->add(ActualizarAniversarios::class);
+			}
 		});
 	}
 }
