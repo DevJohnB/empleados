@@ -1,57 +1,77 @@
 <?php
+declare(strict_types=1);
+
 namespace OCA\Empleados\Command;
 
-use OCA\Empleados\Db\configuracionesMapper;
-use OCA\Empleados\Db\equiposMapper;
+use OCP\IDBConnection;
+use OCP\DB\QueryBuilder\IQueryBuilder;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class RepairConfigCommand.php extends Command {
-    protected static $defaultName = 'empleados:repair-tables';
+class RepairConfigCommand extends Command {
+    protected static $defaultName = 'empleados:repair-config';
 
-    private equiposMapper $equiposMapper;
-    private configuracionesMapper $configMapper;
-
-    public function __construct(equiposMapper $equiposMapper, configuracionesMapper $configMapper) {
+    public function __construct(private IDBConnection $db) {
         parent::__construct();
-        $this->equiposMapper = $equiposMapper;
-        $this->configMapper = $configMapper;
     }
 
     protected function configure(): void {
-        $this->setDescription('Run repair / seed logic for empleados tables (idempotent)');
+        $this->setDescription('Ensure required keys exist in empleados_conf with Data = NULL (idempotent).');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int {
-        $output->writeln('Starting empleados repair...');
+        $keys = [
+            'usuario_almacenamiento',
+            'automatic_save_note',
+            'acumular_vacaciones',
+            'modulo_ahorro',
+            'modulo_ausencias',
+            'ausencias_readonly',
+        ];
 
-        // ejemplo: reparar tabla equipos
+        $table = 'empleados_conf'; // sin prefijo manual
+
+        $this->db->beginTransaction();
         try {
-            if (method_exists($this->equiposMapper, 'repairEquiposTable')) {
-                $this->equiposMapper->repairEquiposTable();
-                $output->writeln('equipos table repaired.');
-            } else {
-                $output->writeln('equiposMapper::repairEquiposTable() not found — skipping.');
+            foreach ($keys as $k) {
+                // ¿Existe la fila?
+                $qb = $this->db->getQueryBuilder();
+                $qb->select('*')
+                   ->from($table)
+                   ->where($qb->expr()->eq('Nombre', $qb->createNamedParameter($k)))
+                   ->setMaxResults(1);
+
+                $exists = $qb->executeQuery()->fetchOne(); // string|int|false|null
+
+                if ($exists === false || $exists === null) {
+                    // INSERT con Data = NULL
+                    $ib = $this->db->getQueryBuilder();
+                    $ib->insert($table)
+                       ->values([
+                           'Nombre' => $ib->createNamedParameter($k),
+                           'Data'   => $ib->createNamedParameter(null, IQueryBuilder::PARAM_NULL),
+                       ])
+                       ->executeStatement();
+                    $output->writeln("INSERT: $k -> NULL");
+                } else {
+                    // UPDATE a NULL (idempotente)
+                    $ub = $this->db->getQueryBuilder();
+                    $ub->update($table)
+                       ->set('Data', $ub->createNamedParameter(null, IQueryBuilder::PARAM_NULL))
+                       ->where($ub->expr()->eq('Nombre', $ub->createNamedParameter($k)))
+                       ->executeStatement();
+                    $output->writeln("UPDATE: $k -> NULL");
+                }
             }
 
-            // ejemplo: seed configuraciones
-            if (method_exists($this->configMapper, 'seedDefaults')) {
-                $defaults = [
-                    'provisioning_admin_user' => 'provisioner',
-                    'provisioning_admin_pass' => '',
-                    'acumular_vacaciones' => 'false',
-                ];
-                $this->configMapper->seedDefaults($defaults);
-                $output->writeln('config defaults seeded.');
-            } else {
-                $output->writeln('configuracionesMapper::seedDefaults() not found — skipping.');
-            }
-
+            $this->db->commit();
             $output->writeln('Done.');
             return Command::SUCCESS;
+
         } catch (\Throwable $e) {
-            $output->writeln('<error>Error: '.$e->getMessage().'</error>');
+            $this->db->rollBack();
+            $output->writeln('<error>Error: ' . $e->getMessage() . '</error>');
             return Command::FAILURE;
         }
     }

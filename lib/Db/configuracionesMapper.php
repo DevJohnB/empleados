@@ -35,7 +35,7 @@ class configuracionesMapper extends QBMapper {
 		$query = $this->db->getQueryBuilder();
 			$query->update($this->getTableName())
 				->set('Data', $query->createNamedParameter($id_gestor))
-				->where($query->expr()->eq('Id_conf', $query->createNamedParameter("1")));
+				->where($query->expr()->eq('Nombre', $query->createNamedParameter("usuario_almacenamiento")));
 	
 			$query->execute();
 	}
@@ -68,7 +68,7 @@ class configuracionesMapper extends QBMapper {
 
 		$qb->select('Data')
 			->from($this->getTableName())
-			->where($qb->expr()->eq('Id_conf', $qb->createNamedParameter("1")));
+			->where($qb->expr()->eq('Nombre', $qb->createNamedParameter("usuario_almacenamiento")));
 			
 		$result = $qb->execute();
 		$config = $result->fetchAll();
@@ -86,7 +86,7 @@ class configuracionesMapper extends QBMapper {
 		$table = 'empleados_conf';
 		foreach ($defaults as $name => $value) {
 			$qb = $this->db->getQueryBuilder();
-			$qb->select('1')->from($table)
+			$qb->select('usuario_almacenamiento')->from($table)
 			->where($qb->expr()->eq('Nombre', $qb->createNamedParameter($name)))
 			->setMaxResults(1);
 			$exists = (bool) $qb->executeQuery()->fetchOne();

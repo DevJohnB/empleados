@@ -10,7 +10,7 @@ use OCP\IDBConnection;
 use Psr\Log\LoggerInterface;
 use OCA\Empleados\Db\configuracionesMapper;
 
-require_once __DIR__ . '/../../vendor/autoload.php';
+# require_once __DIR__ . '/../../vendor/autoload.php';
 
 class ActualizarAniversarios extends Job {
 	protected function run($argument): void {

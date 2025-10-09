@@ -3,7 +3,7 @@
 namespace OCA\Empleados\AppInfo;
 
 use OCA\Empleados\Activity\ActivityProvider;
-use OCA\Empleados\Cron\ActualizarAniversarios;
+# use OCA\Empleados\Cron\ActualizarAniversarios;
 use OCA\Empleados\Db\configuracionesMapper;
 use OCA\Empleados\Helper\MailHelper;
 
@@ -38,11 +38,7 @@ class Application extends App implements IBootstrap {
 			);
 		});
 
-		$context->registerService(\OCA\Empleados\Command\RepairConfigCommand::class, function($c) {
-			return new \OCA\Empleados\Command\RepairConfigCommand(
-				$c->query(\OCA\Empleados\Db\configuracionesMapper::class)
-			);
-		});
+		
 
 	}
 
