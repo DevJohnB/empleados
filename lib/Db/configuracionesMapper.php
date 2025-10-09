@@ -76,4 +76,34 @@ class configuracionesMapper extends QBMapper {
 	
 		return $config;
 	}
+
+	/**
+	 * Inserta keys en empleados_conf si faltan (idempotente).
+	 *
+	 * @param array<string,string> $defaults Nombre => Data
+	 */
+	public function seedDefaults(array $defaults): void {
+		$table = 'empleados_conf';
+		foreach ($defaults as $name => $value) {
+			$qb = $this->db->getQueryBuilder();
+			$qb->select('1')->from($table)
+			->where($qb->expr()->eq('Nombre', $qb->createNamedParameter($name)))
+			->setMaxResults(1);
+			$exists = (bool) $qb->executeQuery()->fetchOne();
+			if ($exists) {
+				continue;
+			}
+			$ins = $this->db->getQueryBuilder();
+			$ins->insert($table)->values([
+				'Nombre' => $ins->createNamedParameter($name),
+				'Data'   => $ins->createNamedParameter($value),
+			]);
+			if (method_exists($ins, 'executeStatement')) {
+				$ins->executeStatement();
+			} else {
+				$ins->execute();
+			}
+		}
+	}
+
 }

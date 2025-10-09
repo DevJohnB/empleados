@@ -37,19 +37,26 @@ class Application extends App implements IBootstrap {
 				$c->query(IURLGenerator::class)
 			);
 		});
+
+		$context->registerService(\OCA\Empleados\Command\RepairConfigCommand::class, function($c) {
+			return new \OCA\Empleados\Command\RepairConfigCommand(
+				$c->query(\OCA\Empleados\Db\configuracionesMapper::class)
+			);
+		});
+
 	}
 
 	public function boot(IBootContext $context): void {
 		// Registrar actividad
-		$context->injectFn(function(IManager $activityManager) {
-			$activityManager->registerProvider(ActivityProvider::class);
-		});
+		//$context->injectFn(function(IManager $activityManager) {
+		//	$activityManager->registerProvider(ActivityProvider::class);
+		//});
 
 		// Registrar cron job
-		$context->injectFn(function(IJobList $jobList) {
-			if (!$jobList->has(ActualizarAniversarios::class, '')) {
-				$jobList->add(ActualizarAniversarios::class);
-			}
-		});
+		//$context->injectFn(function(IJobList $jobList) {
+		//	if (!$jobList->has(ActualizarAniversarios::class, '')) {
+		//		$jobList->add(ActualizarAniversarios::class);
+		//	}
+		//});
 	}
 }
