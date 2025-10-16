@@ -276,7 +276,7 @@ export default {
 		async getall() {
 			try {
 				const response = await axios.get(generateUrl('/apps/empleados/GetAreasFix'))
-				this.options = response.data
+				this.options = response?.data?.ocs?.data
 			} catch (err) {
 				showError(this.t('empleados', 'Se ha producido una excepcion [01] [{error}]', { error: String(err) }))
 			}

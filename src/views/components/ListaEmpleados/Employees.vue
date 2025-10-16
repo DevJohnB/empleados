@@ -43,7 +43,13 @@ export default {
 				await axios.get(generateUrl('/apps/empleados/GetEmpleadosList'))
 					.then(
 						(response) => {
-							this.Empleados = response.data.Empleados
+							if (response?.data?.ocs?.meta?.status !== 'ok') {
+								showError(response?.data?.ocs?.meta?.message)
+								this.loading = false
+								window.location.href = '/apps/empleados/#/'
+								return
+							}
+							this.Empleados = response?.data?.ocs?.data.Empleados
 							this.loading = false
 						},
 						(err) => {

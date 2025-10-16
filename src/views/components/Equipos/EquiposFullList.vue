@@ -33,7 +33,8 @@
 
 							<NcActionSeparator />
 
-							<NcActionButton @click="$refs.file.click()">
+							<NcActionButton :disabled="true"
+								@click="$refs.file.click()">
 								<template #icon>
 									<Upload :size="20" />
 								</template>

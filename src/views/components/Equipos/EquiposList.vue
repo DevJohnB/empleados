@@ -91,7 +91,7 @@ export default {
 		async getallequipo(equipo) {
 			try {
 				const response = await axios.get(generateUrl('/apps/empleados/GetEmpleadosEquipo/' + encodeURIComponent(equipo)))
-				this.peopleArea = response.data
+				this.peopleArea = response?.data?.ocs?.data
 			} catch (err) {
 				showError(t('empleados', 'Se ha producido una excepcion [01] [{error}]', { error: String(err) }))
 			}
@@ -100,7 +100,7 @@ export default {
 		async getall() {
 			try {
 				const response = await axios.get(generateUrl('/apps/empleados/GetEquiposList'))
-				this.Equipos = response.data
+				this.Equipos = response?.data?.ocs?.data
 				this.loading = false
 			} catch (err) {
 				this.loading = false

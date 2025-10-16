@@ -4,10 +4,6 @@
 
 <script>
 import PuestosList from './PuestosList.vue'
-import { showError /* showSuccess */ } from '@nextcloud/dialogs'
-import { generateUrl } from '@nextcloud/router'
-import axios from '@nextcloud/axios'
-import { translate as t } from '@nextcloud/l10n'
 
 export default {
 	name: 'Puestos',
@@ -19,35 +15,6 @@ export default {
 		return {
 			loading: true,
 		}
-	},
-
-	mounted() {
-		this.getall()
-	},
-
-	methods: {
-		t,
-
-		async getall() {
-			this.loading = true
-			try {
-				await axios.get(generateUrl('/apps/empleados/GetPuestosList'))
-					.then(
-						(response) => {
-							// eslint-disable-next-line no-console
-							console.log(response)
-							this.loading = false
-						},
-						(err) => {
-							this.loading = false
-							showError(err)
-						},
-					)
-			} catch (err) {
-				this.loading = false
-				showError(t('empleados', 'An exception has occurred [01] [{error}]', { error: String(err) }))
-			}
-		},
 	},
 }
 </script>

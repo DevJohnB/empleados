@@ -83,7 +83,7 @@ export default {
 				await axios.get(generateUrl('/apps/empleados/GetEmpleadosPuesto/' + puesto))
 					.then(
 						(response) => {
-							this.peopleArea = response.data
+							this.peopleArea = response?.data?.ocs?.data
 						},
 						(err) => {
 							showError(err)
@@ -99,7 +99,7 @@ export default {
 				await axios.get(generateUrl('/apps/empleados/GetPuestosList'))
 					.then(
 						(response) => {
-							this.Puestos = response.data
+							this.Puestos = response?.data?.ocs?.data
 							this.loading = false
 						},
 						(err) => {

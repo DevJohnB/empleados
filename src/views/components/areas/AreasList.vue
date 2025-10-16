@@ -84,7 +84,7 @@ export default {
 				await axios.get(generateUrl('/apps/empleados/GetEmpleadosArea/' + departamento))
 					.then(
 						(response) => {
-							this.peopleArea = response.data
+							this.peopleArea = response?.data?.ocs?.data
 						},
 						(err) => {
 							showError(err)
@@ -100,7 +100,13 @@ export default {
 				await axios.get(generateUrl('/apps/empleados/GetAreasList'))
 					.then(
 						(response) => {
-							this.Areas = response.data
+							if (response?.data?.ocs?.meta?.status !== 'ok') {
+								showError(response?.data?.ocs?.meta?.message)
+								this.loading = false
+								window.location.href = '/apps/empleados/#/'
+								return
+							}
+							this.Areas = response?.data?.ocs?.data
 							this.loading = false
 						},
 						(err) => {

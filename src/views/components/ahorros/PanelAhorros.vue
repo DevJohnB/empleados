@@ -296,7 +296,7 @@ export default {
 			try {
 				state = (this.options_estado_values === t('empleados', 'Pendientes')) ? '0' : '1'
 				const response = await axios.get(generateUrl('apps/empleados/GetHistorialPanel/' + this.options_fechas_value + '/' + state))
-				this.historial = response.data
+				this.historial = response?.data?.ocs?.data
 				this.loading = false
 			} catch (e) {
 				console.error(e)

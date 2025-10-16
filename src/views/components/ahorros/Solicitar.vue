@@ -235,7 +235,7 @@ export default {
 				})
 					.then(
 						(response) => {
-							this.userdata = response.data[0]
+							this.userdata = response?.data?.ocs?.data[0]
 							this.loading = false
 						},
 						(err) => { showError(err) },
@@ -303,7 +303,7 @@ export default {
 					(err) => { showError(Promise.reject(err)) },
 				)
 			} else {
-				showError(t('empleados', 'X - Verifique el formulario'))
+				showError(t('empleados', 'Verifique el formulario'))
 			}
 		},
 	},

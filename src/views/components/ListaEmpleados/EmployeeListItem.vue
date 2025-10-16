@@ -47,8 +47,6 @@ export default {
 	},
 	methods: {
 		showDetails(data) {
-			// eslint-disable-next-line no-console
-			console.log(data)
 			this.$bus.emit('send-data', data)
 			this.$bus.emit('show', false)
 		},

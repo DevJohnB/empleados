@@ -21,6 +21,9 @@ use OCA\Empleados\Db\configuraciones;
 use OCA\Empleados\UploadException;
 use OCP\IGroupManager;
 
+use OCP\AppFramework\Http;
+use OCP\AppFramework\Http\DataResponse;
+
 require_once 'SimpleXLSXGen.php';
 require_once 'SimpleXLSX.php';
 
@@ -57,83 +60,18 @@ class PuestosController extends BaseController {
     }
 
     /**
-     * Obtiene la lista de empleados y usuarios.
-     */
-    #[UseSession]
-    #[NoAdminRequired]
-    public function GetUserLists(): array {
-        return [
-            'Empleados' => $this->empleadosMapper->GetUserLists(),
-            'Users' => $this->empleadosMapper->getAllUsers(),
-        ];
-    }
-
-    /**
      * Obtiene la lista de puestos en formato clave-valor.
      */
     #[UseSession]
     #[NoAdminRequired]
-    public function GetPuestosFix(): array {
-        return array_map(fn($puesto) => [
+    public function GetPuestosFix(): DataResponse {
+        $this->checkAccess(['admin', 'recursos_humanos']);
+        $result = array_map(fn($puesto) => [
             'value' => $puesto['Id_puestos'],
             'label' => $puesto['Nombre'],
         ], $this->puestosMapper->GetPuestosList());
-    }
 
-    /**
-     * Obtiene la lista de empleados.
-     */
-    #[UseSession]
-    #[NoAdminRequired]
-    public function GetEmpleadosList(): array {
-        return ['Empleados' => $this->empleadosMapper->GetUserLists()];
-    }
-
-    /**
-     * Obtiene la lista de empleados con nombres corregidos si están vacíos.
-     */
-    #[UseSession]
-    #[NoAdminRequired]
-    public function GetEmpleadosListFix(): array {
-        return array_map(fn($empleado) => [
-            'id' => $empleado['uid'],
-            'displayName' => $empleado['displayname'] ?: $empleado['uid'],
-            'user' => $empleado['uid'],
-            'showUserStatus' => false,
-        ], $this->empleadosMapper->GetUserLists());
-    }
-
-    /**
-     * Activa un empleado.
-     */
-    #[UseSession]
-    #[NoAdminRequired]
-    public function ActivarEmpleado(string $id_user): string {
-        try {
-            $timestamp = date('Y-m-d');
-            $user = new empleados();
-            $user->setid_user($id_user);
-            $user->setcreated_at($timestamp);
-            $user->setupdated_at($timestamp);
-            $this->empleadosMapper->insert($user);
-            return "ok";
-        } catch (\Exception $e) {
-            return $e->getMessage();
-        }
-    }
-
-    /**
-     * Elimina un empleado por ID.
-     */
-    #[UseSession]
-    #[NoAdminRequired]
-    public function EliminarEmpleado(int $id_empleados): string {
-        try {
-            $this->empleadosMapper->deleteByIdEmpleado($id_empleados);
-            return "ok";
-        } catch (\Exception $e) {
-            return $e->getMessage();
-        }
+        return new Dataresponse($result, Http::STATUS_OK);
     }
 
     /**
@@ -141,14 +79,16 @@ class PuestosController extends BaseController {
      */
     #[UseSession]
     #[NoAdminRequired]
-    public function GetPuestosList(): array {
-        return $this->puestosMapper->GetPuestosList();
+    public function GetPuestosList(): DataResponse {
+        $this->checkAccess(['admin', 'recursos_humanos']);
+        return new DataResponse($this->puestosMapper->GetPuestosList(), Http::STATUS_OK);
     }
 
     /**
      * Exporta la lista de puestos a un archivo XLSX.
      */
-    public function ExportListPuestos(): array {
+    public function ExportListPuestos(): DataResponse {
+        $this->checkAccess(['admin', 'recursos_humanos']);
         $puestos = $this->puestosMapper->GetPuestosList();
         $books = [['Id_puesto', 'Nombre', 'created_at', 'updated_at']];
 
@@ -162,13 +102,14 @@ class PuestosController extends BaseController {
         }
 
         \Shuchkin\SimpleXLSXGen::fromArray($books)->downloadAs('puestos.xlsx');
-        return $books;
+        return new DataResponse($books, Http::STATUS_OK);
     }
 
     /**
      * Importa la lista de puestos desde un archivo XLSX.
      */
-    public function ImportListPuestos(): void {
+    public function ImportListPuestos(): DataResponse {
+        $this->checkAccess(['admin', 'recursos_humanos']);
         $file = $this->getUploadedFile('puestofileXLSX');
         if ($xlsx = \Shuchkin\SimpleXLSX::parse($file['tmp_name'])) {
             foreach ($xlsx->rows() as $row) {
@@ -183,7 +124,9 @@ class PuestosController extends BaseController {
                     $this->puestosMapper->insert($puesto);
                 }
             }
+            return new DataResponse(Http::STATUS_INTERNAL_SERVER_ERROR);
         }
+        return new DataResponse(Http::STATUS_OK);
     }
 
     /**
@@ -191,12 +134,13 @@ class PuestosController extends BaseController {
      */
     #[UseSession]
     #[NoAdminRequired]
-    public function EliminarPuesto(int $id_puesto): string {
+    public function EliminarPuesto(int $id_puesto): DataResponse {
+        $this->checkAccess(['admin', 'recursos_humanos']);
         try {
             $this->puestosMapper->EliminarPuesto((string) $id_puesto);
-            return "ok";
+            return new DataResponse(Http::STATUS_OK);
         } catch (\Exception $e) {
-            return $e->getMessage();
+            return new DataResponse($e->getMessage(), Http::STATUS_INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -205,8 +149,10 @@ class PuestosController extends BaseController {
      */
     #[UseSession]
     #[NoAdminRequired]
-    public function GuardarCambioPuestos(int $id_puestos, string $nombre): void {
+    public function GuardarCambioPuestos(int $id_puestos, string $nombre): DataResponse {
+        $this->checkAccess(['admin', 'recursos_humanos']);
         $this->puestosMapper->updatePuestos((string) $id_puestos, $nombre);
+        return new DataResponse(Http::STATUS_OK);
     }
 
     /**
@@ -214,13 +160,15 @@ class PuestosController extends BaseController {
      */
     #[UseSession]
     #[NoAdminRequired]
-    public function crearPuesto(string $nombre): void {
+    public function crearPuesto(string $nombre): DataResponse {
+        $this->checkAccess(['admin', 'recursos_humanos']);
         $timestamp = date('Y-m-d');
         $puesto = new puestos();
         $puesto->setnombre($nombre);
         $puesto->setcreated_at($timestamp);
         $puesto->setupdated_at($timestamp);
         $this->puestosMapper->insert($puesto);
+        return new DataResponse(Http::STATUS_OK);
     }
 
     /**

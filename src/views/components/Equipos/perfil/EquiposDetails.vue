@@ -234,7 +234,7 @@ export default {
 			if (this.show) {
 				try {
 					const response = await axios.get(generateUrl('/apps/empleados/GetConfigurations'))
-					this.optionsGestor = response.data.Users
+					this.optionsGestor = response?.data?.ocs?.data.Users
 					this.equipo_nombre = this.data.Nombre
 					// Si el backend guarda el ID del líder, preseleccionamos:
 					// Puede llegar como string (uid) o como objeto, normalizamos:

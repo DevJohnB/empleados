@@ -20,6 +20,8 @@ use OCA\Empleados\Db\empleados;
 use OCA\Empleados\Db\departamentos;
 use OCA\Empleados\Db\configuraciones;
 use OCA\Empleados\UploadException;
+use OCP\AppFramework\Http;
+use OCP\AppFramework\Http\DataResponse;
 
 require_once 'SimpleXLSXGen.php';
 require_once 'SimpleXLSX.php';
@@ -57,50 +59,18 @@ class AreasController extends BaseController {
     }
 
     /**
-     * Obtiene la lista de empleados y usuarios.
-     */
-    #[UseSession]
-    #[NoAdminRequired]
-    public function GetUserLists(): array {
-        return [
-            'Empleados' => $this->empleadosMapper->GetUserLists(),
-            'Users' => $this->empleadosMapper->getAllUsers(),
-        ];
-    }
-
-    /**
      * Obtiene la lista de áreas en formato clave-valor.
      */
     #[UseSession]
     #[NoAdminRequired]
-    public function GetAreasFix(): array {
-        return array_map(fn($area) => [
+    public function GetAreasFix(): DataResponse {
+        $this->checkAccess(['admin', 'recursos_humanos']);
+        $areas = array_map(fn($area) => [
             'value' => $area['Id_departamento'],
             'label' => $area['Nombre'],
         ], $this->departamentosMapper->GetAreasList());
-    }
 
-    /**
-     * Obtiene la lista de empleados.
-     */
-    #[UseSession]
-    #[NoAdminRequired]
-    public function GetEmpleadosList(): array {
-        return ['Empleados' => $this->empleadosMapper->GetUserLists()];
-    }
-
-    /**
-     * Obtiene la lista de empleados con nombres corregidos si están vacíos.
-     */
-    #[UseSession]
-    #[NoAdminRequired]
-    public function GetEmpleadosListFix(): array {
-        return array_map(fn($empleado) => [
-            'id' => $empleado['uid'],
-            'displayName' => $empleado['displayname'] ?: $empleado['uid'],
-            'user' => $empleado['uid'],
-            'showUserStatus' => false,
-        ], $this->empleadosMapper->GetUserLists());
+        return new DataResponse($areas, Http::STATUS_OK);
     }
 
     /**
@@ -108,14 +78,16 @@ class AreasController extends BaseController {
      */
     #[UseSession]
     #[NoAdminRequired]
-    public function GetAreasList(): array {
-        return $this->departamentosMapper->GetAreasList();
+    public function GetAreasList(): DataResponse {
+        $this->checkAccess(['admin', 'recursos_humanos']);
+        return new DataResponse($this->departamentosMapper->GetAreasList(), Http::STATUS_OK);
     }
 
     /**
      * Exporta la lista de áreas a un archivo XLSX.
      */
-    public function ExportListAreas(): array {
+    public function ExportListAreas(): DataResponse {
+        $this->checkAccess(['admin', 'recursos_humanos']);
         $areas = $this->departamentosMapper->GetAreasList();
         $books = [['Id_departamento', 'Id_padre', 'Nombre', 'created_at', 'updated_at']];
 
@@ -130,13 +102,14 @@ class AreasController extends BaseController {
         }
 
         \Shuchkin\SimpleXLSXGen::fromArray($books)->downloadAs('areas.xlsx');
-        return $books;
+        return new DataResponse($books, Http::STATUS_OK);
     }
 
     /**
      * Importa la lista de áreas desde un archivo XLSX.
      */
-    public function ImportListAreas(): void {
+    public function ImportListAreas(): DataResponse {
+        $this->checkAccess(['admin', 'recursos_humanos']);
         $file = $this->getUploadedFile('AreafileXLSX');
         if ($xlsx = \Shuchkin\SimpleXLSX::parse($file['tmp_name'])) {
             foreach ($xlsx->rows() as $row) {
@@ -152,7 +125,9 @@ class AreasController extends BaseController {
                     $this->departamentosMapper->insert($area);
                 }
             }
+            return new DataResponse(['status' => 'error'], Http::STATUS_BAD_REQUEST);
         }
+        return new DataResponse(Http::STATUS_OK);
     }
 
     /**
@@ -160,12 +135,13 @@ class AreasController extends BaseController {
      */
     #[UseSession]
     #[NoAdminRequired]
-    public function EliminarArea(int $id_departamento): string {
+    public function EliminarArea(int $id_departamento): DataResponse {
+        $this->checkAccess(['admin', 'recursos_humanos']);
         try {
             $this->departamentosMapper->EliminarArea((string) $id_departamento);
-            return "ok";
+            return new DataResponse(Http::STATUS_OK);
         } catch (\Exception $e) {
-            return $e->getMessage();
+            return new DataResponse("Error al eliminar el área: " . $e->getMessage(), Http::STATUS_INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -174,8 +150,10 @@ class AreasController extends BaseController {
      */
     #[UseSession]
     #[NoAdminRequired]
-    public function GuardarCambioArea(int $id_departamento, string $padre, string $nombre): void {
+    public function GuardarCambioArea(int $id_departamento, string $padre, string $nombre): DataResponse {
+        $this->checkAccess(['admin', 'recursos_humanos']);
         $this->departamentosMapper->updateAreas((string) $id_departamento, $padre, $nombre);
+        return new DataResponse(Http::STATUS_OK);
     }
 
     /**
@@ -183,7 +161,8 @@ class AreasController extends BaseController {
      */
     #[UseSession]
     #[NoAdminRequired]
-    public function crearArea(string $nombre, string $padre): void {
+    public function crearArea(string $nombre, string $padre): DataResponse {
+        $this->checkAccess(['admin', 'recursos_humanos']);
         $timestamp = date('Y-m-d');
         $area = new departamentos();
         $area->setid_padre($padre);
@@ -191,6 +170,7 @@ class AreasController extends BaseController {
         $area->setcreated_at($timestamp);
         $area->setupdated_at($timestamp);
         $this->departamentosMapper->insert($area);
+        return new DataResponse(Http::STATUS_OK);
     }
 
     /**
@@ -199,6 +179,7 @@ class AreasController extends BaseController {
     #[UseSession]
     #[NoAdminRequired]
     private function getUploadedFile(string $key): array {
+        $this->checkAccess(['admin', 'recursos_humanos']);
         $file = $this->request->getUploadedFile($key);
         if (empty($file) || ($file['error'] ?? UPLOAD_ERR_OK) !== UPLOAD_ERR_OK) {
             throw new UploadException($this->l10n->t('Error en la subida del archivo.'));

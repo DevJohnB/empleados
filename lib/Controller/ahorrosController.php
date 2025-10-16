@@ -17,6 +17,8 @@ use OCA\Empleados\Db\empleadosMapper;
 use OCA\Empleados\Db\configuracionesMapper;
 use OCA\Empleados\Db\userahorroMapper;
 use OCA\Empleados\Db\historialahorroMapper;
+use OCP\AppFramework\Http;
+use OCP\AppFramework\Http\DataResponse;
 
 class ahorrosController extends BaseController {
 
@@ -48,20 +50,22 @@ class ahorrosController extends BaseController {
 
     #[UseSession]
     #[NoAdminRequired]
-	public function GetInfoAhorro(int $Id_user): array{
+	public function GetInfoAhorro(int $Id_user): DataResponse {
+        $this->checkAccess(['admin', 'empleados']);
 		try{
 			$user = $this->userahorroMapper->GetInfoAhorro($Id_user);
 			
-			return $user; 
+			return new DataResponse($user, Http::STATUS_OK);
 		}
 		catch(Exception $e){
-			return $e;
+			return new DataResponse($e, Http::STATUS_NOT_FOUND);
 		}
 	}
 
 	#[UseSession]
     #[NoAdminRequired]
-	public function EnviarSolicitud(int $id_ahorro, float $cantidad_solicitada, string $nota): string {
+	public function EnviarSolicitud(int $id_ahorro, float $cantidad_solicitada, string $nota): DataResponse {
+        $this->checkAccess(['admin', 'empleados']);
 		try{
 			# $user = $this->userahorroMapper->GetInfoByIdAhorro($id_ahorro);
 			$user = $this->userSession->getUser();
@@ -70,29 +74,31 @@ class ahorrosController extends BaseController {
 			$this->historialahorroMapper->EnviarSolicitud($id_ahorro, $cantidad_solicitada, $employee[0]['Fondo_ahorro'], $nota);
 			$this->userahorroMapper->updatePermisionUserId($id_ahorro, '2');
 			
-			return "ok"; 
+			return new DataResponse("ok", Http::STATUS_OK);
 		}
 		catch(Exception $e){
-			return $e;
+			return new DataResponse($e, Http::STATUS_NOT_FOUND);
 		}
 	}
 
 	#[UseSession]
     #[NoAdminRequired]
-	public function getHistorial(string $id_user) : array {
+	public function getHistorial(string $id_user) : DataResponse {
+        $this->checkAccess(['admin', 'empleados']);
 		try{
 			$user = $this->historialahorroMapper->getahorrobyid($id_user);
 			
-			return $user; 
+			return new DataResponse($user, Http::STATUS_OK);
 		}
 		catch(Exception $e){
-			return $e;
+			return new DataResponse($e, Http::STATUS_NOT_FOUND);
 		}
 	}
 
 	#[UseSession]
     #[NoAdminRequired]
-	public function GetHistorialPanel(string $options_fechas_value, string $options_estado_values) : array {
+	public function GetHistorialPanel(string $options_fechas_value, string $options_estado_values) : DataResponse {
+        $this->checkAccess(['admin', 'recursos_humanos']);
 		try{
 			$user = $this->historialahorroMapper->GetHistorialPanel($options_fechas_value, $options_estado_values);
 			

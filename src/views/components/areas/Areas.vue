@@ -6,11 +6,6 @@
 // navigator
 import AreasList from './AreasList.vue'
 
-import { showError /* showSuccess */ } from '@nextcloud/dialogs'
-import { generateUrl } from '@nextcloud/router'
-import axios from '@nextcloud/axios'
-import { translate as t } from '@nextcloud/l10n'
-
 export default {
 	name: 'Areas',
 	components: {
@@ -21,31 +16,6 @@ export default {
 		return {
 			loading: true,
 		}
-	},
-
-	async mounted() {
-		this.getall()
-	},
-
-	methods: {
-		async getall() {
-			this.loading = false
-			try {
-				await axios.get(generateUrl('/apps/empleados/GetAreasList'))
-					.then(
-						(response) => {
-							// eslint-disable-next-line no-console
-							console.log(response)
-							this.loading = false
-						},
-						(err) => {
-							showError(err)
-						},
-					)
-			} catch (err) {
-				showError(t('empleados', 'Se ha producido una excepcion [01] [{error}]', { error: String(err) }))
-			}
-		},
 	},
 }
 </script>

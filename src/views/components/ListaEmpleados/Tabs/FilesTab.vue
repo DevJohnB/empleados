@@ -96,7 +96,7 @@ import Reload from 'vue-material-design-icons/Reload.vue'
 
 import { getClient, defaultRootPath } from '@nextcloud/files/dav'
 import { upload as Upload } from '@nextcloud/upload'
-import { showError, showSuccess } from '@nextcloud/dialogs'
+import { showError, showSuccess, showWarning } from '@nextcloud/dialogs'
 import { NcButton, NcDialog, NcTextField, NcLoadingIcon } from '@nextcloud/vue'
 
 import { translate as t } from '@nextcloud/l10n'
@@ -213,7 +213,7 @@ export default {
 				} catch {}
 				await new Promise(resolve => setTimeout(resolve, delay))
 			}
-			console.warn(`⚠️ Archivo ${file.name} no confirmado tras reintentos.`)
+			showWarning(`⚠️ No se pudo confirmar la subida del archivo ${file.name} después de varios intentos.`)
 		},
 		async uploadFile(event) {
 			const files = Array.from(event.target.files)

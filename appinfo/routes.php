@@ -11,16 +11,33 @@ return [
 		
 
 		/******************************** EMPLEADOS ********************************************/ 
+		# OBTENER DATOS DE USUARIO NEXTCLOUD
 		['name' => 'empleados#GetUser', 'url' => '/GetUser', 'verb' => 'GET'],
-		['name' => 'empleados#GetUserLists', 'url' => '/GetUserLists', 'verb' => 'GET'],
-		['name' => 'empleados#GetEmpleadosList', 'url' => '/GetEmpleadosList', 'verb' => 'GET'],
-		['name' => 'empleados#GetEmpleadosArea', 'url' => '/GetEmpleadosArea/{id_area}', 'verb' => 'GET'],
-		['name' => 'empleados#GetEmpleadosPuesto', 'url' => '/GetEmpleadosPuesto/{id_puesto}', 'verb' => 'GET'],
-		['name' => 'empleados#GetEmpleadosEquipo', 'url' => '/GetEmpleadosEquipo/{id_equipo}', 'verb' => 'GET'],
-		['name' => 'empleados#GetEmpleadosListFix', 'url' => '/GetEmpleadosListFix', 'verb' => 'GET'],
-		['name' => 'empleados#ExportListEmpleados', 'url' => '/ExportListEmpleados', 'verb' => 'GET'],
-		['name' => 'empleados#GetMyEquipo', 'url' => '/GetMyEquipo', 'verb' => 'GET'],
 		
+		# OBTIENE LA LISTA DE EMPĹEADOS, USUARIOS Y USUARIOS DESACTIVADOS
+		['name' => 'empleados#GetUserLists', 'url' => '/GetUserLists', 'verb' => 'GET'],
+		
+		# LISTADO COMPLETO DE EMPLEADOS CON SUS DATOS
+		['name' => 'empleados#GetEmpleadosList', 'url' => '/GetEmpleadosList', 'verb' => 'GET'],
+		
+		# LISTADO DE EMPLEADOS POR AREA
+		['name' => 'empleados#GetEmpleadosArea', 'url' => '/GetEmpleadosArea/{id_area}', 'verb' => 'GET'],
+		
+		# LISTADO DE EMPLEADOS POR PUESTO
+		['name' => 'empleados#GetEmpleadosPuesto', 'url' => '/GetEmpleadosPuesto/{id_puesto}', 'verb' => 'GET'],
+		
+		# LISTADO DE EMPLEADOS POR EQUIPO
+		['name' => 'empleados#GetEmpleadosEquipo', 'url' => '/GetEmpleadosEquipo/{id_equipo}', 'verb' => 'GET'],
+		
+		# EN DESUSO
+		['name' => 'empleados#GetEmpleadosListFix', 'url' => '/GetEmpleadosListFix', 'verb' => 'GET'],
+		
+		# EXPORTA LISTA DE EMPLEADOS A EXCEL
+		['name' => 'empleados#ExportListEmpleados', 'url' => '/ExportListEmpleados', 'verb' => 'GET'],
+		
+		# LISTADO DE EMPLEADOS EN EQUIPO DEL USUARIO ACTUAL
+		['name' => 'empleados#GetMyEquipo', 'url' => '/GetMyEquipo', 'verb' => 'GET'],
+
 		['name' => 'empleados#uploadAvatar', 'url' => '/uploadAvatar', 'verb' => 'POST'],
 		
 		['name' => 'empleados#GuardarNota', 'url' => '/GuardarNota', 'verb' => 'POST'],
@@ -62,7 +79,7 @@ return [
 		['name' => 'equipos#ExportListEquipos', 'url' => '/ExportListEquipos', 'verb' => 'GET'],
 				
 		['name' => 'equipos#GuardarCambioEquipo', 'url' => '/GuardarCambioEquipo', 'verb' => 'POST'],
-		['name' => 'equipos#ImportListEquipo', 'url' => '/ImportListEquipo', 'verb' => 'POST'],
+		['name' => 'equipos#ImportListEquipos', 'url' => '/ImportListEquipos', 'verb' => 'POST'],
 		['name' => 'equipos#EliminarEquipo', 'url' => '/EliminarEquipo', 'verb' => 'POST'],
 		['name' => 'equipos#GetEquipoJefe', 'url' => '/GetEquipoJefe', 'verb' => 'POST'],
 		['name' => 'equipos#crearEquipo', 'url' => '/crearEquipo', 'verb' => 'POST'],

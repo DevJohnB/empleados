@@ -141,6 +141,7 @@ export default {
 
 		async guardarNota() {
 			try {
+				this.debouncePropertyChange.flush?.()
 				await axios.post(generateUrl('/apps/empleados/GuardarNota'), {
 					id_empleados: this.data.Id_empleados,
 					nota: this.notas,

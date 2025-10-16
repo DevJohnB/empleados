@@ -24,7 +24,10 @@ use OCP\IConfig;
 
 use OCP\IURLGenerator;
 use OCP\Http\Client\IClientService;
-use OCP\Group\ISubAdmin;    
+use OCP\Group\ISubAdmin;
+
+use OCP\AppFramework\Http;
+use OCP\AppFramework\Http\DataResponse;
 
 require_once 'SimpleXLSXGen.php';
 require_once 'SimpleXLSX.php';
@@ -32,7 +35,7 @@ require_once 'SimpleXLSX.php';
 /**
  * Controlador para la gestión de equipos de empleados en Nextcloud.
  */
-class equiposController extends Controller {
+class equiposController extends BaseController {
 
     protected $userSession;
     protected $userManager;
@@ -77,83 +80,18 @@ class equiposController extends Controller {
     }
 
     /**
-     * Obtiene la lista de empleados y usuarios.
-     */
-    #[UseSession]
-    #[NoAdminRequired]
-    public function GetUserLists(): array {
-        return [
-            'Empleados' => $this->empleadosMapper->GetUserLists(),
-            'Users' => $this->empleadosMapper->getAllUsers(),
-        ];
-    }
-
-    /**
      * Obtiene la lista de equipos en formato clave-valor.
      */
     #[UseSession]
     #[NoAdminRequired]
-    public function GetEquiposFix(): array {
-        return array_map(fn($equipo) => [
+    public function GetEquiposFix(): DataResponse {
+        $this->checkAccess(['admin', 'recursos_humanos']);
+        $response = array_map(fn($equipo) => [
             'value' => $equipo['Id_equipos'],
             'label' => $equipo['Nombre'],
         ], $this->equiposMapper->GetEquiposList());
-    }
 
-    /**
-     * Obtiene la lista de empleados.
-     */
-    #[UseSession]
-    #[NoAdminRequired]
-    public function GetEmpleadosList(): array {
-        return ['Empleados' => $this->empleadosMapper->GetUserLists()];
-    }
-
-    /**
-     * Obtiene la lista de empleados con nombres corregidos si están vacíos.
-     */
-    #[UseSession]
-    #[NoAdminRequired]
-    public function GetEmpleadosListFix(): array {
-        return array_map(fn($empleado) => [
-            'id' => $empleado['uid'],
-            'displayName' => $empleado['displayname'] ?: $empleado['uid'],
-            'user' => $empleado['uid'],
-            'showUserStatus' => false,
-        ], $this->empleadosMapper->GetUserLists());
-    }
-
-    /**
-     * Activa un empleado.
-     */
-    #[UseSession]
-    #[NoAdminRequired]
-    public function ActivarEmpleado(string $id_user): string {
-        try {
-            $timestamp = date('Y-m-d');
-            $user = new empleados();
-            $user->setid_user($id_user);
-            $user->setcreated_at($timestamp);
-            $user->setupdated_at($timestamp);
-            $this->empleadosMapper->insert($user);
-            return "ok";
-        } catch (\Exception $e) {
-            return $e->getMessage();
-        }
-    }
-
-    /**
-     * Elimina un empleado por ID.
-     */
-    #[UseSession]
-    #[NoAdminRequired]
-    public function EliminarEmpleado(int $id_empleados): string {
-        try {
-            $this->empleadosMapper->deleteByIdEmpleado($id_empleados);
-            return "ok";
-        } catch (\Exception $e) {
-            return $e->getMessage();
-        }
+        return new DataResponse($response, Http::STATUS_OK);
     }
 
     /**
@@ -161,8 +99,9 @@ class equiposController extends Controller {
      */
     #[UseSession]
     #[NoAdminRequired]
-    public function GetEquiposList(): array {
-        return $this->equiposMapper->GetEquiposList();
+    public function GetEquiposList(): DataResponse {
+        $this->checkAccess(['admin', 'recursos_humanos']);
+        return new DataResponse($this->equiposMapper->GetEquiposList(), Http::STATUS_OK);
     }
 
     /**
@@ -170,15 +109,17 @@ class equiposController extends Controller {
      */
     #[UseSession]
     #[NoAdminRequired]
-    public function GetEquipoJefe(): array {
+    public function GetEquipoJefe(): DataResponse {
+        $this->checkAccess(['admin', 'recursos_humanos']);
         $id = $this->request->getParam('id');
-        return $this->equiposMapper->GetEquipoJefe($id);
+        return new DataResponse($this->equiposMapper->GetEquipoJefe((string)$id), Http::STATUS_OK);
     }
 
     /**
      * Exporta la lista de equipos a un archivo XLSX.
      */
-    public function ExportListEquipos(): array {
+    public function ExportListEquipos(): DataResponse {
+        $this->checkAccess(['admin', 'recursos_humanos']);
         $equipos = $this->equiposMapper->GetEquiposList();
         $books = [['Id_equipo', 'Nombre', 'created_at', 'updated_at']];
 
@@ -192,13 +133,14 @@ class equiposController extends Controller {
         }
 
         \Shuchkin\SimpleXLSXGen::fromArray($books)->downloadAs('equipos.xlsx');
-        return $books;
+        return new DataResponse($books, Http::STATUS_OK);
     }
 
     /**
      * Importa la lista de equipos desde un archivo XLSX.
      */
-    public function ImportListEquipos(): void {
+    public function ImportListEquipos(): DataResponse {
+        $this->checkAccess(['admin', 'recursos_humanos']);
         $file = $this->getUploadedFile('equipofileXLSX');
         if ($xlsx = \Shuchkin\SimpleXLSX::parse($file['tmp_name'])) {
             foreach ($xlsx->rows() as $row) {
@@ -213,7 +155,9 @@ class equiposController extends Controller {
                     $this->equiposMapper->insert($equipo);
                 }
             }
+        return new DataResponse(['status' => 'error'], Http::STATUS_BAD_REQUEST);
         }
+        return new DataResponse(Http::STATUS_OK);
     }
 
     /**
@@ -221,7 +165,8 @@ class equiposController extends Controller {
      */
     #[UseSession]
     #[NoAdminRequired]
-    public function EliminarEquipo(int $id_equipo): string {
+    public function EliminarEquipo(int $id_equipo): DataResponse {
+        $this->checkAccess(['admin', 'recursos_humanos']);
         try {
             $row = $this->equiposMapper->deleteByIdReturningRow((string)$id_equipo);
             if ($row) {
@@ -234,9 +179,9 @@ class equiposController extends Controller {
                     }
                 }
             } else {
-                return 'no existe';
+                return new DataResponse('equipo_no_encontrado', Http::STATUS_NOT_FOUND);
             }
-            return 'ok';
+            return new DataResponse('ok', Http::STATUS_OK);
         } catch (\Exception $e) {
             return $e->getMessage();
         }
@@ -248,7 +193,8 @@ class equiposController extends Controller {
      */
     #[UseSession]
     #[NoAdminRequired] // si aplica, cámbiala por #[AdminRequired]
-    public function GuardarCambioEquipo(int $Id_Equipo, string $Id_jefe_equipo): void {
+    public function GuardarCambioEquipo(int $Id_Equipo, string $Id_jefe_equipo): DataResponse {
+        $this->checkAccess(['admin', 'recursos_humanos']);
         // 1) leer estado actual
         $old = $this->equiposMapper->getById((string)$Id_Equipo);
         if (!$old) throw new \RuntimeException("Equipo $Id_Equipo no existe");
@@ -285,6 +231,7 @@ class equiposController extends Controller {
             // opcional: también puedes removerlo del grupo:
             // if ($oldUser && $group->inGroup($oldUser)) $group->removeUser($oldUser);
         }
+        return new DataResponse('ok', Http::STATUS_OK);
     }
 
     /**
@@ -292,7 +239,8 @@ class equiposController extends Controller {
      */
     #[UseSession]
     #[NoAdminRequired]
-    public function crearEquipo(string $nombre, string $jefe): void {
+    public function crearEquipo(string $nombre, string $jefe): DataResponse {
+        $this->checkAccess(['admin', 'recursos_humanos']);
         $timestamp = date('Y-m-d');
         $equipo = new equipos();
         $equipo->setnombre($nombre);
@@ -324,16 +272,18 @@ class equiposController extends Controller {
         }
 
         $this->subAdmin->createSubAdmin($user, $group);
+        return new DataResponse(Http::STATUS_OK);
     }
 
     #[UseSession]
     #[NoAdminRequired]
-    public function promoverJefeDeEquipo(string $uid, string $gid): string {
+    public function promoverJefeDeEquipo(string $uid, string $gid): DataResponse {
+        $this->checkAccess(['admin', 'recursos_humanos']);
         try {
             $user  = $this->userManager->get($uid);
             $group = $this->groupManager->get($gid);
             if (!$user || !$group) {
-                return 'usuario_o_grupo_no_existe';
+                return DataResponse('error: usuario o grupo no existen', Http::STATUS_BAD_REQUEST);
             }
 
             // Asegurar pertenencia al grupo (evita fallo de subadmin si no es miembro)
@@ -344,9 +294,9 @@ class equiposController extends Controller {
             // Promover a subadmin SIN usar HTTP:
             $this->subAdmin->createSubAdmin($user, $group);
 
-            return 'ok';
+            return new DataResponse('ok', Http::STATUS_OK);
         } catch (\Throwable $e) {
-            return 'error: ' . $e->getMessage();
+            return new DataResponse('error: ' . $e->getMessage(), Http::STATUS_INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -354,6 +304,7 @@ class equiposController extends Controller {
      * Obtiene un archivo subido y maneja posibles errores.
      */
     private function getUploadedFile(string $key): array {
+        $this->checkAccess(['admin', 'recursos_humanos']);
         $file = $this->request->getUploadedFile($key);
         if (empty($file) || ($file['error'] ?? UPLOAD_ERR_OK) !== UPLOAD_ERR_OK) {
             throw new UploadException($this->l10n->t('Error en la subida del archivo.'));

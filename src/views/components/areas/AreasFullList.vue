@@ -181,7 +181,7 @@ export default {
 			try {
 				await axios.get(generateUrl('/apps/empleados/GetAreasFix'))
 					.then(
-						(response) => { this.options = response.data },
+						(response) => { this.options = response?.data?.ocs?.data },
 						(err) => { showError(err) },
 					)
 			} catch (err) {

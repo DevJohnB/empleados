@@ -85,10 +85,10 @@ export default {
 
 		async gethistorial() {
 			try {
-				const { data } = await axios.get(generateUrl('apps/empleados/getHistorial/' + this.id))
+				const response = await axios.get(generateUrl('apps/empleados/getHistorial/' + this.id))
+				const data = response?.data?.ocs?.data || []
 				this.historial = Array.isArray(data) ? data : []
 			} catch (e) {
-				console.error(e)
 				showError(t('ahorrosgossler', 'Could not fetch your information'))
 			} finally {
 				this.loading = false

@@ -473,7 +473,7 @@ export default {
 		async getAreas(Area) {
 			try {
 				const response = await axios.get(generateUrl('/apps/empleados/GetAreasFix'))
-				this.optionsarea = response.data
+				this.optionsarea = response?.data?.ocs?.data
 				if (Area && Area.length !== 0) {
 					this.area = this.optionsarea.find(areas => areas.value === parseInt(Area)).label
 				} else {
@@ -487,7 +487,7 @@ export default {
 		async getPuestos(Puesto) {
 			try {
 				const response = await axios.get(generateUrl('/apps/empleados/GetPuestosFix'))
-				this.optionspuesto = response.data
+				this.optionspuesto = response?.data?.ocs?.data
 				if (Puesto && Puesto.length !== 0) {
 					this.puesto = this.optionspuesto.find(role => role.value === parseInt(Puesto)).label
 				} else {
@@ -502,7 +502,8 @@ export default {
 			this.loading = false
 			this.GetAllEquipo(Equipo)
 			try {
-				const { data } = await axios.get(generateUrl('/apps/empleados/GetEquiposList'))
+				const response = await axios.get(generateUrl('/apps/empleados/GetEquiposList'))
+				const data = response?.data?.ocs?.data
 				this.optionsequipos = data.map(equipo => ({
 					value: equipo.Id_equipo,
 					label: equipo.Nombre,
@@ -523,7 +524,8 @@ export default {
 				if (equipo === '' || equipo === null || equipo === undefined) {
 					showError(t('empleados', 'This employee doesn’t belong to a team — assign them to one.'))
 				} else {
-					const { data } = await axios.get(generateUrl('/apps/empleados/GetEmpleadosEquipo/' + equipo))
+					const response = await axios.get(generateUrl('/apps/empleados/GetEmpleadosEquipo/' + equipo))
+					const data = response?.data?.ocs?.data
 					this.peopleEquipo = data
 				}
 			} catch (err) {
@@ -596,8 +598,8 @@ export default {
 				const response = await axios.post(generateUrl('/apps/empleados/GetAniversarioByDate'), {
 					ingreso: this.checknull(this.Ingreso),
 				})
-				this.Aniversario = response.data[0]?.numero_aniversario
-				this.Vacaciones = response.data[0]?.dias
+				this.Aniversario = response?.data?.ocs?.data[0]?.numero_aniversario
+				this.Vacaciones = response?.data?.ocs?.data[0]?.dias
 			} catch (err) {
 				showError(err)
 			}

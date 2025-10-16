@@ -252,20 +252,20 @@ export default {
 					.then(
 						(response) => {
 							this.Usuarios = []
-							this.Empleados = response.data.Empleados
-							this.Desactivados = response.data.Desactivados
+							this.Empleados = response?.data?.ocs?.data.Empleados
+							this.Desactivados = response?.data?.ocs?.data.Desactivados
 
 							this.map = {}
 
-							response.data.Empleados.forEach(empleado => {
+							response?.data?.ocs?.data.Empleados.forEach(empleado => {
 								this.map[empleado.Id_user] = true
 							})
 
-							response.data.Desactivados.forEach(empleado => {
+							response?.data?.ocs?.data.Desactivados.forEach(empleado => {
 								this.map[empleado.Id_user] = true
 							})
 
-							this.Usuarios = response.data.Users.filter(user => !this.map[user.uid])
+							this.Usuarios = response?.data?.ocs?.data.Users.filter(user => !this.map[user.uid])
 
 							this.loading = false
 						},
