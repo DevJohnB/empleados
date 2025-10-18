@@ -13,11 +13,12 @@ use OCP\IL10N;
 use OCA\Empleados\UploadException;
 use OCP\AppFramework\Http\DataResponse;
 
+use OCP\IUserSession;
+use OCP\IUserManager;
+use OCP\IGroupManager;
+
 use OCA\Empleados\Db\configuracionesMapper;
 use OCP\Files\IRootFolder;
-use OCP\IUserManager;
-
-use OCP\IUserSession;
 
 use DateTime;
 
@@ -28,8 +29,8 @@ use OCA\Empleados\Db\tipoausenciaMapper;
 use OCA\Empleados\Db\historialausenciasMapper;
 use OCA\Empleados\Db\ausencias;
 
+use OCP\AppFramework\Http;
 use OCP\IURLGenerator;
-use OCP\IGroupManager;
 use OCP\Activity\IManager;
 
 use OCA\Empleados\Helper\MailHelper;
@@ -40,7 +41,7 @@ require_once 'SimpleXLSX.php';
 /**
  * Controlador para la gestión de áreas en Nextcloud.
  */
-class AusenciasController extends Controller {
+class AusenciasController extends BaseController {
 
     protected $userSession;
     protected $l10n;
@@ -76,10 +77,10 @@ class AusenciasController extends Controller {
 		IURLGenerator $urlGenerator,
         MailHelper $mailHelper
     ) {
-        parent::__construct(Application::APP_ID, $request, $userSession, $configuracionesMapper, $groupManager);
+        parent::__construct(Application::APP_ID, $request, $userSession, $groupManager, $empleadosMapper, $configuracionesMapper);
         
         $this->l10n = $l10n;
-        $this->empleadosMapper = $empleadosMapper;
+        $this->empleadosMapper = $empleadosMapper;eturn ;
         $this->ausenciasMapper = $ausenciasMapper;
         $this->equiposMapper = $equiposMapper;
         $this->tipoausenciaMapper = $tipoausenciaMapper;
@@ -98,7 +99,7 @@ class AusenciasController extends Controller {
      */
     #[UseSession]
     #[NoAdminRequired]
-    private function registrarActividadAusencia(string $tipoAusencia, string $fechaInicio, string $fechaFin, ?int $idHistorialAusencia): void {
+    private function registrarActividadAusencia(string $tipoAusencia, string $fechaInicio, string $fechaFin, ?int $idHistorialAusencia): DataResponse {
         $user = $this->userSession->getUser()->getUID();
         $username = $this->userSession->getUser()->getDisplayName();
         $employe_info = $this->empleadosMapper->GetMyEmployeeInfo($user);
@@ -212,8 +213,9 @@ class AusenciasController extends Controller {
      */
     #[UseSession]
     #[NoAdminRequired]
-    public function GetAusenciasByUser($id): array {
-        return $this->ausenciasMapper->GetAusenciasByUser($id);
+    public function GetAusenciasByUser($id): DataResponse {
+        $this->checkAccess(['admin', 'empleados']);
+        return new DataResponse($this->ausenciasMapper->GetAusenciasByUser($id), Http::STATUS_OK);
     }
 
     /**
@@ -262,44 +264,7 @@ class AusenciasController extends Controller {
             return $e->getMessage();
         }
     }
-
-    /**
-     * Elimina un área por ID.
-     */
-    #[UseSession]
-    #[NoAdminRequired]
-    public function EliminarArea(int $id_departamento): string {
-        try {
-            $this->departamentosMapper->EliminarArea((string) $id_departamento);
-            return "ok";
-        } catch (\Exception $e) {
-            return $e->getMessage();
-        }
-    }
-
-    /**
-     * Guarda cambios en las áreas.
-     */
-    #[UseSession]
-    #[NoAdminRequired]
-    public function GuardarCambioArea(int $id_departamento, string $padre, string $nombre): void {
-        $this->departamentosMapper->updateAusencias((string) $id_departamento, $padre, $nombre);
-    }
-
-    /**
-     * Crea una nueva área.
-     */
-    #[UseSession]
-    #[NoAdminRequired]
-    public function AgregarNuevoAniversario(int $numero_ausencias, string $fecha_de, string $fecha_hasta, float $dias): void {
-        $area = new ausencias();
-        $area->setnumero_ausencias($numero_ausencias);
-        $area->setfecha_de($fecha_de);
-        $area->setfecha_hasta($fecha_hasta);
-        $area->setdias($dias);
-        $this->ausenciasMapper->insert($area);
-    }
-
+        
     /**
      * Obtiene un archivo subido y maneja posibles errores.
      */
@@ -444,6 +409,7 @@ class AusenciasController extends Controller {
     #[UseSession]
     #[NoAdminRequired]
     public function GetAusenciasHistorial(): DataResponse {
+        $this->checkAccess(['admin', 'empleados']);
         $user = $this->userSession->getUser();
         $id_empleado = $this->empleadosMapper->GetMyEmployeeInfo($user->getUID());
         $empleado_ausencias = $this->ausenciasMapper->GetAusenciasByUser($id_empleado[0]['Id_empleados']);
@@ -461,7 +427,7 @@ class AusenciasController extends Controller {
                 $a['nombre_empleado'] = $id_empleado[0]['Id_user']; // si existe
         }
 
-        return new DataResponse(['success' => true, 'message' => $response]);
+        return new DataResponse($response, Http::STATUS_OK);
     }
 
     /**

@@ -102,43 +102,46 @@ class ahorrosController extends BaseController {
 		try{
 			$user = $this->historialahorroMapper->GetHistorialPanel($options_fechas_value, $options_estado_values);
 			
-			return $user; 
+			return new DataResponse($user, Http::STATUS_OK);
 		}
 		catch(Exception $e){
-			return $e;
+			return new DataResponse($e, Http::STATUS_NOT_FOUND);
 		}
 
 	}
 
 	#[UseSession]
     #[NoAdminRequired]
-	public function AceptarAhorro(int $id_ahorro, int $id): string {
+	public function AceptarAhorro(int $id_ahorro, int $id): DataResponse {
+        $this->checkAccess(['admin', 'recursos_humanos']);
 		try{
 			$this->historialahorroMapper->AceptarAhorro($id_ahorro);	
 			$this->userahorroMapper->updatePermisionUserId($id, '0');	
 			
-			return "ok"; 
+			return new DataResponse("ok", Http::STATUS_OK);
 		}
 		catch(Exception $e){
-			return $e;
+			return new DataResponse($e, Http::STATUS_NOT_FOUND);
 		}
 	}
 
 	#[UseSession]
     #[NoAdminRequired]
-	public function DenegarAhorro(int $id_ahorro, int $id): string {
+	public function DenegarAhorro(int $id_ahorro, int $id): DataResponse {
+		$this->checkAccess(['admin', 'recursos_humanos']);
 		try{
 			$this->historialahorroMapper->DenegarAhorro($id_ahorro);		
 			$this->userahorroMapper->updatePermisionUserId($id, '1');	
 			
-			return "ok"; 
+			return new DataResponse("ok", Http::STATUS_OK);
 		}
 		catch(Exception $e){
-			return $e;
+			return new DataResponse($e, Http::STATUS_NOT_FOUND);
 		}
 	}
 
-	public function GenerateReport(string $options_fechas_value, string $options_estado_values): string {
+	public function GenerateReport(string $options_fechas_value, string $options_estado_values): DataResponse {
+		$this->checkAccess(['admin', 'recursos_humanos']);
 		try{
 			
 			$user = $this->historialahorroMapper->GetHistorialPanel($options_fechas_value, $options_estado_values);
@@ -162,18 +165,16 @@ class ahorrosController extends BaseController {
 				]);
 				
 			}
-
-			
 		
 			$xlsx = \Shuchkin\SimpleXLSXGen::fromArray( $books );
 			//$xlsx->saveAs('books.xlsx'); // or downloadAs('books.xlsx') or $xlsx_content = (string) $xlsx 
 		
 			$fileContent = $xlsx->downloadAs('php://memory');
 
-			return $books; 
+			return new DataResponse($book, Http::STATUS_OK); 
 		}
 		catch(Exception $e){
-			return $e;
+			return new DataResponse($e, Http::STATUS_NOT_FOUND);
 		}
 	}
 
