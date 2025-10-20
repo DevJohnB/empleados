@@ -44,13 +44,13 @@ require_once 'SimpleXLSX.php';
 class AusenciasController extends BaseController {
 
     protected $userSession;
+    protected $configuracionesMapper;
     protected $l10n;
     protected $equiposMapper;
     protected $empleadosMapper;
     protected $ausenciasMapper;
     protected $tipoausenciaMapper;
     protected $historialausenciasMapper;
-    protected $configuracionesMapper;
 
     protected $userManager;
 
@@ -62,17 +62,17 @@ class AusenciasController extends BaseController {
 
     public function __construct(
         IRequest $request,
+        IUserSession $userSession,
+        IGroupManager $groupManager,
+        configuracionesMapper $configuracionesMapper,
         IL10N $l10n,
         ausenciasMapper $ausenciasMapper,
         equiposMapper $equiposMapper,
         historialausenciasMapper $historialausenciasMapper,
         tipoausenciaMapper $tipoausenciaMapper,
         empleadosMapper $empleadosMapper,
-        IUserSession $userSession,
-        configuracionesMapper $configuracionesMapper,
         IRootFolder $rootFolder,
         IUserManager $userManager,
-        IGroupManager $groupManager,
         IManager $activityManager,
 		IURLGenerator $urlGenerator,
         MailHelper $mailHelper
@@ -80,16 +80,16 @@ class AusenciasController extends BaseController {
         parent::__construct(Application::APP_ID, $request, $userSession, $groupManager, $empleadosMapper, $configuracionesMapper);
         
         $this->l10n = $l10n;
-        $this->empleadosMapper = $empleadosMapper;eturn ;
+        $this->empleadosMapper = $empleadosMapper;
+        $this->groupManager = $groupManager;
+        $this->configuracionesMapper = $configuracionesMapper;
+        $this->userSession = $userSession;
         $this->ausenciasMapper = $ausenciasMapper;
         $this->equiposMapper = $equiposMapper;
         $this->tipoausenciaMapper = $tipoausenciaMapper;
         $this->historialausenciasMapper = $historialausenciasMapper;
-        $this->userSession = $userSession;
-        $this->configuracionesMapper = $configuracionesMapper;
         $this->rootFolder = $rootFolder;
         $this->userManager = $userManager;
-        $this->groupManager = $groupManager;
         $this->activityManager = $activityManager;
 		$this->urlGenerator = $urlGenerator;
         $this->mailHelper = $mailHelper;
@@ -164,7 +164,8 @@ class AusenciasController extends BaseController {
     
     #[UseSession]
     #[NoAdminRequired]
-    public function GetNotificationsSubordinates(): array {
+    public function GetNotificationsSubordinates(): DataResponse {
+        $this->checkAccess(['admin', 'empleados']);
         $user = $this->userSession->getUser();
         $equipo_empleado = $this->empleadosMapper->GetSubordinates($user->getUID());
 
@@ -195,7 +196,7 @@ class AusenciasController extends BaseController {
             }
         }
 
-        return $empleados_data;
+        return new DataResponse($empleados_data, Http::STATUS_OK);
     }
 
 
@@ -204,8 +205,9 @@ class AusenciasController extends BaseController {
      */
     #[UseSession]
     #[NoAdminRequired]
-    public function GetAusencias(): array {
-        return $this->ausenciasMapper->Getausencias();
+    public function GetAusencias(): DataResponse {
+        $this->checkAccess(['admin', 'empleados']);
+        return new DataResponse($this->ausenciasMapper->Getausencias(), Http::STATUS_OK);
     }
 
     /**
@@ -221,7 +223,8 @@ class AusenciasController extends BaseController {
     /**
      * Exporta la lista de áreas a un archivo XLSX.
      */
-    public function ExportListAusencias(): array {
+    public function ExportListAusencias(): DataResponse {
+        $this->checkAccess(['admin', 'empleados']);
         $ausencias = $this->ausenciasMapper->Getausencias();
         $books = [['id_universario', 'numero_ausencias', 'dias']];
 
@@ -233,13 +236,14 @@ class AusenciasController extends BaseController {
         }
 
         \Shuchkin\SimpleXLSXGen::fromArray($books)->downloadAs('ausencias.xlsx');
-        return $books;
+        return new DataResponse($books, Http::STATUS_OK);
     }
 
     /**
      * Importa la lista de áreas desde un archivo XLSX.
      */
-    public function ImportListAusencias(): void {
+    public function ImportListAusencias(): DataResponse {
+        $this->checkAccess(['admin', 'empleados']);
         $file = $this->getUploadedFile('fileXLSX');
         if ($xlsx = \Shuchkin\SimpleXLSX::parse($file['tmp_name'])) {
             foreach ($xlsx->rows() as $row) {
@@ -248,7 +252,9 @@ class AusenciasController extends BaseController {
                     $area->setdias($row[1]);
                     $this->ausenciasMapper->insert($area);
             }
+            return new DataResponse(['success' => true], Http::STATUS_OK);
         }
+        return new DataResponse(Http::STATUS_BAD_REQUEST);
     }
         
     /**
@@ -256,12 +262,13 @@ class AusenciasController extends BaseController {
      */
     #[UseSession]
     #[NoAdminRequired]
-    public function VaciarAusencias(): string {
+    public function VaciarAusencias(): DataResponse {
+        $this->checkAccess(['admin', 'empleados']);
         try {
             $this->ausenciasMapper->VaciarAusencias();
-            return "ok";
+            return new DataResponse(['success' => true], Http::STATUS_OK);
         } catch (\Exception $e) {
-            return $e->getMessage();
+            return new DataResponse(['success' => false, 'message' => $e->getMessage()], Http::STATUS_BAD_REQUEST);
         }
     }
         
@@ -283,13 +290,14 @@ class AusenciasController extends BaseController {
      */
     #[UseSession]
     #[NoAdminRequired]
-    public function GetAniversarioByDate(string $ingreso): array {
+    public function GetAniversarioByDate(string $ingreso): DataResponse {
+        $this->checkAccess(['admin', 'empleados']);
         $fechaInicio = new DateTime($ingreso);
         $hoy = new DateTime();
     
         $diferencia = $hoy->diff($fechaInicio);
     
-        return $this->ausenciasMapper->GetAniversarioByDate($diferencia->y);
+        return new DataResponse($this->ausenciasMapper->GetAniversarioByDate($diferencia->y), Http::STATUS_OK);
 
     }
 

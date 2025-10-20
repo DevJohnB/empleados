@@ -11,11 +11,18 @@ use OCP\AppFramework\Http\Attribute\NoAdminRequired;
 use OCP\IRequest;
 use OCP\IL10N;
 use OCA\Empleados\UploadException;
+use OCP\AppFramework\Http;
+use OCP\AppFramework\Http\DataResponse;
 
 use DateTime;
-
+use OCA\Empleados\Db\configuracionesMapper;
+use OCA\Empleados\Db\empleadosMapper;
 use OCA\Empleados\Db\aniversarioMapper;
 use OCA\Empleados\Db\aniversario;
+
+use OCP\IUserSession;
+use OCP\IUserManager;
+use OCP\IGroupManager;
 
 require_once 'SimpleXLSXGen.php';
 require_once 'SimpleXLSX.php';
@@ -23,20 +30,31 @@ require_once 'SimpleXLSX.php';
 /**
  * Controlador para la gestión de áreas en Nextcloud.
  */
-class AniversariosController extends Controller {
+class AniversariosController extends BaseController {
 
     protected $l10n;
     protected $aniversarioMapper;
+    protected $userSession;
+    protected $configuracionesMapper;
+    protected $empleadosMapper;
 
     public function __construct(
         IRequest $request,
-        IL10N $l10n,
+        IUserSession $userSession,
+        IGroupManager $groupManager,
+        empleadosMapper $empleadosMapper,
+        configuracionesMapper $configuracionesMapper,
         aniversarioMapper $aniversarioMapper,
+        IL10N $l10n
     ) {
-        parent::__construct(Application::APP_ID, $request);
-        
+        parent::__construct(Application::APP_ID, $request, $userSession, $groupManager, $empleadosMapper, $configuracionesMapper);
+
         $this->l10n = $l10n;
         $this->aniversarioMapper = $aniversarioMapper;
+        $this->empleadosMapper = $empleadosMapper;
+        $this->groupManager = $groupManager;
+        $this->configuracionesMapper = $configuracionesMapper;
+        $this->userSession = $userSession;
     }
 
     /**
@@ -44,15 +62,16 @@ class AniversariosController extends Controller {
      */
     #[UseSession]
     #[NoAdminRequired]
-    public function Getaniversarios(): array {
-        return $this->aniversarioMapper->Getaniversarios();
+    public function Getaniversarios(): DataResponse {
+        $this->checkAccess(['admin', 'empleados']);
+        return new DataResponse($this->aniversarioMapper->GetAniversarios(), Http::STATUS_OK);
     }
 
     /**
      * Exporta la lista de áreas a un archivo XLSX.
      */
     public function ExportListAniversarios(): array {
-        $aniversarios = $this->aniversarioMapper->Getaniversarios();
+        $aniversarios = $this->aniversarioMapper->GetAniversarios();
         $books = [['numero_aniversario', 'dias']];
 
         foreach ($aniversarios as $area) {

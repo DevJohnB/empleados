@@ -341,7 +341,7 @@ export default {
 				formData.append('fecha_de', this.date.start.toLocaleDateString())
 				formData.append('fecha_hasta', this.date.end ? this.date.end.toLocaleDateString() : '')
 				formData.append('prima_vacacional', this.SolicitarPrima)
-				formData.append('notas', this.comentarios)
+				// formData.append('notas', this.comentarios || '')
 
 				for (let i = 0; i < this.selectedFiles.length; i++) {
 					formData.append('archivos[]', this.selectedFiles[i])

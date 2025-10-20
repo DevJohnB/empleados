@@ -539,7 +539,7 @@ export default {
 				const response = await axios.post(generateUrl('/apps/empleados/GetAusenciasByUser'), {
 					id: this.employee[0].Id_empleados,
 				})
-				this.Ausencias = response.data[0]
+				this.Ausencias = response?.data?.ocs?.data[0]
 			} catch (err) {
 				showError(t('empleados', 'An exception has occurred [03] [{err}]', { err }))
 			}
@@ -547,7 +547,7 @@ export default {
 		async getAniversarios() {
 			try {
 				const response = await axios.get(generateUrl('/apps/empleados/Getaniversarios'))
-				this.Aniversarios = response.data
+				this.Aniversarios = response?.data?.ocs?.data
 				this.ModalAniversario = true
 			} catch (err) {
 				showError(t('empleados', 'An exception has occurred [01] [{err}]', { err }))
@@ -595,7 +595,7 @@ export default {
 				hasta: fetchInfo.endStr,
 			})
 				.then(r => {
-					const data = r.data.message || []
+					const data = r?.data?.ocs?.data
 					const events = data.map(item => {
 						const fechaInicio = new Date(item.fecha_de)
 						const fechaHasta = new Date(item.fecha_hasta)
@@ -734,7 +734,7 @@ export default {
 		async updateList() {
 			try {
 				const response = await axios.get(generateUrl('/apps/empleados/GetEmpleadosList'))
-				const empleados = response.data.Empleados || []
+				const empleados = response?.data?.ocs?.data.Empleados || []
 
 				this.propsEmployees.options = empleados.map(user => ({
 					Id_empleados: user.Id_empleados,
@@ -809,7 +809,7 @@ export default {
 			try {
 				await axios.get(generateUrl('/apps/empleados/GetMyEquipo'))
 					.then((response) => {
-						this.peopleEquipo = response.data
+						this.peopleEquipo = response?.data?.ocs?.data
 					})
 			} catch (err) {
 				// eslint-disable-next-line no-console
@@ -821,7 +821,8 @@ export default {
 				id: this.employee[0].Id_equipo,
 			})
 				.then(r => {
-					this.Equipo = r.data[0]
+					const response = r?.data?.ocs?.data
+					this.Equipo = response[0]
 				})
 				.catch(error => {
 					console.error('Error getting team lead:', error)

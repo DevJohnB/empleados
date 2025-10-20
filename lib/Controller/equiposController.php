@@ -105,12 +105,12 @@ class equiposController extends BaseController {
     }
 
     /**
-     * Obtiene la jefe de equipo
+     * Obtiene jefe de equipo
      */
     #[UseSession]
     #[NoAdminRequired]
     public function GetEquipoJefe(): DataResponse {
-        $this->checkAccess(['admin', 'recursos_humanos']);
+        $this->checkAccess(['admin', 'empleados']);
         $id = $this->request->getParam('id');
         return new DataResponse($this->equiposMapper->GetEquipoJefe((string)$id), Http::STATUS_OK);
     }

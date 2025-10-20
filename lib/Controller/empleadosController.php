@@ -375,7 +375,7 @@ class EmpleadosController extends BaseController {
 
     #[UseSession]
     #[NoAdminRequired]
-	public function CambiosEmpleado(
+    public function CambiosEmpleado(
         $id_empleados, 
         $numeroempleado, 
         $ingreso, 
@@ -386,90 +386,93 @@ class EmpleadosController extends BaseController {
         $fondoclave, 
         $fondoahorro, 
         $numerocuenta, 
-        $equipoasignado,
-        $equipo, 
+        $equipoasignado, // equipo de cómputo
+        $equipo,         // grupo de trabajo
         $sueldo,
         $id_aniversario,
-        $dias_disponibles): DataResponse {
-            $this->checkAccess(['admin', 'recursos_humanos']);
-            $empBefore = $this->empleadosMapper->GetMyEmployeeInfoByIdEmpleado((string)$id_empleados);
-            if (!$empBefore) {
-                throw new \RuntimeException("Empleado $id_empleados no existe");
-            }
-            $oldUid    = $empBefore['Id_user'] ?? null;
-            $oldEquipo = $empBefore['Id_equipo'] ?? null;
+        $dias_disponibles
+    ): DataResponse {
+        $this->checkAccess(['admin', 'recursos_humanos']);
+        $empBefore = $this->empleadosMapper->GetMyEmployeeInfoByIdEmpleado((string)$id_empleados);
+        if (!$empBefore) {
+            throw new \RuntimeException("Empleado $id_empleados no existe");
+        }
 
-            // 1) Aplica cambios en BD (empleado + ausencias)
-            $this->empleadosMapper->CambiosEmpleado(
-                $id_empleados, 
-                $numeroempleado, 
-                $ingreso, 
-                $area, 
-                $puesto, 
-                $socio, 
-                $gerente, 
-                $fondoclave, 
-                $fondoahorro, 
-                $numerocuenta, 
-                $equipoasignado, 
-                $equipo, 
-                $sueldo
-            );
+        $oldUid    = $empBefore[0]['Id_user'] ?? null;
+        $oldEquipo = $empBefore[0]['Id_equipo'] ?? null;
+        
+        // 1) Aplica cambios en BD (empleado + ausencias)
+        $this->empleadosMapper->CambiosEmpleado(
+            $id_empleados, 
+            $numeroempleado, 
+            $ingreso, 
+            $area, 
+            $puesto, 
+            $socio, 
+            $gerente, 
+            $fondoclave, 
+            $fondoahorro, 
+            $numerocuenta, 
+            $equipoasignado, 
+            $equipo, 
+            $sueldo
+        );
 
-            $this->ausenciasMapper->updateAusenciasById(
-                (int)$id_empleados, 
-                (int)$id_aniversario, 
-                (float)$dias_disponibles
-            );
+        $this->ausenciasMapper->updateAusenciasById(
+            (int)$id_empleados, 
+            (int)$id_aniversario, 
+            (float)$dias_disponibles
+        );
 
-            // 2) Si NO cambió ni el uid ni el equipo → no toques grupos (early return)
-            if (($oldUid === $equipoasignado || empty($equipoasignado)) && (string)$oldEquipo === (string)$equipo) {
-                return new DataResponse(Http::STATUS_OK);
-            }
+        // 2) Si no cambió el equipo o está vacío → no tocar grupos
+        if (empty($equipo) || (string)$oldEquipo === (string)$equipo) {
+            return new DataResponse(Http::STATUS_OK);
+        }
 
-            // 3) Resuelve datos actuales (uid y grupo destino)
-            $team = $this->equiposMapper->getById((string)$equipo); // siempre existe según tu comentario
-            $groupName = $team['Nombre'] ?? $team['nombre'] ?? null;
-            if (!$groupName) {
-                throw new \RuntimeException("El equipo $equipo no tiene nombre de grupo");
-            }
+        // 3) Obtiene datos del equipo destino
+        $team = $this->equiposMapper->getById((string)$equipo);
+        $groupName = $team['Nombre'] ?? $team['nombre'] ?? null;
+        if (!$groupName) {
+            throw new \RuntimeException("El equipo $equipo no tiene nombre de grupo");
+        }
 
-            $group = $this->groupManager->get($groupName);
-            if (!$group) {
-                throw new \RuntimeException("El grupo '$groupName' no existe");
-            }
+        $group = $this->groupManager->get($groupName);
+        if (!$group) {
+            throw new \RuntimeException("El grupo '$groupName' no existe");
+        }
 
-            // uid final (si no se envió uno nuevo, usa el anterior)
-            $uid = $empBefore['Id_user'] ?? null;
-            if (empty($uid)) {
-                // No hay uid ligado: no tocar grupos
-                return new DataResponse(Http::STATUS_OK);
-            }
+        // 4) Busca el usuario
+        $uid = $oldUid;
+        if (empty($uid)) {
+            return new DataResponse(Http::STATUS_OK);
+        }
 
-            $user = $this->userManager->get($uid);
-            if (!$user) {
-                throw new \RuntimeException("Usuario '$uid' no existe en Nextcloud");
-            }
+        $user = $this->userManager->get($uid);
+        if (!$user) {
+            throw new \RuntimeException("Usuario '$uid' no existe en Nextcloud");
+        }
 
-            // 4) Si cambió el equipo, quita del grupo anterior (opcional pero recomendable)
-            if ((string)$oldEquipo !== (string)$equipo && !empty($oldEquipo)) {
-                $oldTeam = $this->equiposMapper->getById((string)$oldEquipo);
-                $oldGroupName = $oldTeam['Nombre'] ?? $oldTeam['nombre'] ?? null;
-                if ($oldGroupName) {
-                    $oldGroup = $this->groupManager->get($oldGroupName);
-                    if ($oldGroup && $oldGroup->inGroup($user)) {
-                        $oldGroup->removeUser($user);
-                    }
+        // 5) Quita del grupo anterior si cambió
+        if (!empty($oldEquipo) && (string)$oldEquipo !== (string)$equipo) {
+            $oldTeam = $this->equiposMapper->getById((string)$oldEquipo);
+            $oldGroupName = $oldTeam['Nombre'] ?? $oldTeam['nombre'] ?? null;
+            if ($oldGroupName) {
+                $oldGroup = $this->groupManager->get($oldGroupName);
+                if ($oldGroup && $oldGroup->inGroup($user)) {
+                    $oldGroup->removeUser($user);
                 }
             }
+        }
 
-            // 5) Añade al grupo destino SOLO si realmente no pertenece (rápido)
-            $userGroups = $this->groupManager->getUserGroupIds($user); // array de gids
-            if (!in_array($groupName, $userGroups, true)) {
-                $group->addUser($user);
-            }
+        // 6) Añade al nuevo grupo
+        $userGroups = $this->groupManager->getUserGroupIds($user);
+        if (!in_array($groupName, $userGroups, true)) {
+            $group->addUser($user);
+        }
+
         return new DataResponse(Http::STATUS_OK);
-	}
+    }
+
 
     #[UseSession]
     #[NoAdminRequired]
