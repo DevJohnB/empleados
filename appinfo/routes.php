@@ -136,5 +136,16 @@ return [
 		['name' => 'ahorros#AceptarAhorro', 'url' => '/AceptarAhorro', 'verb' => 'POST'],
 		['name' => 'ahorros#DenegarAhorro', 'url' => '/DenegarAhorro', 'verb' => 'POST'],
 
+		/******************************* CLIENTES *****************************************/
+
+
+		/****************************** ACTIVIDADES ***************************************/
+		['name' => 'actividades#crearActividad', 'url' => '/crearActividad', 'verb' => 'POST'],
+		['name' => 'actividades#GetActividades', 'url' => '/GetActividades', 'verb' => 'GET'],
+
+		/************************** REPORTE DE TIEMPOS ************************************/
+
+		
+
 	],
 ];

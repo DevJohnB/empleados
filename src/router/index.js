@@ -10,6 +10,9 @@ import Areas from '../views/components/areas/Areas.vue'
 import Ahorros from '../views/components/ahorros/Solicitar.vue'
 import PanelAhorros from '../views/components/ahorros/PanelAhorros.vue'
 import Dashboard from '../views/components/Dashboard/Dashboard.vue'
+import CompaniesGroups from '../views/components/clientes/CompaniesGroups.vue'
+import Actividades from '../views/components/clientes/Actividades.vue'
+
 Vue.use(Router)
 
 export default new Router({
@@ -58,6 +61,16 @@ export default new Router({
 			path: '/PanelAhorros',
 			component: PanelAhorros,
 			name: 'PanelAhorros',
+		},
+		{
+			path: '/Activities',
+			component: Actividades,
+			name: 'Activities',
+		},
+		{
+			path: '/CompaniesGroups',
+			component: CompaniesGroups,
+			name: 'CompaniesGroups',
 		},
 	],
 })

@@ -315,7 +315,14 @@
     "Go to global settings and select the data manager.": "Go to global settings and select the data manager.",
     "This employee doesn’t belong to a team — assign them to one.": "This employee doesn’t belong to a team — assign them to one.",
     "Boss": "Boss",
-    "The area/department name cannot be empty.": "The area/department name cannot be empty."
+    "The area/department name cannot be empty.": "The area/department name cannot be empty.",
+    "Customers": "Customers",
+    "Customers module": "Customers module",
+    "Enable customers module": "Enable customers module",
+    "Report times module": "Report times module",
+    "Companies / Groups": "Companies / Groups",
+    "Activities": "Activities",
+    "Enable report times module": "Enable report times module"
   },
   "pluralForm": "nplurals=2; plural=(n != 1);"
 }

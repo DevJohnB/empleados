@@ -34,7 +34,32 @@ class Version12Date20251021172139 extends SimpleMigrationStep {
 	 * @return null|ISchemaWrapper
 	 */
 	public function changeSchema(IOutput $output, Closure $schemaClosure, array $options): ?ISchemaWrapper {
-		return null;
+		/** @var ISchemaWrapper $schema */
+		$schema = $schemaClosure();
+
+		// Tabla CLIENTES
+		if (!$schema->hasTable('empleados_clientes')) {
+			$table = $schema->createTable('empleados_clientes');
+			$table->addColumn('id_cliente', 'integer', ['autoincrement' => true, 'notnull' => true]);
+			$table->addColumn('nombre', 'string', ['length' => 200, 'notnull' => true]);
+			$table->addColumn('detalles', 'text', ['notnull' => false]);
+			$table->addColumn('cliente_padre', 'integer', ['notnull' => false]);
+			$table->addColumn('timestamp', 'datetime', ['notnull' => true, 'default' => 'CURRENT_TIMESTAMP']);
+			$table->setPrimaryKey(['id_cliente']);
+		}
+
+		// Tabla ACTIVIDADES
+		if (!$schema->hasTable('empleados_actividades')) {
+			$table = $schema->createTable('empleados_actividades');
+			$table->addColumn('id_actividad', 'integer', ['autoincrement' => true, 'notnull' => true]);
+			$table->addColumn('nombre', 'string', ['length' => 200, 'notnull' => true]);
+			$table->addColumn('detalles', 'text', ['notnull' => false]);
+			$table->addColumn('tiempo_estimado', 'decimal', ['precision' => 8, 'scale' => 2, 'notnull' => false]);
+			$table->addColumn('tiempo_real', 'decimal', ['precision' => 8, 'scale' => 2, 'notnull' => false]);
+			$table->setPrimaryKey(['id_actividad']);
+		}
+		
+		return $schema;		
 	}
 
 	/**

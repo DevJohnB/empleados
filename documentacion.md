@@ -40,3 +40,30 @@ solo agrega el helper para poder enviar notificaciones por correo (en casos muy 
                 'Hasta: 2025-08-01'
             ]
         );
+
+
+
+para usar listas agrega del helper
+
+import List from '../Helpers/Lists/List.vue'
+<List
+			:loading="loading"
+			:detalles="detalles" />
+
+
+const keyMap = {
+					id_response: 'id',
+					name_response: 'name',
+					subname_response: 'subname',
+					cantidades_response: 'count',
+                    imagen_response: 'image'
+				}
+
+				const renameKeys = (obj, map) =>
+					Object.fromEntries(Object.entries(obj).map(([k, v]) => [map[k] ?? k, v]))
+
+				const arr = Array.isArray(response?.data?.ocs?.data) ? response.data.ocs.data : []
+
+				this.detalles = arr.map(o => renameKeys(o, keyMap))
+
+				this.loading = false

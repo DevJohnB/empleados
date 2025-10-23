@@ -97,17 +97,44 @@
 				</NcAppNavigationItem>
 			</NcAppNavigationList>
 		</div>
+
+		<!-- CLIENTES -->
+		<div v-if="isAdmin() && configuraciones.modulo_clientes === 'true'">
+			<NcAppNavigationCaption
+				:heading-id="t('empleados', 'Customers')"
+				is-heading
+				:name="t('empleados', 'Customers')" />
+			<NcAppNavigationList :aria-labelledby="t('empleados', 'Customers')">
+				<NcAppNavigationItem
+					:name="t('empleados', 'Companies / Groups')"
+					:to="{ name: 'CompaniesGroups' }">
+					<template #icon>
+						<HexagonMultipleOutline :size="20" />
+					</template>
+				</NcAppNavigationItem>
+
+				<NcAppNavigationItem
+					:name="t('empleados', 'Activities')"
+					:to="{ name: 'Activities' }">
+					<template #icon>
+						<ViewList :size="20" />
+					</template>
+				</NcAppNavigationItem>
+			</NcAppNavigationList>
+		</div>
 	</NcAppNavigation>
 </template>
 
 <script>
 // ICONOS
+import HexagonMultipleOutline from 'vue-material-design-icons/HexagonMultipleOutline.vue'
 import AccountGroup from 'vue-material-design-icons/AccountGroup.vue'
 import BadgeAccountAlert from 'vue-material-design-icons/BadgeAccountAlert.vue'
 import OfficeBuilding from 'vue-material-design-icons/OfficeBuilding.vue'
 import AccountTieOutline from 'vue-material-design-icons/AccountTieOutline.vue'
 import ViewDashboard from 'vue-material-design-icons/ViewDashboard.vue'
 import FileSign from 'vue-material-design-icons/FileSign.vue'
+import ViewList from 'vue-material-design-icons/ViewList.vue'
 import Bank from 'vue-material-design-icons/Bank.vue'
 import CalendarBlank from 'vue-material-design-icons/CalendarBlank.vue'
 
@@ -134,6 +161,8 @@ export default {
 		FileSign,
 		Bank,
 		CalendarBlank,
+		HexagonMultipleOutline,
+		ViewList,
 	},
 	inject: ['groupuser', 'configuraciones'],
 	methods: {

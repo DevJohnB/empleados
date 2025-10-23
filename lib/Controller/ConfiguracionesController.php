@@ -147,13 +147,15 @@ class ConfiguracionesController extends Controller {
             'modulo_ahorro' => $configuraciones[3]['Data'],
             'modulo_ausencias' => $configuraciones[4]['Data'],
             'modulo_ausencias_readonly' => $configuraciones[5]['Data'],
+            'modulo_clientes' => $configuraciones[6]['Data'],
+            'modulo_reporte_tiempos' => $configuraciones[7]['Data'],
         );
 
 
         return $data;
 	}
 
-    	#[NoCSRFRequired]
+    #[NoCSRFRequired]
 	#[NoAdminRequired]    
 	public function GetDataManager(): array {
         $configuraciones = $this->configuracionesMapper->GetConfig();

@@ -88,6 +88,32 @@
 
 			<br>
 
+			<!-- Block: Customers module -->
+			<div class="grid">
+				<NcNoteCard :type="'info'" :heading="t('empleados','Customers module')">
+					<NcCheckboxRadioSwitch
+						:checked="modulo_clientes"
+						type="switch"
+						@update:checked="onChangemodulo_clientes">
+						{{ t('empleados', 'Enable customers module') }}
+					</NcCheckboxRadioSwitch>
+				</NcNoteCard>
+			</div>
+
+			<!-- Block: report times module -->
+			<div class="grid">
+				<NcNoteCard :type="'info'" :heading="t('empleados','Report times module')">
+					<NcCheckboxRadioSwitch
+						:checked="modulo_reporte_tiempos"
+						type="switch"
+						@update:checked="onChangemodulo_reporte_tiempos">
+						{{ t('empleados', 'Enable report times module') }}
+					</NcCheckboxRadioSwitch>
+				</NcNoteCard>
+			</div>
+
+			<br>
+
 			<!-- Block: Single select for Data Manager -->
 			<div class="grid">
 				<NcNoteCard v-if="selected_user" :type="'warning'" :heading="t('empleados','ATTENTION')">
@@ -188,6 +214,8 @@ export default {
 			modulo_ahorro: false,
 			modulo_ausencias: false,
 			modulo_ausencias_readonly: false,
+			modulo_clientes: false,
+			modulo_reporte_tiempos: false,
 
 			// MULTI SELECT — Human Resources
 			propsCapitalHumano: {
@@ -236,6 +264,8 @@ export default {
 				this.modulo_ahorro = (response.data.modulo_ahorro === 'true')
 				this.modulo_ausencias = (response.data.modulo_ausencias === 'true')
 				this.modulo_ausencias_readonly = (response.data.modulo_ausencias_readonly === 'true')
+				this.modulo_clientes = (response.data.modulo_clientes === 'true')
+				this.modulo_reporte_tiempos = (response.data.modulo_reporte_tiempos === 'true')
 
 				this.loading = false
 			} catch (err) {
@@ -292,6 +322,40 @@ export default {
 				})
 				showSuccess(t('empleados', 'Configuration updated'))
 				this.$bus?.emit('GetDataManager') // Notify other components
+			} catch (err) {
+				showError(t('empleados', 'Exception [UpdateConfiguration]: {error}', { error: String(err) }))
+				console.error(err)
+			}
+		},
+
+		/**
+		 * Toggle: Customers module
+		 */
+		async onChangemodulo_clientes() {
+			this.modulo_clientes = !this.modulo_clientes
+			try {
+				await axios.post(generateUrl('/apps/empleados/ActualizarConfiguracion'), {
+					id_configuracion: 'modulo_clientes',
+					data: this.modulo_clientes.toString(),
+				})
+				showSuccess(t('empleados', 'Configuration updated'))
+			} catch (err) {
+				showError(t('empleados', 'Exception [UpdateConfiguration]: {error}', { error: String(err) }))
+				console.error(err)
+			}
+		},
+
+		/**
+		 * Toggle: Report times module
+		 */
+		async onChangemodulo_reporte_tiempos() {
+			this.modulo_reporte_tiempos = !this.modulo_reporte_tiempos
+			try {
+				await axios.post(generateUrl('/apps/empleados/ActualizarConfiguracion'), {
+					id_configuracion: 'modulo_reporte_tiempos',
+					data: this.modulo_reporte_tiempos.toString(),
+				})
+				showSuccess(t('empleados', 'Configuration updated'))
 			} catch (err) {
 				showError(t('empleados', 'Exception [UpdateConfiguration]: {error}', { error: String(err) }))
 				console.error(err)
