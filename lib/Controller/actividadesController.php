@@ -105,6 +105,16 @@ class actividadesController extends BaseController {
     }
 
     /**
+     * Obtiene la lista de actividad por id.
+     */
+    #[UseSession]
+    #[NoAdminRequired]
+    public function findById($id): DataResponse {
+        $this->checkAccess(['admin', 'recursos_humanos']);
+        return new DataResponse($this->actividadMapper->findById($id), Http::STATUS_OK);
+    }
+
+    /**
      * Obtiene jefe de actividad
      */
     #[UseSession]

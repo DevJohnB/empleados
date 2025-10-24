@@ -126,7 +126,7 @@ export default {
 
 	async mounted() {
 		this.$root.$on('datagetter', (data) => {
-			this.select = data || []
+			this.GetActividad(data)
 			// this.getalldepartament(data.Id_departamento)
 		})
 		this.$root.$on('exportlist', () => {
@@ -147,17 +147,16 @@ export default {
 			this.addmodal = false
 		},
 
-		async getalldepartament(departamento) {
+		async GetActividad(id) {
 			try {
-				await axios.get(generateUrl('/apps/empleados/GetEmpleadosArea/' + departamento))
-					.then(
-						(response) => {
-							this.peopleArea = response?.data?.ocs?.data
-						},
-						(err) => {
-							showError(err)
-						},
-					)
+				await axios.post(generateUrl('/apps/empleados/GetActividad'), {
+					id,
+				}).then(
+					(response) => {
+						this.select = response?.data?.ocs?.data
+					},
+					(err) => { showError(err) },
+				)
 			} catch (err) {
 				showError(t('empleados', 'Se ha producido una excepcion [01] [{error}]', { error: String(err) }))
 			}
@@ -177,7 +176,7 @@ export default {
 							const keyMap = {
 								id_actividad: 'id',
 								nombre: 'name',
-								tiempo_estimado: 'count',
+								tiempo_real: 'count',
 							}
 
 							const renameKeys = (obj, map) =>

@@ -16,14 +16,18 @@ class actividadMapper extends QBMapper {
 	}
 
 	/** @throws DoesNotExistException|MultipleObjectsReturnedException */
-	public function findById(int $id): Actividad {
+	public function findById(int $id): array {
 		$qb = $this->db->getQueryBuilder();
 		$qb->select('*')
 			->from($this->getTableName())
 			->where(
 				$qb->expr()->eq('id_actividad', $qb->createNamedParameter($id, IQueryBuilder::PARAM_INT))
 			);
-		return $this->findEntity($qb);
+		$result = $qb->execute();
+		$data = $result->fetchAll();
+		$result->closeCursor();
+	
+		return $data;
 	}
 
 	/** @return Actividad[] */
