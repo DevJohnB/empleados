@@ -54,7 +54,7 @@ export default {
 	methods: {
 		t, // exponer i18n a la plantilla
 		showDetails(data) {
-			this.$root.$emit('datagetter', data.id)
+			this.$root.$emit('details', data.id)
 		},
 	},
 }

@@ -11,19 +11,69 @@
 		<!-- contacts list -->
 		<template #list>
 			<FullList
-				:detalles="detalles"
+				:listas="listas"
 				:reload-bus="reloadBus" />
 		</template>
-		{{ select }}
-		<!-- main contacts details -->
-		<!-- AreasDetails :data="data_areas" :people-area="peopleArea" / -->
+		<!-- main details -->
+		<div class="Details">
+			<div class="contacts-list__item-wrapper">
+				<div v-if="Object.keys(select).length == 0">
+					<div class="emptycontent">
+						<DatabaseSearchOutline :size="60" />
+						<h2>{{ t('empleados', 'Select something') }}</h2>
+					</div>
+				</div>
+				<div v-else>
+					<div>
+						<div class="container container-search-profile">
+							<div class="button-container-profile">
+								<NcActions>
+									<template #icon>
+										<AccountCog :size="20" />
+									</template>
+									<slot name="buttons" />
+									<NcActionButton
+										:close-after-click="true"
+										@click="edit()">
+										<template #icon>
+											<AccountEdit :size="20" />
+										</template>
+										{{ t('empleados', 'Enable editing') }}
+									</NcActionButton>
+									<NcActionSeparator />
+									<NcActionButton
+										:close-after-click="true"
+										@click="showDialog = true">
+										<template #icon>
+											<DeleteAlert :size="20" />
+										</template>
+										{{ t('empleados', 'Delete department') }}
+									</NcActionButton>
+									<NcDialog
+										:open.sync="showDialog"
+										:name="t('empleados', 'Confirm')"
+										:message="t('empleados', 'Do you want to delete this item?')"
+										:buttons="buttons" />
+								</NcActions>
+							</div>
+						</div>
+					</div>
+					<slot name="details" />
+				</div>
+			</div>
+		</div>
 	</NcAppContent>
 </template>
 
 <script>
+// ICONOS
+import DatabaseSearchOutline from 'vue-material-design-icons/DatabaseSearchOutline.vue'
+import DeleteAlert from 'vue-material-design-icons/DeleteAlert.vue'
+import AccountEdit from 'vue-material-design-icons/AccountEdit.vue'
+import AccountCog from 'vue-material-design-icons/AccountCog.vue'
+
 // agregados
 import FullList from './FullList.vue'
-// import AreasDetails from './perfil/AreasDetails.vue'
 
 // import axios from '@nextcloud/axios'
 import mitt from 'mitt'
@@ -33,6 +83,16 @@ import {
 	NcEmptyContent,
 	NcAppContent,
 	NcLoadingIcon,
+	NcActionButton,
+	// NcAvatar,
+	NcActions,
+	NcActionSeparator,
+	NcDialog,
+	// NcTextField,
+	// NcSelect,
+	// NcButton,
+	// NcListItem,
+	// NcModal,
 } from '@nextcloud/vue'
 
 export default {
@@ -42,12 +102,27 @@ export default {
 		NcEmptyContent,
 		NcAppContent,
 		NcLoadingIcon,
+		NcActionButton,
+		// NcAvatar,
+		NcActionSeparator,
+		NcActions,
+		AccountCog,
+		AccountEdit,
+		// NcActionButton,
+		DeleteAlert,
+		NcDialog,
+		// NcTextField,
+		// NcSelect,
+		// NcButton,
+		// NcListItem,
+		// NcModal,
 		// AreasDetails,
+		DatabaseSearchOutline,
 	},
 
 	props: {
 		loading: { type: Boolean, required: true },
-		detalles: { type: Array, required: true },
+		listas: { type: Array, required: true },
 		select: { type: Array, required: true },
 		// reloadBus: { type: Object, required: true },
 	},
@@ -55,11 +130,46 @@ export default {
 	data() {
 		return {
 			reloadBus: mitt(),
+			showDialog: false,
 		}
+	},
+
+	computed: {
+		buttons() {
+			return [
+				{
+					label: this.t('empleados', 'Cancelar'),
+					callback: () => { this.lastResponse = 'Pressed "Cancel"' },
+				},
+				{
+					label: this.t('empleados', 'Eliminar'),
+					type: 'primary',
+					callback: () => { this.delete() },
+				},
+			]
+		},
+	},
+
+	async mounted() {
+		window.addEventListener('keydown', this.onKeyDown)
 	},
 
 	methods: {
 		t, // exponer i18n a la plantilla
+		 onKeyDown(e) {
+			if (e.key === 'Escape') this.onEsc()
+		},
+
+		onEsc() {
+			this.showDialog = false
+		},
+		delete() {
+			this.showDialog = false
+			this.$root.$emit('delete')
+		},
+		edit() {
+			this.$root.$emit('edit')
+		},
 	},
 }
 </script>

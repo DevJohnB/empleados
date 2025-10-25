@@ -141,7 +141,9 @@ return [
 
 		/****************************** ACTIVIDADES ***************************************/
 		['name' => 'actividades#crearActividad', 'url' => '/crearActividad', 'verb' => 'POST'],
+		['name' => 'actividades#modificarActividad', 'url' => '/ModificarActividad', 'verb' => 'POST'],
 		['name' => 'actividades#findById', 'url' => '/GetActividad', 'verb' => 'POST'],
+		['name' => 'actividades#deleteById', 'url' => '/DeleteActividad', 'verb' => 'POST'],
 		['name' => 'actividades#GetActividades', 'url' => '/GetActividades', 'verb' => 'GET'],
 
 		/************************** REPORTE DE TIEMPOS ************************************/

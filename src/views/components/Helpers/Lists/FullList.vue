@@ -85,7 +85,7 @@ export default {
 	},
 
 	props: {
-		detalles: { type: Array, required: true },
+		listas: { type: Array, required: true },
 		reloadBus: { type: Object, required: true },
 		searchQuery: { type: String, default: '' },
 	},
@@ -102,7 +102,7 @@ export default {
 
 	computed: {
 		filteredList() {
-			return this.detalles.filter(item => this.matchSearch(item.name))
+			return this.listas.filter(item => this.matchSearch(item.name))
 		},
 	},
 
@@ -131,7 +131,7 @@ export default {
 
 		AgregarNuevo() {
 			this.toggle()
-			this.$root.$emit('newmodal', true)
+			this.$root.$emit('new', true)
 		},
 
 		toggle() {

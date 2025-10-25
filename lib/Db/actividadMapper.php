@@ -54,4 +54,16 @@ class actividadMapper extends QBMapper {
 			);
 		$qb->executeStatement();
 	}
+
+
+	public function updateActividad(int $id_actividad, string $nombre, string $detalles, float $tiempoestimado): void {	
+		$query = $this->db->getQueryBuilder();
+		$query->update($this->getTableName())
+			->set('nombre', $query->createNamedParameter($nombre))
+			->set('detalles', $query->createNamedParameter($detalles))
+			->set('tiempo_estimado', $query->createNamedParameter($tiempoestimado))
+			->where($query->expr()->eq('id_actividad', $query->createNamedParameter($id_actividad)));
+	
+		$query->execute();
+	}
 }

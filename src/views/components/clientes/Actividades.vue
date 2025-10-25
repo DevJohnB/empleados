@@ -2,11 +2,17 @@
 	<NcAppContent name="Empleados – Actividades">
 		<List
 			:loading="loading"
-			:detalles="detalles"
-			:select="select" />
+			:listas="listas"
+			:select="select">
+			<template #buttons />
+			<template #details>
+				{{ select }}
+				<!-- ActividadesDetalles /-->
+			</template>
+		</List>
 
 		<NcModal
-			v-if="addmodal"
+			v-if="modal"
 			ref="modalRef"
 			:name="t('empleados', 'Add new activity')"
 			@close="closeModal">
@@ -51,10 +57,19 @@
 						</div>
 						<div class="save">
 							<NcButton
+								v-if="editing"
+								class="center"
+								:aria-label="t('empleados', 'Edit Activity')"
+								type="primary"
+								@click="modify()">
+								{{ t('empleados', 'Edit Activity') }}
+							</NcButton>
+							<NcButton
+								v-else
 								class="center"
 								:aria-label="t('empleados', 'Create Activity')"
 								type="primary"
-								@click="sendData()">
+								@click="create()">
 								{{ t('empleados', 'Create Activity') }}
 							</NcButton>
 						</div>
@@ -72,8 +87,6 @@
 </template>
 
 <script>
-// import { generateUrl } from '@nextcloud/router'
-// import axios from '@nextcloud/axios'
 // public imports
 import { showError, showSuccess } from '@nextcloud/dialogs'
 import { generateUrl } from '@nextcloud/router'
@@ -81,6 +94,7 @@ import axios from '@nextcloud/axios'
 import { translate as t } from '@nextcloud/l10n'
 
 import List from '../Helpers/Lists/List.vue'
+// import ActividadesDetalles from './ActividadesDetalles.vue'
 
 import {
 	NcAppContent,
@@ -101,14 +115,15 @@ export default {
 		NcButton,
 		NcTextArea,
 		NcCheckboxRadioSwitch,
+		// ActividadesDetalles,
 	},
 	data() {
 		return {
+			editing: false,
 			loading: true,
 			listas: [],
-			detalles: [],
 			select: [],
-			addmodal: false,
+			modal: false,
 			name_activity: '',
 			description_activity: '',
 			type_time: 'minutos',
@@ -116,35 +131,62 @@ export default {
 		}
 	},
 
-	watch: {
-		modal(newVal, oldVal) {
-			if (oldVal !== newVal && newVal === true) {
-				this.getallsAreas()
-			}
-		},
-	},
-
 	async mounted() {
-		this.$root.$on('datagetter', (data) => {
+		// deteccion de esc
+		window.addEventListener('keydown', this.onKeyDown)
+
+		// Obtener data
+		this.$root.$on('details', (data) => {
 			this.GetActividad(data)
-			// this.getalldepartament(data.Id_departamento)
 		})
+
+		this.$root.$on('new', (data) => {
+			this.openModal()
+		})
+		this.$root.$on('delete', () => {
+			this.delete()
+		})
+		this.$root.$on('edit', () => {
+			this.edit()
+		})
+
 		this.$root.$on('exportlist', () => {
 			this.Exportar()
 		})
 		this.$root.$on('importlist', () => {
 			this.$refs.file.click()
 		})
-		this.$root.$on('newmodal', (data) => {
-			this.addmodal = data
-		})
-		this.getall()
+
+		this.GetActividades()
 	},
+
+	beforeUnmount() {
+		window.removeEventListener('keydown', this.onKeyDown)
+	},
+
 	methods: {
 		t,
 
+		 onKeyDown(e) {
+			if (e.key === 'Escape') this.onEsc()
+		},
+
+		onEsc() {
+			this.select = []
+		},
+
+		openModal() {
+			this.editing = false
+			this.name_activity = null
+			this.description_activity = null
+			this.type_time = 'minutos'
+			this.time_activity = null
+
+			this.modal = true
+		},
+
 		closeModal() {
-			this.addmodal = false
+			this.modal = false
 		},
 
 		async GetActividad(id) {
@@ -162,7 +204,7 @@ export default {
 			}
 		},
 
-		async getall() {
+		async GetActividades() {
 			try {
 				await axios.get(generateUrl('/apps/empleados/GetActividades'))
 					.then(
@@ -184,7 +226,7 @@ export default {
 
 							const arr = Array.isArray(response?.data?.ocs?.data) ? response.data.ocs.data : []
 
-							this.detalles = arr.map(o => renameKeys(o, keyMap))
+							this.listas = arr.map(o => renameKeys(o, keyMap))
 
 							this.loading = false
 						},
@@ -197,7 +239,7 @@ export default {
 			}
 		},
 
-		async sendData() {
+		async create() {
 			try {
 				await axios.post(generateUrl('/apps/empleados/crearActividad'), {
 					nombre: this.name_activity,
@@ -207,7 +249,7 @@ export default {
 				}).then(
 					() => {
 						showSuccess(t('empleados', 'Área creada exitosamente'))
-						this.getall()
+						this.GetActividades()
 						this.closeModal()
 					},
 					(err) => { showError(err) },
@@ -215,6 +257,54 @@ export default {
 			} catch (err) {
 				showError(t('empleados', 'Se ha producido una excepcion [03] [{error}]', { error: String(err) }))
 			}
+		},
+
+		async delete() {
+			try {
+				await axios.post(generateUrl('/apps/empleados/DeleteActividad'), {
+					id: this.select[0].id_actividad,
+				}).then(
+					() => {
+						showSuccess(t('empleados', 'Se ha eliminadon exitosamente'))
+						this.GetActividades()
+						this.closeModal()
+						this.select = []
+					},
+					(err) => { showError(err) },
+				)
+			} catch (err) {
+				showError(t('empleados', 'Se ha producido una excepcion [03] [{error}]', { error: String(err) }))
+			}
+		},
+
+		async modify() {
+			try {
+				await axios.post(generateUrl('/apps/empleados/ModificarActividad'), {
+					id_actividad: this.select[0].id_actividad,
+					nombre: this.name_activity,
+					detalles: this.description_activity,
+					tiempoestimado: this.time_activity,
+					tipo: this.type_time,
+				}).then(
+					() => {
+						showSuccess(t('empleados', 'Modificacion exitosa'))
+						this.GetActividades()
+						this.closeModal()
+					},
+					(err) => { showError(err) },
+				)
+			} catch (err) {
+				showError(t('empleados', 'Se ha producido una excepcion [03] [{error}]', { error: String(err) }))
+			}
+		},
+
+		edit() {
+			this.editing = true
+			this.name_activity = this.select[0].nombre
+			this.description_activity = this.select[0].detalles
+			this.type_time = 'minutos'
+			this.time_activity = this.select[0].tiempo_estimado
+			this.modal = true
 		},
 
 		async importar() {
@@ -225,7 +315,7 @@ export default {
 					headers: { 'Content-Type': 'multipart/form-data' },
 				}).then(
 					() => {
-						this.$root.$emit('getall')
+						// this.$root.$emit('GetActividades')
 						this.$root.$emit('reload')
 						this.$root.$emit('send-data-areas', [])
 						showSuccess(t('empleados', 'Se actualizó la base de datos exitosamente'))
@@ -254,18 +344,6 @@ export default {
 						showError(t('empleados', 'Se ha producido un error {error}, reporte al administrador', { error: String(err) }))
 					},
 				)
-		},
-
-		async getallsAreas() {
-			try {
-				await axios.get(generateUrl('/apps/empleados/GetAreasFix'))
-					.then(
-						(response) => { this.options = response?.data?.ocs?.data },
-						(err) => { showError(err) },
-					)
-			} catch (err) {
-				showError(t('empleados', 'Se ha producido una excepcion [01] [{error}]', { error: String(err) }))
-			}
 		},
 	},
 }
