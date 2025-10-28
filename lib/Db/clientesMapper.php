@@ -73,7 +73,7 @@ class clientesMapper extends QBMapper {
 		$query->update($this->getTableName())
 			->set('nombre', $query->createNamedParameter($nombre))
 			->set('detalles', $query->createNamedParameter($detalles))
-			->set('cliente_padre', $query->createNamedParameter($tiempoestimado))
+			->set('cliente_padre', $query->createNamedParameter($cliente_padre))
 			->where($query->expr()->eq('id_cliente', $query->createNamedParameter($id_clientes)));
 	
 		$query->execute();

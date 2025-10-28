@@ -141,14 +141,18 @@ return [
 		['name' => 'clientes#modificarCliente', 'url' => '/modificarCliente', 'verb' => 'POST'],
 		['name' => 'clientes#findById', 'url' => '/GetCompanieGroup', 'verb' => 'POST'],
 		['name' => 'clientes#deleteById', 'url' => '/deleteCliente', 'verb' => 'POST'],
+		['name' => 'clientes#importarClientes', 'url' => '/importarClientes', 'verb' => 'POST'],
 		['name' => 'clientes#GetCompaniesGroups', 'url' => '/GetCompaniesGroups', 'verb' => 'GET'],
+		['name' => 'clientes#Exportarclientes', 'url' => '/Exportarclientes', 'verb' => 'GET'],
 
 		/****************************** ACTIVIDADES ***************************************/
 		['name' => 'actividades#crearActividad', 'url' => '/crearActividad', 'verb' => 'POST'],
 		['name' => 'actividades#modificarActividad', 'url' => '/ModificarActividad', 'verb' => 'POST'],
 		['name' => 'actividades#findById', 'url' => '/GetActividad', 'verb' => 'POST'],
 		['name' => 'actividades#deleteById', 'url' => '/DeleteActividad', 'verb' => 'POST'],
+		['name' => 'actividades#ImportarActividades', 'url' => '/ImportarActividades', 'verb' => 'POST'],
 		['name' => 'actividades#GetActividades', 'url' => '/GetActividades', 'verb' => 'GET'],
+		['name' => 'actividades#ExportarActividades', 'url' => '/ExportarActividades', 'verb' => 'GET'],
 
 		/************************** REPORTE DE TIEMPOS ************************************/
 

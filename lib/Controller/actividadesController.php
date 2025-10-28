@@ -150,40 +150,38 @@ class actividadesController extends BaseController {
     /**
      * Exporta la lista de actividad a un archivo XLSX.
      */
-    public function ExportListactividad(): DataResponse {
+    public function ExportarActividades(): DataResponse {
         $this->checkAccess(['admin', 'recursos_humanos']);
-        $actividad = $this->actividadMapper->GetactividadList();
-        $books = [['Id_actividad', 'Nombre', 'created_at', 'updated_at']];
+        $actividad = $this->actividadMapper->findAll();
+        $books = [['id_actividad', 'nombre', 'detalles', 'tiempo_estimado', 'tiempo_real']];
 
         foreach ($actividad as $actividad) {
             $books[] = [
-                $actividad['Id_actividad'],
-                $actividad['Nombre'],
-                $actividad['created_at'],
-                $actividad['updated_at'],
+                $actividad['id_actividad'],
+                $actividad['nombre'],
+                $actividad['tiempo_estimado'],
+                $actividad['tiempo_real'],
             ];
         }
 
-        \Shuchkin\SimpleXLSXGen::fromArray($books)->downloadAs('actividad.xlsx');
+        \Shuchkin\SimpleXLSXGen::fromArray($books)->downloadAs('actividades.xlsx');
         return new DataResponse($books, Http::STATUS_OK);
     }
 
     /**
      * Importa la lista de actividad desde un archivo XLSX.
      */
-    public function ImportListactividad(): DataResponse {
-        $this->checkAccess(['admin', 'recursos_humanos']);
-        $file = $this->getUploadedFile('actividadfileXLSX');
+    public function ImportarActividades(): DataResponse {
+        $file = $this->getUploadedFile('ActividadesfileXLSX');
         if ($xlsx = \Shuchkin\SimpleXLSX::parse($file['tmp_name'])) {
             foreach ($xlsx->rows() as $row) {
                 if (!empty($row[0])) {
-                    $this->actividadMapper->updateactividad((string) $row[0], (string) $row[1]);
+                    $this->actividadMapper->updateActividad((int) $row[0], (string) $row[1], (string) $row[2], (float) $row[3]);
                 } else {
-                    $timestamp = date('Y-m-d');
                     $actividad = new actividad();
-                    $actividad->setnombre((string) $row[1]);
-                    $actividad->setcreated_at($timestamp);
-                    $actividad->setupdated_at($timestamp);
+                    $actividad->setnombre($row[1]);
+                    $actividad->setdetalles($row[2]);
+                    $actividad->settiempo_estimado($row[3]);
                     $this->actividadMapper->insert($actividad);
                 }
             }
@@ -195,7 +193,6 @@ class actividadesController extends BaseController {
      * Obtiene un archivo subido y maneja posibles errores.
      */
     private function getUploadedFile(string $key): array {
-        $this->checkAccess(['admin', 'recursos_humanos']);
         $file = $this->request->getUploadedFile($key);
         if (empty($file) || ($file['error'] ?? UPLOAD_ERR_OK) !== UPLOAD_ERR_OK) {
             throw new UploadException($this->l10n->t('Error en la subida del archivo.'));

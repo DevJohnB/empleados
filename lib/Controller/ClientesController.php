@@ -141,17 +141,17 @@ class ClientesController extends BaseController {
     /**
      * Exporta la lista de clientes a un archivo XLSX.
      */
-    public function ExportListclientes(): DataResponse {
+    public function Exportarclientes(): DataResponse {
         $this->checkAccess(['admin', 'recursos_humanos']);
-        $clientes = $this->clientesMapper->GetclientesList();
-        $books = [['Id_clientes', 'Nombre', 'created_at', 'updated_at']];
+        $clientes = $this->clientesMapper->findAll();
+        $books = [['id_cliente', 'nombre', 'detalles', 'cliente_padre']];
 
         foreach ($clientes as $clientes) {
             $books[] = [
-                $clientes['Id_clientes'],
-                $clientes['Nombre'],
-                $clientes['created_at'],
-                $clientes['updated_at'],
+                $clientes['id_cliente'],
+                $clientes['nombre'],
+                $clientes['detalles'],
+                $clientes['cliente_padre'],
             ];
         }
 
@@ -162,19 +162,18 @@ class ClientesController extends BaseController {
     /**
      * Importa la lista de clientes desde un archivo XLSX.
      */
-    public function ImportListclientes(): DataResponse {
+    public function importarClientes(): DataResponse {
         $this->checkAccess(['admin', 'recursos_humanos']);
         $file = $this->getUploadedFile('clientesfileXLSX');
         if ($xlsx = \Shuchkin\SimpleXLSX::parse($file['tmp_name'])) {
             foreach ($xlsx->rows() as $row) {
                 if (!empty($row[0])) {
-                    $this->clientesMapper->updateclientes((string) $row[0], (string) $row[1]);
+                    $this->clientesMapper->updateClientes((int) $row[0], (string) $row[1], (string) $row[2], (int) $row[3]);
                 } else {
-                    $timestamp = date('Y-m-d');
                     $clientes = new clientes();
-                    $clientes->setnombre((string) $row[1]);
-                    $clientes->setcreated_at($timestamp);
-                    $clientes->setupdated_at($timestamp);
+                    $clientes->setnombre($row[1]);
+                    $clientes->setdetalles($row[2]);
+                    $clientes->setcliente_padre($row[3]);
                     $this->clientesMapper->insert($clientes);
                 }
             }
@@ -186,7 +185,6 @@ class ClientesController extends BaseController {
      * Obtiene un archivo subido y maneja posibles errores.
      */
     private function getUploadedFile(string $key): array {
-        $this->checkAccess(['admin', 'recursos_humanos']);
         $file = $this->request->getUploadedFile($key);
         if (empty($file) || ($file['error'] ?? UPLOAD_ERR_OK) !== UPLOAD_ERR_OK) {
             throw new UploadException($this->l10n->t('Error en la subida del archivo.'));

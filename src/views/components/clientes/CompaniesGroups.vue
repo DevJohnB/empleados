@@ -269,7 +269,7 @@ export default {
 					id_clientes: this.select[0].id_cliente,
 					nombre: this.name_cliente,
 					detalles: this.description_client,
-					cliente_padre: this.padre,
+					cliente_padre: this.padre.id,
 				}).then(
 					() => {
 						showSuccess(t('empleados', 'Modificacion exitosa'))
@@ -303,15 +303,13 @@ export default {
 
 		async importar() {
 			const formData = new FormData()
-			formData.append('AreafileXLSX', this.$refs.file.files[0])
+			formData.append('clientesfileXLSX', this.$refs.file.files[0])
 			try {
-				await axios.post(generateUrl('/apps/empleados/ImportListAreas'), formData, {
+				await axios.post(generateUrl('/apps/empleados/importarClientes'), formData, {
 					headers: { 'Content-Type': 'multipart/form-data' },
 				}).then(
 					() => {
-						// this.$root.$emit('GetCompaniesGroups')
-						this.$root.$emit('reload')
-						this.$root.$emit('send-data-areas', [])
+						this.GetCompaniesGroups()
 						showSuccess(t('empleados', 'Se actualizó la base de datos exitosamente'))
 					},
 					(err) => { showError(err) },
@@ -322,7 +320,7 @@ export default {
 		},
 
 		Exportar() {
-			axios.get(generateUrl('/apps/empleados/ExportListAreas'), { responseType: 'blob' })
+			axios.get(generateUrl('/apps/empleados/Exportarclientes'), { responseType: 'blob' })
 				.then(
 					(response) => {
 						const url = URL.createObjectURL(new Blob([response.data], {
@@ -330,7 +328,7 @@ export default {
 						}))
 						const link = document.createElement('a')
 						link.href = url
-						link.setAttribute('download', 'areas.xlsx')
+						link.setAttribute('download', 'clientes.xlsx')
 						document.body.appendChild(link)
 						link.click()
 					},
