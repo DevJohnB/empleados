@@ -247,8 +247,8 @@ export default {
 
 		async delete() {
 			try {
-				await axios.post(generateUrl('/apps/empleados/DeleteCompanieGroup'), {
-					id: this.select[0].id_CompanieGroup,
+				await axios.post(generateUrl('/apps/empleados/deleteCliente'), {
+					id: this.select[0].id_cliente,
 				}).then(
 					() => {
 						showSuccess(t('empleados', 'Se ha eliminadon exitosamente'))
@@ -265,17 +265,17 @@ export default {
 
 		async modify() {
 			try {
-				await axios.post(generateUrl('/apps/empleados/ModificarCompanieGroup'), {
-					id_CompanieGroup: this.select[0].id_CompanieGroup,
+				await axios.post(generateUrl('/apps/empleados/modificarCliente'), {
+					id_clientes: this.select[0].id_cliente,
 					nombre: this.name_cliente,
 					detalles: this.description_client,
-					tipo: this.type_time,
+					cliente_padre: this.padre,
 				}).then(
 					() => {
 						showSuccess(t('empleados', 'Modificacion exitosa'))
-						const id = this.select?.[0]?.id_CompanieGroup ?? null
+						const id = this.select?.[0]?.id_cliente ?? null
 						this.select = [{
-							id_CompanieGroup: id,
+							id_cliente: id,
 							nombre: this.name_cliente,
 							detalles: this.description_client,
 							tipo: 'minutos',
@@ -294,7 +294,10 @@ export default {
 			this.editing = true
 			this.name_cliente = this.select[0].nombre
 			this.description_client = this.select[0].detalles
-			this.type_time = 'minutos'
+			const pid = this.select?.[0]?.cliente_padre ?? null
+			this.padre = (pid == null)
+				? null
+				: this.options.find(o => Number(o.id) === Number(pid)) || null
 			this.modal = true
 		},
 

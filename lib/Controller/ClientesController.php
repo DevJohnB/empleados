@@ -114,13 +114,9 @@ class ClientesController extends BaseController {
      */
     #[UseSession]
     #[NoAdminRequired] // si aplica, cámbiala por #[AdminRequired]
-    public function modificarClientes(int $id_clientes, string $nombre, string $detalles, float $tiempoestimado, string $tipo): DataResponse {
+    public function modificarCliente(int $id_clientes, string $nombre, ?string $detalles, ?int $cliente_padre): DataResponse {
         $this->checkAccess(['admin', 'recursos_humanos']);
-        $tipo = strtolower(trim($tipo));
-        if ($tipo === 'horas') {
-            $tiempoestimado *= 60; // <-- usa la MISMA variable
-        }
-        $this->clientesMapper->updateclientes($id_clientes, $nombre, $detalles, $tiempoestimado);
+        $this->clientesMapper->updateClientes($id_clientes, $nombre, $detalles, $cliente_padre);
         return new DataResponse('ok', Http::STATUS_OK);
     }
 

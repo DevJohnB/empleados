@@ -47,7 +47,7 @@
 										<template #icon>
 											<DeleteAlert :size="20" />
 										</template>
-										{{ t('empleados', 'Delete department') }}
+										{{ t('empleados', 'Delete') }}
 									</NcActionButton>
 									<NcDialog
 										:open.sync="showDialog"

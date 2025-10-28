@@ -68,13 +68,13 @@ class clientesMapper extends QBMapper {
 		$qb->executeStatement(); // usa ->execute() si tu versión lo requiere
 	}
 
-	public function updateCliente(int $id_cliente, string $nombre, string $detalles, float $tiempoestimado): void {	
+	public function updateClientes(int $id_clientes, string $nombre, ?string $detalles, ?int $cliente_padre): void {	
 		$query = $this->db->getQueryBuilder();
 		$query->update($this->getTableName())
 			->set('nombre', $query->createNamedParameter($nombre))
 			->set('detalles', $query->createNamedParameter($detalles))
-			->set('tiempo_estimado', $query->createNamedParameter($tiempoestimado))
-			->where($query->expr()->eq('id_cliente', $query->createNamedParameter($id_cliente)));
+			->set('cliente_padre', $query->createNamedParameter($tiempoestimado))
+			->where($query->expr()->eq('id_cliente', $query->createNamedParameter($id_clientes)));
 	
 		$query->execute();
 	}
