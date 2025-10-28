@@ -31,7 +31,7 @@ class actividadMapper extends QBMapper {
 	}
 
 	/** @return Actividad[] */
-	public function findAll(int $limit = 100, int $offset = 0): array {
+	public function findAll(?int $limit = null, int $offset = 0): array {
 		$qb = $this->db->getQueryBuilder();
 		$qb->select('*')
 			->from($this->getTableName())

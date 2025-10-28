@@ -33,7 +33,7 @@ class clientesMapper extends QBMapper {
 
 	/** Listado simple */
 	/** @return Cliente[] */
-	public function findAll(int $limit = 100, int $offset = 0): array {
+	public function findAll(?int $limit = null, int $offset = 0): array {
 		$qb = $this->db->getQueryBuilder();
 		$qb->select(
 				'p.id_cliente',
@@ -47,7 +47,7 @@ class clientesMapper extends QBMapper {
 				$qb->expr()->eq('c.cliente_padre', 'p.id_cliente')
 			)
 			->groupBy('p.id_cliente', 'p.nombre', 'p.detalles', 'p.cliente_padre')
-			->orderBy('p.id_cliente', 'DESC')
+			->orderBy('p.id_cliente', 'ASC')
 			->setMaxResults($limit)
 			->setFirstResult($offset);
 

@@ -231,7 +231,7 @@ export default {
 				await axios.post(generateUrl('/apps/empleados/crearCliente'), {
 					nombre: this.name_cliente,
 					detalles: this.description_client,
-					cliente_padre: this.padre.id,
+					cliente_padre: (this.padre && this.padre.id != null) ? Number(this.padre.id) : 0,
 				}).then(
 					() => {
 						showSuccess(t('empleados', 'Área creada exitosamente'))
