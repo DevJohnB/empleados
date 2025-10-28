@@ -6,8 +6,7 @@
 			:select="select">
 			<template #buttons />
 			<template #details>
-				{{ select }}
-				<!-- ActividadesDetalles /-->
+				<ActividadesDetalles :select="select" />
 			</template>
 		</List>
 
@@ -94,7 +93,7 @@ import axios from '@nextcloud/axios'
 import { translate as t } from '@nextcloud/l10n'
 
 import List from '../Helpers/Lists/List.vue'
-// import ActividadesDetalles from './ActividadesDetalles.vue'
+import ActividadesDetalles from './ActividadesDetalles.vue'
 
 import {
 	NcAppContent,
@@ -115,7 +114,7 @@ export default {
 		NcButton,
 		NcTextArea,
 		NcCheckboxRadioSwitch,
-		// ActividadesDetalles,
+		ActividadesDetalles,
 	},
 	data() {
 		return {
@@ -132,36 +131,35 @@ export default {
 	},
 
 	async mounted() {
+		this._onDetails = (id) => this.GetActividad(id)
+		this._onNew = () => this.openModal()
+		this._onDelete = () => this.delete()
+		this._onEdit = () => this.edit()
+		this._onExport = () => this.Exportar()
+		this._onImport = () => this.$refs.file.click()
 		// deteccion de esc
 		window.addEventListener('keydown', this.onKeyDown)
 
-		// Obtener data
-		this.$root.$on('details', (data) => {
-			this.GetActividad(data)
-		})
-
-		this.$root.$on('new', (data) => {
-			this.openModal()
-		})
-		this.$root.$on('delete', () => {
-			this.delete()
-		})
-		this.$root.$on('edit', () => {
-			this.edit()
-		})
-
-		this.$root.$on('exportlist', () => {
-			this.Exportar()
-		})
-		this.$root.$on('importlist', () => {
-			this.$refs.file.click()
-		})
-
+		this.$root.$on('details', this._onDetails)
+		this.$root.$on('new', this._onNew)
+		this.$root.$on('delete', this._onDelete)
+		this.$root.$on('edit', this._onEdit)
+		this.$root.$on('exportlist', this._onExport)
+		this.$root.$on('importlist', this._onImport)
 		this.GetActividades()
 	},
 
 	beforeUnmount() {
 		window.removeEventListener('keydown', this.onKeyDown)
+	},
+
+	beforeDestroy() {
+		this.$root.$off('details', this._onDetails)
+		this.$root.$off('new', this._onNew)
+		this.$root.$off('delete', this._onDelete)
+		this.$root.$off('edit', this._onEdit)
+		this.$root.$off('exportlist', this._onExport)
+		this.$root.$off('importlist', this._onImport)
 	},
 
 	methods: {
@@ -244,7 +242,7 @@ export default {
 				await axios.post(generateUrl('/apps/empleados/crearActividad'), {
 					nombre: this.name_activity,
 					detalles: this.description_activity,
-					tiempoestimado: this.time_activity,
+					tiempoestimado: this.time_activity != null ? this.time_activity : 0,
 					tipo: this.type_time,
 				}).then(
 					() => {
@@ -288,6 +286,14 @@ export default {
 				}).then(
 					() => {
 						showSuccess(t('empleados', 'Modificacion exitosa'))
+						const id = this.select?.[0]?.id_actividad ?? null
+						this.select = [{
+							id_actividad: id,
+							nombre: this.name_activity,
+							detalles: this.description_activity,
+							tiempo_estimado: this.time_activity,
+							tipo: 'minutos',
+						}]
 						this.GetActividades()
 						this.closeModal()
 					},

@@ -137,7 +137,11 @@ return [
 		['name' => 'ahorros#DenegarAhorro', 'url' => '/DenegarAhorro', 'verb' => 'POST'],
 
 		/******************************* CLIENTES *****************************************/
-
+		['name' => 'clientes#crearCliente', 'url' => '/crearCliente', 'verb' => 'POST'],
+		['name' => 'clientes#modificarCliente', 'url' => '/modificarCliente', 'verb' => 'POST'],
+		['name' => 'clientes#findById', 'url' => '/GetCompanieGroup', 'verb' => 'POST'],
+		['name' => 'clientes#deleteById', 'url' => '/deleteById', 'verb' => 'POST'],
+		['name' => 'clientes#GetCompaniesGroups', 'url' => '/GetCompaniesGroups', 'verb' => 'GET'],
 
 		/****************************** ACTIVIDADES ***************************************/
 		['name' => 'actividades#crearActividad', 'url' => '/crearActividad', 'verb' => 'POST'],

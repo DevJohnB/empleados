@@ -129,7 +129,7 @@ class actividadesController extends BaseController {
      */
     #[UseSession]
     #[NoAdminRequired]
-    public function crearActividad(string $nombre, string $detalles, float $tiempoestimado, string $tipo): DataResponse {
+    public function crearActividad(string $nombre, ?string $detalles, float $tiempoestimado, string $tipo): DataResponse {
         $this->checkAccess(['admin', 'recursos_humanos']);
 
         $tipo = strtolower(trim($tipo));

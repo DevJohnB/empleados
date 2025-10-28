@@ -25,7 +25,7 @@
 				</div>
 				<div v-else>
 					<div>
-						<div class="container container-search-profile">
+						<div class="container">
 							<div class="button-container-profile">
 								<NcActions>
 									<template #icon>
