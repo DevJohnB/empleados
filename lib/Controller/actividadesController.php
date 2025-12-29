@@ -85,7 +85,7 @@ class actividadesController extends BaseController {
     #[UseSession]
     #[NoAdminRequired]
     public function GetActividades(): DataResponse {
-        $this->checkAccess(['admin', 'recursos_humanos']);
+        $this->checkAccess(['admin', 'empleados', 'recursos_humanos']);
         return new DataResponse($this->actividadMapper->findAll(), Http::STATUS_OK);
     }
 

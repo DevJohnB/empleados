@@ -155,7 +155,8 @@ return [
 		['name' => 'actividades#ExportarActividades', 'url' => '/ExportarActividades', 'verb' => 'GET'],
 
 		/************************** REPORTE DE TIEMPOS ************************************/
-
+		['name' => 'reportetiempo#crearReporte', 'url' => '/crearReporte', 'verb' => 'POST'],
+		['name' => 'reportetiempo#GetReportes', 'url' => '/GetReportes', 'verb' => 'GET'],
 		
 
 	],

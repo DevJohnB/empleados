@@ -57,8 +57,6 @@ class Version13Date20251021182202 extends SimpleMigrationStep {
 			]);
 
 			$table->setPrimaryKey(['id_reporte']);
-			$table->addForeignKeyConstraint('oc_empleados_clientes', ['id_cliente'], ['id_cliente'], ['onDelete' => 'SET NULL']);
-			$table->addForeignKeyConstraint('oc_empleados_actividades', ['id_actividad'], ['id_actividad'], ['onDelete' => 'SET NULL']);
 
 		}
 		

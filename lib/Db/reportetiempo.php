@@ -8,19 +8,19 @@ use OCP\AppFramework\Db\Entity;
 
 class ReporteTiempo extends Entity {
 
-	protected string $id_reporte        = '';
-	protected string $id_empleado       = '';
-	protected ?string $id_cliente       = null;
-	protected ?string $id_actividad     = null;
-	protected ?string $descripcion      = null;
-	protected string $tiempo_registrado = '';   // horas decimales
-	protected string $fecha_registro    = '';   // YYYY-MM-DD
-	protected string $created_at        = '';
-	protected string $updated_at        = '';
+	protected ?int $id_reporte = null;
+	protected ?int $id_empleado = null;
+	protected ?int $id_cliente = null;
+	protected ?int $id_actividad = null;
+	protected ?string $descripcion = null;
+	protected float $tiempo_registrado = 0.0;
+	protected string $fecha_registro = '';
+	protected string $created_at = '';
+	protected string $updated_at = '';
 
 	public function __construct() {
 		$this->addType('id_reporte', 'integer');
-		$this->addType('id_empleado', 'string');
+		$this->addType('id_empleado', 'integer');
 		$this->addType('id_cliente', 'integer');
 		$this->addType('id_actividad', 'integer');
 		$this->addType('descripcion', 'string');
