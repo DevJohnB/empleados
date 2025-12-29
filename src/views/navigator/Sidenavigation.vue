@@ -55,7 +55,32 @@
 			</NcAppNavigationList>
 		</div>
 
-		<!-- Ahorro -->
+		<!-- REPORTE DE TIEMPOS -->
+		<div v-if="configuraciones.modulo_reporte_tiempos === 'true'">
+			<NcAppNavigationCaption
+				:heading-id="t('empleados', 'Report Times')"
+				is-heading
+				:name="t('empleados', 'Report Times')" />
+			<NcAppNavigationList :aria-labelledby="t('empleados', 'Report Times')">
+				<NcAppNavigationItem
+					:name="t('empleados', 'My reports | Create report')"
+					:to="{ name: 'Reports' }">
+					<template #icon>
+						<CalendarClock :size="20" />
+					</template>
+				</NcAppNavigationItem>
+
+				<NcAppNavigationItem
+					:name="t('empleados', 'Admin reports')"
+					:to="{ name: 'adminreports' }">
+					<template #icon>
+						<FileChartOutline :size="20" />
+					</template>
+				</NcAppNavigationItem>
+			</NcAppNavigationList>
+		</div>
+
+		<!-- AHORRO -->
 		<div v-if="ahorroModulo()">
 			<NcAppNavigationCaption
 				:heading-id="t('empleados', 'Savings module')"
@@ -136,6 +161,8 @@ import ViewDashboard from 'vue-material-design-icons/ViewDashboard.vue'
 import FileSign from 'vue-material-design-icons/FileSign.vue'
 import ViewList from 'vue-material-design-icons/ViewList.vue'
 import Bank from 'vue-material-design-icons/Bank.vue'
+import FileChartOutline from 'vue-material-design-icons/FileChartOutline.vue'
+import CalendarClock from 'vue-material-design-icons/CalendarClock.vue'
 import CalendarBlank from 'vue-material-design-icons/CalendarBlank.vue'
 
 import {
@@ -163,6 +190,8 @@ export default {
 		CalendarBlank,
 		HexagonMultipleOutline,
 		ViewList,
+		FileChartOutline,
+		CalendarClock,
 	},
 	inject: ['groupuser', 'configuraciones'],
 	methods: {
