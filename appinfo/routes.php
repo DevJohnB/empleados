@@ -156,7 +156,7 @@ return [
 
 		/************************** REPORTE DE TIEMPOS ************************************/
 		['name' => 'reportetiempo#crearReporte', 'url' => '/crearReporte', 'verb' => 'POST'],
-		['name' => 'reportetiempo#GetReportes', 'url' => '/GetReportes', 'verb' => 'GET'],
+		['name' => 'reportetiempo#findById', 'url' => '/GetReportes', 'verb' => 'GET'],
 		
 
 	],

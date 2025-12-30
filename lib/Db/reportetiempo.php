@@ -5,8 +5,7 @@ declare(strict_types=1);
 namespace OCA\Empleados\Db;
 
 use OCP\AppFramework\Db\Entity;
-
-class ReporteTiempo extends Entity {
+class reportetiempo extends Entity {
 
 	protected ?int $id_reporte = null;
 	protected ?int $id_empleado = null;
@@ -32,15 +31,15 @@ class ReporteTiempo extends Entity {
 
 	public function read(): array {
 		return [
-			'Id_reporte'       => $this->id_reporte,
-			'Id_empleado'      => $this->id_empleado,
-			'Id_cliente'       => $this->id_cliente,
-			'Id_actividad'     => $this->id_actividad,
-			'Descripcion'      => $this->descripcion,
-			'Tiempo_registrado'=> $this->tiempo_registrado,
-			'Fecha_registro'   => $this->fecha_registro,
-			'created_at'       => $this->created_at,
-			'updated_at'       => $this->updated_at,
+			'id_reporte'        => $this->id_reporte,
+			'id_cliente'        => $this->id_cliente,
+			'id_actividad'      => $this->id_actividad,
+			'id_empleado'       => $this->id_empleado,
+			'descripcion'       => $this->descripcion,
+			'tiempo_registrado' => $this->tiempo_registrado,
+			'fecha_registro'    => $this->fecha_registro,
+			'created_at'        => $this->created_at,
+			'updated_at'        => $this->updated_at,
 		];
 	}
 }

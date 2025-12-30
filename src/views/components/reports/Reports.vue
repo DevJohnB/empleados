@@ -8,69 +8,40 @@
 
 		<div v-else>
 			<div class="container">
-				<h2 class="board-title">
-					<Archive :size="20" decorative class="icon" />
-					<span>{{ t('ahorrosgossler', 'Report time') }}</span>
-				</h2>
-			</div>
-
-			<div class="main-content-card">
-				<div class="pack_card">
-					<p class="description">
-						{{ t('empleados', 'El empleado debe generar el reporte cada día · registrar cada procedimiento por separado · si requiere más registros, usar un nuevo formulario.') }}
-					</p>
-					<div class="bottom">
-						<NcButton
-							aria-label="center (default)"
-							type="primary"
-							wide
-							@click="openModal()">
-							<template #icon>
-								<Check :size="20" />
-							</template>
-							{{ t('empleados', 'Create report') }}
-						</NcButton>
+				<div class="main-content-card">
+					<div class="pack_card">
+						<p class="description">
+							{{ t('empleados', 'El empleado debe generar el reporte cada día · registrar cada procedimiento por separado · si requiere más registros, usar un nuevo formulario.') }}
+						</p>
+						<div class="bottom">
+							<NcButton
+								aria-label="center (default)"
+								type="primary"
+								wide
+								@click="openModal()">
+								<template #icon>
+									<Check :size="20" />
+								</template>
+								{{ t('empleados', 'Create report') }}
+							</NcButton>
+						</div>
 					</div>
 				</div>
 			</div>
 
-			<div v-if="historial.length > 0">
-				<ul style="padding: 10px;">
-					<li v-for="item in historial" :key="item.id">
-						<NcListItem
-							:name="t('ahorrosgossler', 'Movement')"
-							:bold="true"
-							:active="true"
-							:details="formatDate(item.fecha_solicitud)"
-							counter-type="highlighted"
-							@click.prevent>
-							<template #name>
-								{{ t('ahorrosgossler', 'Requested amount') }}:
-								{{ Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(item.cantidad_solicitada) }}
-							</template>
-
-							<template #subname>
-								<p v-if="item.nota">
-									{{ item.nota }}
-								</p>
-							</template>
-
-							<template #indicator>
-								<!-- estado: 0 = pendiente/rechazado?, !=0 = aprobado (ajústalo a tu lógica si aplica) -->
-								<div :title="item.estado == 0 ? t('ahorrosgossler', 'Rejected / pending') : t('ahorrosgossler', 'Approved')">
-									<CheckboxBlankCircle :size="16" :fill-color="item.estado == 0 ? '#cc0000' : '#8fce00'" />
-								</div>
-							</template>
-						</NcListItem>
-					</li>
-				</ul>
-			</div>
+			<VirtualList
+				v-if="historial.length > 0"
+				class="list"
+				:data-sources="historial"
+				:data-key="'id'"
+				:data-component="rowComponent"
+				:keeps="30"
+				:estimate-size="52" />
 
 			<div v-else id="emptycontent">
 				<h2>{{ t('ahorrosgossler', 'No movements yet') }}</h2>
 			</div>
 		</div>
-
 		<NcModal
 			v-if="modal"
 			ref="modalRef"
@@ -147,14 +118,16 @@
 
 <script>
 import { showError, showSuccess } from '@nextcloud/dialogs'
-import Archive from 'vue-material-design-icons/Archive.vue'
-import CheckboxBlankCircle from 'vue-material-design-icons/CheckboxBlankCircle.vue'
 import Check from 'vue-material-design-icons/Check.vue'
 import axios from '@nextcloud/axios'
 import { generateUrl } from '@nextcloud/router'
+
+import VirtualList from 'vue-virtual-scroll-list'
+import ReportRow from '../Helpers/Lists/ReportRow.vue'
+import mitt from 'mitt'
+
 import {
 	NcLoadingIcon,
-	NcListItem,
 	NcAppContent,
 	NcButton,
 	NcTextArea,
@@ -170,9 +143,6 @@ export default {
 	name: 'Reports',
 	components: {
 		NcLoadingIcon,
-		NcListItem,
-		Archive,
-		CheckboxBlankCircle,
 		NcAppContent,
 		NcButton,
 		Check,
@@ -182,9 +152,12 @@ export default {
 		NcTextField,
 		NcDateTimePicker,
 		NcSelect,
+		VirtualList,
 	},
 	data() {
 		return {
+			rowComponent: ReportRow,
+			reloadBus: mitt(),
 			loading: true,
 			historial: [],
 			modal: false,
@@ -198,8 +171,17 @@ export default {
 			listas_selected: null,
 		}
 	},
-	mounted() {
-		this.gethistorial()
+	async mounted() {
+		this.loading = true
+		try {
+			await Promise.all([
+				await this.GetCompaniesGroups(),
+				await this.GetActividades(),
+			])
+			await this.gethistorial()
+		} finally {
+			this.loading = false
+		}
 	},
 	methods: {
 		t, // expone t al template
@@ -217,8 +199,40 @@ export default {
 		async gethistorial() {
 			try {
 				const response = await axios.get(generateUrl('apps/empleados/GetReportes'))
-				const data = response?.data?.ocs?.data || []
-				this.historial = Array.isArray(data) ? data : []
+				const data = response?.data?.ocs?.data
+				const arr = Array.isArray(data) ? data : []
+
+				const actividadesMap = new Map(
+					(this.temp_listas || []).map(c => [Number(c.id), c.name || c.nombre || c.label]),
+				)
+
+				const clientesMap = new Map(
+					(this.listas || []).map(a => [Number(a.id), a.label || a.nombre || a.name]),
+				)
+
+				this.historial = arr
+					.filter(r => r && typeof r === 'object')
+					.map((r, i) => {
+						// fuerza PK real (id_reporte) y siempre string
+						const rawId = r.id_reporte ?? r.idReporte ?? r.Id_reporte ?? r.id ?? i
+						const id = String(rawId)
+
+						const idCliente = r.id_cliente ?? r.idCliente ?? r.Id_cliente ?? null
+						const idActividad = r.id_actividad ?? r.idActividad ?? r.Id_actividad ?? null
+
+						const clienteNombre = clientesMap.get(Number(idCliente)) || `Cliente ${idCliente ?? ''}`.trim()
+						const actividadNombre = actividadesMap.get(Number(idActividad)) || `Actividad ${idActividad ?? ''}`.trim()
+
+						return {
+							...r,
+							id,
+							idCliente,
+							idActividad,
+							clienteNombre,
+							actividadNombre,
+						}
+					})
+
 			} catch (e) {
 				showError(t('ahorrosgossler', 'Could not fetch your information'))
 			} finally {
@@ -323,7 +337,7 @@ export default {
 				}).then(
 					() => {
 						showSuccess(t('empleados', 'Área creada exitosamente'))
-						this.GetActividades()
+						this.gethistorial()
 						this.closeModal()
 					},
 					(err) => { showError(err) },
@@ -420,4 +434,12 @@ export default {
 .fit {
 	width: 100%;
 }
+.list {
+  height: calc(100vh - 260px);
+  overflow: auto;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  margin: 20px;
+}
+
 </style>

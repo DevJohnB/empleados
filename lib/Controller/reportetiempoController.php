@@ -95,9 +95,11 @@ class reportetiempoController extends BaseController {
      */
     #[UseSession]
     #[NoAdminRequired]
-    public function findById($id): DataResponse {
+    public function findById(): DataResponse {
         $this->checkAccess(['admin', 'recursos_humanos']);
-        return new DataResponse($this->reportetiempoMapper->findById($id), Http::STATUS_OK);
+        $empleado = $this->empleadosMapper->GetMyEmployeeInfo($this->userSession->getUser()->getUID());
+
+        return new DataResponse($this->reportetiempoMapper->findById($empleado[0]['Id_empleados']), Http::STATUS_OK);
     }
 
     /**
@@ -143,7 +145,7 @@ class reportetiempoController extends BaseController {
             }
             
             $reportetiempo = new reportetiempo();
-            $reportetiempo->setid_empleado($empleado[0]['Id_empleados']);
+            $reportetiempo->setid_empleado($empleado[0]['Id_empleados'] );
             $reportetiempo->setid_cliente($id_cliente);
             $reportetiempo->setid_actividad($id_actividad);
             $reportetiempo->settiempo_registrado($tiemporegistrado);

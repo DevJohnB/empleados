@@ -11,22 +11,28 @@ use OCP\AppFramework\Db\MultipleObjectsReturnedException;
 use OCP\DB\QueryBuilder\IQueryBuilder;
 
 class reportetiempoMapper extends QBMapper {
+	protected string $primaryKey = 'id_reporte';
 	public function __construct(IDBConnection $db) {
-		parent::__construct($db, 'empleados_rep_tiempos', ReporteTiempo::class);
+		parent::__construct($db, 'empleados_rep_tiempos', reportetiempo::class);
 	}
 
-	/** @throws DoesNotExistException|MultipleObjectsReturnedException */
-	public function findById(int $id): ReporteTiempo {
+	/** @return reportetiempo[] */
+	public function findById(int $id, int $limit = 20, int $offset = 0): array {
 		$qb = $this->db->getQueryBuilder();
 		$qb->select('*')
 			->from($this->getTableName())
-			->where(
-				$qb->expr()->eq('id_reporte', $qb->createNamedParameter($id, IQueryBuilder::PARAM_INT))
-			);
-		return $this->findEntity($qb);
+			->orderBy('id_reporte', 'DESC')
+			->setMaxResults($limit)
+			->setFirstResult($offset);
+
+		$result = $qb->executeQuery();
+		$rows = $result->fetchAll();
+		$result->closeCursor();
+
+		return $rows;
 	}
 
-	/** @return ReporteTiempo[] */
+	/** @return reportetiempo[] */
 	public function findAll(int $limit = 100, int $offset = 0): array {
 		$qb = $this->db->getQueryBuilder();
 		$qb->select('*')
