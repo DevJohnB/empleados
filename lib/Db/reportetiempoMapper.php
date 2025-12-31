@@ -23,7 +23,10 @@ class reportetiempoMapper extends QBMapper {
 			->from($this->getTableName())
 			->orderBy('id_reporte', 'DESC')
 			->setMaxResults($limit)
-			->setFirstResult($offset);
+			->setFirstResult($offset)
+			->where(
+				$qb->expr()->eq('id_empleado', $qb->createNamedParameter($id, IQueryBuilder::PARAM_INT))
+			);
 
 		$result = $qb->executeQuery();
 		$rows = $result->fetchAll();

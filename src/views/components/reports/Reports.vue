@@ -36,7 +36,8 @@
 				:data-key="'id'"
 				:data-component="rowComponent"
 				:keeps="30"
-				:estimate-size="52" />
+				:estimate-size="52"
+				:extra-props="{ actividades, listas }" />
 
 			<div v-else id="emptycontent">
 				<h2>{{ t('ahorrosgossler', 'No movements yet') }}</h2>
@@ -182,6 +183,9 @@ export default {
 		} finally {
 			this.loading = false
 		}
+		this.$bus.on('gethistorial', () => {
+			this.gethistorial()
+		})
 	},
 	methods: {
 		t, // expone t al template

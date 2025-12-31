@@ -139,8 +139,8 @@ return [
 		/******************************* CLIENTES *****************************************/
 		['name' => 'clientes#crearCliente', 'url' => '/crearCliente', 'verb' => 'POST'],
 		['name' => 'clientes#modificarCliente', 'url' => '/modificarCliente', 'verb' => 'POST'],
-		['name' => 'clientes#findById', 'url' => '/GetCompanieGroup', 'verb' => 'POST'],
 		['name' => 'clientes#deleteById', 'url' => '/deleteCliente', 'verb' => 'POST'],
+		['name' => 'clientes#findById', 'url' => '/GetCompanieGroup', 'verb' => 'POST'],
 		['name' => 'clientes#importarClientes', 'url' => '/importarClientes', 'verb' => 'POST'],
 		['name' => 'clientes#GetCompaniesGroups', 'url' => '/GetCompaniesGroups', 'verb' => 'GET'],
 		['name' => 'clientes#Exportarclientes', 'url' => '/Exportarclientes', 'verb' => 'GET'],
@@ -157,6 +157,9 @@ return [
 		/************************** REPORTE DE TIEMPOS ************************************/
 		['name' => 'reportetiempo#crearReporte', 'url' => '/crearReporte', 'verb' => 'POST'],
 		['name' => 'reportetiempo#findById', 'url' => '/GetReportes', 'verb' => 'GET'],
+
+		['name' => 'reportetiempo#modificarReporte', 'url' => '/modificarReporte', 'verb' => 'POST'],
+		['name' => 'reportetiempo#deleteReport', 'url' => '/deleteReport', 'verb' => 'POST'],
 		
 
 	],

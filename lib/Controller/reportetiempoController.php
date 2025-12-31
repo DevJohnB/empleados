@@ -96,7 +96,7 @@ class reportetiempoController extends BaseController {
     #[UseSession]
     #[NoAdminRequired]
     public function findById(): DataResponse {
-        $this->checkAccess(['admin', 'recursos_humanos']);
+        $this->checkAccess(['admin', 'recursos_humanos', 'empleados']);
         $empleado = $this->empleadosMapper->GetMyEmployeeInfo($this->userSession->getUser()->getUID());
 
         return new DataResponse($this->reportetiempoMapper->findById($empleado[0]['Id_empleados']), Http::STATUS_OK);
@@ -107,8 +107,8 @@ class reportetiempoController extends BaseController {
      */
     #[UseSession]
     #[NoAdminRequired]
-    public function deleteById($id): DataResponse {
-        $this->checkAccess(['admin', 'recursos_humanos']);
+    public function deleteReport($id): DataResponse {
+        $this->checkAccess(['admin', 'recursos_humanos', 'empleados']);
         return new DataResponse($this->reportetiempoMapper->deleteById($id), Http::STATUS_OK);
     }
 
@@ -117,13 +117,13 @@ class reportetiempoController extends BaseController {
      */
     #[UseSession]
     #[NoAdminRequired] // si aplica, cámbiala por #[AdminRequired]
-    public function modificarReporte(int $id_reportetiempo, string $nombre, string $detalles, float $tiempoestimado, string $tipo): DataResponse {
-        $this->checkAccess(['admin', 'recursos_humanos']);
+    public function modificarReporte(int $id_reporte, $id_actividad, $tiemporegistrado, $descripcion, string $tipo, $time): DataResponse {
+        $this->checkAccess(['admin', 'recursos_humanos', 'empleados']);
         $tipo = strtolower(trim($tipo));
         if ($tipo === 'horas') {
-            $tiempoestimado *= 60; // <-- usa la MISMA variable
+            $tiemporegistrado *= 60; // <-- usa la MISMA variable
         }
-        $this->reportetiempoMapper->updateReporte($id_reportetiempo, $nombre, $detalles, $tiempoestimado);
+        $this->reportetiempoMapper->updateReporte($id_reporte, $nombre, $detalles, $tiempoestimado);
         return new DataResponse('ok', Http::STATUS_OK);
     }
 
@@ -133,7 +133,7 @@ class reportetiempoController extends BaseController {
         #[UseSession]
         #[NoAdminRequired]
         public function crearReporte($id_cliente, $id_actividad, $tiemporegistrado, $descripcion, string $tipo, $time): DataResponse {
-            $this->checkAccess(['admin', 'recursos_humanos']);
+            $this->checkAccess(['admin', 'recursos_humanos', 'empleados']);
 
             $empleado = $this->empleadosMapper->GetMyEmployeeInfo($this->userSession->getUser()->getUID());
             

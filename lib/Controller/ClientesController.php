@@ -85,7 +85,7 @@ class ClientesController extends BaseController {
     #[UseSession]
     #[NoAdminRequired]
     public function GetCompaniesGroups(): DataResponse {
-        $this->checkAccess(['admin', 'recursos_humanos']);
+        $this->checkAccess(['admin', 'recursos_humanos', 'empleados']);
         return new DataResponse($this->clientesMapper->findAll(), Http::STATUS_OK);
     }
 
