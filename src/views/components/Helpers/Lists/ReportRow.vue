@@ -102,7 +102,7 @@
 						<NcSelect
 							v-model="listas_selected"
 							:input-label="t('empleados', 'Activity')"
-							:options="actividades"
+							:options="listas"
 							class="fit"
 							:disabled="!editable" />
 						<br>
