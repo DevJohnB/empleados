@@ -37,7 +37,7 @@
 				:data-component="rowComponent"
 				:keeps="30"
 				:estimate-size="52"
-				:extra-props="{ actividades, listas }" />
+				:extra-props="{ listas, actividades }" />
 
 			<div v-else id="emptycontent">
 				<h2>{{ t('ahorrosgossler', 'No movements yet') }}</h2>
@@ -50,6 +50,10 @@
 			@close="closeModal">
 			<div class="modal__content">
 				<div class="form-group">
+					<input
+						ref="trapFocus"
+						type="text"
+						style="position:absolute;opacity:0;height:0;width:0;pointer-events:none;">
 					<NcSelect
 						v-model="activity_selected"
 						:input-label="t('empleados', 'Proyect')"
@@ -207,11 +211,11 @@ export default {
 				const arr = Array.isArray(data) ? data : []
 
 				const actividadesMap = new Map(
-					(this.temp_listas || []).map(c => [Number(c.id), c.name || c.nombre || c.label]),
+					(this.listas || []).map(c => [Number(c.id), c.name || c.nombre || c.label]),
 				)
 
 				const clientesMap = new Map(
-					(this.listas || []).map(a => [Number(a.id), a.label || a.nombre || a.name]),
+					(this.temp_listas || []).map(a => [Number(a.id), a.label || a.nombre || a.name]),
 				)
 
 				this.historial = arr
@@ -332,8 +336,8 @@ export default {
 		async create() {
 			try {
 				await axios.post(generateUrl('/apps/empleados/crearReporte'), {
-					id_cliente: this.listas_selected.id,
-					id_actividad: this.activity_selected.id,
+					id_cliente: this.activity_selected.id,
+					id_actividad: this.listas_selected.id,
 					tiemporegistrado: Number(this.time_activity ?? 0),
 					descripcion: this.description_activity,
 					tipo: this.type_time,

@@ -117,13 +117,18 @@ class reportetiempoController extends BaseController {
      */
     #[UseSession]
     #[NoAdminRequired] // si aplica, cámbiala por #[AdminRequired]
-    public function modificarReporte(int $id_reporte, $id_actividad, $tiemporegistrado, $descripcion, string $tipo, $time): DataResponse {
+    public function modificarReporte(int $id_reporte, $id_actividad, $tiemporegistrado, $descripcion, string $tipo, $fecharegistrada): DataResponse {
         $this->checkAccess(['admin', 'recursos_humanos', 'empleados']);
+        $empleado = $this->empleadosMapper->GetMyEmployeeInfo($this->userSession->getUser()->getUID());
+
         $tipo = strtolower(trim($tipo));
         if ($tipo === 'horas') {
             $tiemporegistrado *= 60; // <-- usa la MISMA variable
         }
-        $this->reportetiempoMapper->updateReporte($id_reporte, $nombre, $detalles, $tiempoestimado);
+
+        $fecha = (new \DateTimeImmutable($fecharegistrada))->format('Y-m-d');
+
+        $this->reportetiempoMapper->updateReporte($id_reporte, $id_actividad, $empleado[0]['Id_empleados'], $descripcion, $tiemporegistrado, $fecha);
         return new DataResponse('ok', Http::STATUS_OK);
     }
 

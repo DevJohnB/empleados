@@ -47,12 +47,16 @@
 			:name="t('empleados', 'Report')"
 			@close="closeEdit">
 			<div class="modal__content">
-				<form autocomplete="off">
+				<form>
 					<div class="form-group">
+						<input
+							ref="trapFocus"
+							type="text"
+							style="position:absolute;opacity:0;height:0;width:0;pointer-events:none;">
 						<NcSelect
 							v-model="activity_selected"
 							:input-label="t('empleados', 'Proyect')"
-							:options="actividades"
+							:options="listas"
 							class="fit"
 							:open="false"
 							:disabled="true" />
@@ -98,7 +102,7 @@
 						<NcSelect
 							v-model="listas_selected"
 							:input-label="t('empleados', 'Activity')"
-							:options="listas"
+							:options="actividades"
 							class="fit"
 							:disabled="!editable" />
 						<br>
@@ -183,6 +187,7 @@ export default {
 			activity_selected: null,
 			listas_selected: null,
 			reportid: null,
+			id_activity: null,
 		}
 	},
 	computed: {
@@ -230,10 +235,10 @@ export default {
 			return this.source?.fecha_registro ?? this.source?.fechaRegistro ?? ''
 		},
 		titleText() {
-			return this.source?.actividadNombre || ''
+			return this.source?.clienteNombre || ''
 		},
 		subnameText() {
-			return this.source?.clienteNombre || ''
+			return this.source?.actividadNombre || ''
 		},
 	},
 	mounted() {
@@ -274,8 +279,9 @@ export default {
 			this.showDialog = false
 		},
 		edit() {
-			this.activity_selected = this.source.actividadNombre
-			this.listas_selected = this.source.clienteNombre
+			this.activity_selected = this.source.clienteNombre
+			this.listas_selected = this.source.actividadNombre
+			this.id_activity = this.source.id_cliente
 			this.description_activity = this.source.descripcion
 			this.time_activity = this.source.tiempo_registrado
 			this.type_time = 'minutos'
@@ -286,17 +292,16 @@ export default {
 			try {
 				await axios.post(generateUrl('/apps/empleados/modificarReporte'), {
 					id_reporte: parseInt(this.source.id),
-					id_cliente: this.listas_selected.id,
-					id_actividad: this.activity_selected.id,
+					id_actividad: this.listas_selected.id ?? this.id_activity,
 					tiemporegistrado: Number(this.time_activity ?? 0),
 					descripcion: this.description_activity,
 					tipo: this.type_time,
-					time: this.time.toISOString().slice(0, 10),
+					fecharegistrada: this.time.toISOString().slice(0, 10),
 				}).then(
 					() => {
-						showSuccess(t('empleados', 'Área creada exitosamente'))
-						this.gethistorial()
-						this.closeModal()
+						showSuccess(t('empleados', 'Datos actualizados correctamente'))
+						this.$bus.emit('gethistorial')
+						this.closeEdit()
 					},
 					(err) => { showError(err) },
 				)
