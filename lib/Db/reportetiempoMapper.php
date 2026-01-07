@@ -64,7 +64,7 @@ class reportetiempoMapper extends QBMapper {
 			->set('descripcion', $query->createNamedParameter($descripcion))
 			->set('tiempo_registrado', $query->createNamedParameter($tiemporegistrado))
 			->set('fecha_registro', $query->createNamedParameter($fecha))
-			->set('created_at', $query->createNamedParameter($timestamp))
+			->set('updated_at', $query->createNamedParameter($timestamp))
 			->where($query->expr()->eq('id_reporte', $query->createNamedParameter($id_reporte)))
 			->andWhere($query->expr()->eq('id_empleado', $query->createNamedParameter($id_empleado)))
 			// condición de 40 minutos
