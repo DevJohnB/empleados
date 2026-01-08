@@ -162,6 +162,18 @@ class reportetiempoController extends BaseController {
         }
 
     /**
+     * Obtiene la lista de empleados con validación de acceso.
+     */
+    #[UseSession]
+    #[NoAdminRequired]
+    public function GetEmpleadosReports(): DataResponse {
+        $this->checkAccess(['admin', 'recursos_humanos']);
+        return new DataResponse([
+            'Empleados'    => $this->empleadosMapper->GetUserLists()
+        ], Http::STATUS_OK);
+    }
+
+    /**
      * Exporta la lista de reportetiempo a un archivo XLSX.
      */
     public function ExportarReportes(): DataResponse {

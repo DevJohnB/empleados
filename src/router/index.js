@@ -13,7 +13,7 @@ import Dashboard from '../views/components/Dashboard/Dashboard.vue'
 import CompaniesGroups from '../views/components/clientes/CompaniesGroups.vue'
 import Actividades from '../views/components/clientes/Actividades.vue'
 import Reports from '../views/components/reports/Reports.vue'
-import adminreports from '../views/components/reports/admin/adminreports.vue'
+import Adminreports from '../views/components/reports/admin/Adminreports.vue'
 
 Vue.use(Router)
 
@@ -80,9 +80,9 @@ export default new Router({
 			name: 'Reports',
 		},
 		{
-			path: '/adminreports',
-			component: adminreports,
-			name: 'adminreports',
+			path: '/Adminreports',
+			component: Adminreports,
+			name: 'Adminreports',
 		},
 	],
 })

@@ -6,12 +6,12 @@
 					<div class="input-container">
 						<input v-model="query" type="text" :placeholder="t('empleados', 'Search...')">
 					</div>
-					<div class="button-container">
+					<slot name="custombuttons" />
+					<div v-if="defaultbuttons" class="button-container">
 						<NcActions :open="button" @click="toggle">
 							<template #icon>
 								<Cog :size="20" />
 							</template>
-
 							<NcActionButton @click="AgregarNuevo()">
 								<template #icon>
 									<AccountMultiplePlusOutline :size="20" />
@@ -88,6 +88,7 @@ export default {
 		listas: { type: Array, required: true },
 		reloadBus: { type: Object, required: true },
 		searchQuery: { type: String, default: '' },
+		defaultbuttons: { type: Boolean, default: true, required: false },
 	},
 
 	data() {

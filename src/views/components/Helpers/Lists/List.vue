@@ -12,7 +12,12 @@
 		<template #list>
 			<FullList
 				:listas="listas"
-				:reload-bus="reloadBus" />
+				:reload-bus="reloadBus"
+				:defaultbuttons="defaultbuttons">
+				<template #custombuttons>
+					<slot name="custombuttons" />
+				</template>
+			</FullList>
 		</template>
 		<!-- main details -->
 		<div class="Details">
@@ -124,6 +129,7 @@ export default {
 		loading: { type: Boolean, required: true },
 		listas: { type: Array, required: true },
 		select: { type: Array, required: true },
+		defaultbuttons: { type: Boolean, default: true, required: false },
 		// reloadBus: { type: Object, required: true },
 	},
 

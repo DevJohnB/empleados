@@ -72,7 +72,7 @@
 
 				<NcAppNavigationItem
 					:name="t('empleados', 'Admin reports')"
-					:to="{ name: 'adminreports' }">
+					:to="{ name: 'Adminreports' }">
 					<template #icon>
 						<FileChartOutline :size="20" />
 					</template>
