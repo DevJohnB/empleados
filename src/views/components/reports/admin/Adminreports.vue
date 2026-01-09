@@ -11,7 +11,9 @@
 						<template #icon>
 							<DatabaseCog :size="20" />
 						</template>
-						<NcActionButton @click="AgregarNuevo()">
+						<NcActionButton
+							:close-after-click="true"
+							@click="reportConfig()">
 							<template #icon>
 								<AccountMultiplePlusOutline :size="20" />
 							</template>
@@ -106,6 +108,46 @@
 			style="display: none"
 			accept=".xlsx"
 			@change="importar()">
+		<NcModal
+			v-if="modalReport"
+			ref="modalRef"
+			:name="t('empleados', 'Add new activity')"
+			size="large"
+			@close="closeModal">
+			<div class="modal__content">
+				<div class="form-group center">
+					<input
+						ref="trapFocus"
+						type="text"
+						style="position:absolute;opacity:0;height:0;width:0;pointer-events:none;">
+					<div class="report-config">
+						<NcSelect
+							v-model="periodo_inicio"
+							:options="meses"
+							input-label="Mes de inicio"
+							class="select-date" />
+						<NcSelect
+							v-model="periodo_fin"
+							:options="meses"
+							input-label="Mes de fin"
+							class="select-date" />
+						<NcSelect
+							v-model="anioSeleccionado"
+							:options="anios"
+							:reduce="a => a"
+							input-label="Año"
+							class="select-date" />
+					</div>
+					<NcButton
+						class="appli-report"
+						:aria-label="t('empleados', 'apply changes')"
+						type="primary"
+						@click="ChangeReportConfig()">
+						{{ t('empleados', 'Apply changes') }}
+					</NcButton>
+				</div>
+			</div>
+		</NcModal>
 	</NcAppContent>
 </template>
 
@@ -124,8 +166,6 @@ import { translate as t } from '@nextcloud/l10n'
 import List from '../../Helpers/Lists/List.vue'
 import AdminDetalles from './AdminDetalles.vue'
 
-import { h } from 'vue'
-
 import {
 	NcAppContent,
 	NcModal,
@@ -135,6 +175,7 @@ import {
 	NcCheckboxRadioSwitch,
 	NcActions,
 	NcActionButton,
+	NcSelect,
 } from '@nextcloud/vue'
 
 export default {
@@ -153,6 +194,7 @@ export default {
 		DatabaseExport,
 		AccountMultiplePlusOutline,
 		DatabaseCog,
+		NcSelect,
 	},
 	data() {
 		return {
@@ -165,10 +207,33 @@ export default {
 			description_activity: '',
 			type_time: 'minutos',
 			time_activity: 0,
+			modalReport: false,
+			periodo_inicio: '',
+			periodo_fin: '',
+			anioSeleccionado: null,
+			meses: [
+				'Enero',
+				'Febrero',
+				'Marzo',
+				'Abril',
+				'Mayo',
+				'Junio',
+				'Julio',
+				'Agosto',
+				'Septiembre',
+				'Octubre',
+				'Noviembre',
+				'Diciembre',
+			],
+			anios: Array.from({ length: 10 }, (_, i) => 2024 + i),
 		}
 	},
 
 	async mounted() {
+		this.periodo_inicio = localStorage.getItem('nextcloud_empleados_mes_inicio')
+		this.periodo_fin = localStorage.getItem('nextcloud_empleados_mes_fin')
+		this.anioSeleccionado = localStorage.getItem('nextcloud_empleados_anio_seleccionado')
+
 		this._onDetails = (id) => this.GetActividad(id)
 		this._onNew = () => this.openModal()
 		this._onDelete = () => this.delete()
@@ -223,6 +288,11 @@ export default {
 
 		closeModal() {
 			this.modal = false
+			this.modalReport = false
+		},
+
+		reportConfig() {
+			this.modalReport = true
 		},
 
 		async GetActividad(id) {
@@ -255,6 +325,7 @@ export default {
 							const keyMap = {
 								Id_empleados: 'id',
 								displayname: 'name',
+								uid: 'image',
 							}
 
 							const renameKeys = (obj, map) =>
@@ -351,6 +422,14 @@ export default {
 			this.modal = true
 		},
 
+		ChangeReportConfig() {
+			localStorage.setItem('nextcloud_empleados_mes_inicio', this.periodo_inicio)
+			localStorage.setItem('nextcloud_empleados_mes_fin', this.periodo_fin)
+			localStorage.setItem('nextcloud_empleados_anio_seleccionado', this.anioSeleccionado)
+			this.closeModal()
+			this.GetEmpleadosReports()
+		},
+
 		async importar() {
 			const formData = new FormData()
 			formData.append('ActividadesfileXLSX', this.$refs.file.files[0])
@@ -387,32 +466,7 @@ export default {
 					},
 				)
 		},
-		 renderDiv() {
-			if (!this.defaultbuttons) return null
 
-			return h('div', { class: 'button-container' }, [
-				h('NcActions', {
-					open: this.button,
-					onClick: this.toggle,
-				}, {
-					default: () => [
-						h('NcActionButton', { onClick: this.AgregarNuevo }, {
-							icon: () => h('span', {}, this.$slots.icon),
-							default: () => this.t('empleados', 'Add new'),
-						}),
-						h('NcActionButton', { onClick: this.Exportar }, {
-							icon: () => h('span', {}, this.$slots.icon),
-							default: () => this.t('empleados', 'Export list'),
-						}),
-						h('NcActionSeparator'),
-						h('NcActionButton', { onClick: this.importar }, {
-							icon: () => h('span', {}, this.$slots.icon),
-							default: () => this.t('empleados', 'Import data from template'),
-						}),
-					],
-				}),
-			])
-		},
 	},
 }
 </script>
@@ -436,5 +490,18 @@ export default {
 .save {
 	display: flex;
 	margin-left: 10px;
+}
+.select-date {
+	margin-right: 10px;
+}
+.report-config {
+	display: flex;
+	flex-direction: row;
+	justify-content: center;
+	align-items: center;
+}
+.appli-report {
+	margin-top: 15px;
+	align-self: center;
 }
 </style>
