@@ -167,10 +167,37 @@ class reportetiempoController extends BaseController {
     #[UseSession]
     #[NoAdminRequired]
     public function GetEmpleadosReports(): DataResponse {
-        $this->checkAccess(['admin', 'recursos_humanos']);
-        return new DataResponse([
-            'Empleados'    => $this->empleadosMapper->GetUserLists()
-        ], Http::STATUS_OK);
+        $this->checkAccess(['admin', 'recursos_humanos', 'empleados']);
+
+        $user = $this->userSession->getUser();
+        $equipo_empleado = $this->empleadosMapper->GetSubordinates($user->getUID());
+
+        foreach ($equipo_empleado as $empleado) {
+            $id_empleado = $this->empleadosMapper->GetMyEmployeeInfo($empleado['Id_user']);
+            $ausencias = $this->reportetiempoMapper->findById($id_empleado[0]['Id_empleados'], 0, 0);
+
+            if (empty($ausencias)) {
+                continue; // Si no hay ausencias, no seguimos con este empleado
+            }
+
+            if ($id_empleado[0]['Id_gerente'] == $user->getUID()) {
+                $ausencias_historial = $this->historialausenciasMapper
+                    ->GetAusenciasHistorialGerente($ausencias[0]['id_ausencias']);
+            } elseif ($id_empleado[0]['Id_socio'] == $user->getUID()) {
+                $ausencias_historial = $this->historialausenciasMapper
+                    ->GetAusenciasHistorialSocio($ausencias[0]['id_ausencias']);
+            } else {
+                continue; // Si no es ni socio ni gerente, lo ignoramos
+            }
+
+            if (!empty($ausencias_historial)) {
+                foreach ($ausencias_historial as $item) {
+                    $empleados_data[] = array_merge($empleado, $item); // Fusiona empleado + historial
+                }
+            }
+        }
+
+        return new DataResponse($empleados_data, Http::STATUS_OK);
     }
 
     /**

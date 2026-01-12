@@ -22,7 +22,10 @@
 		<!-- main details -->
 		<div class="Details">
 			<div class="contacts-list__item-wrapper">
-				<div v-if="Object.keys(select).length == 0">
+				<div v-if="custom == true && Object.keys(select).length == 0">
+					<slot name="custom" />
+				</div>
+				<div v-else-if="custom == false && Object.keys(select).length == 0">
 					<div class="emptycontent">
 						<DatabaseSearchOutline :size="60" />
 						<h2>{{ t('empleados', 'Select something') }}</h2>
@@ -129,6 +132,7 @@ export default {
 		loading: { type: Boolean, required: true },
 		listas: { type: Array, required: true },
 		select: { type: Array, required: true },
+		custom: { type: Boolean, default: false, required: false },
 		defaultbuttons: { type: Boolean, default: true, required: false },
 		// reloadBus: { type: Object, required: true },
 	},

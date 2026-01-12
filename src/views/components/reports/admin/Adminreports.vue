@@ -4,7 +4,8 @@
 			:loading="loading"
 			:listas="listas"
 			:select="select"
-			:defaultbuttons="false">
+			:defaultbuttons="false"
+			:custom="true">
 			<template #custombuttons>
 				<div class="button-container">
 					<NcActions>
@@ -29,6 +30,11 @@
 
 						<NcActionSeparator />
 					</NcActions>
+				</div>
+			</template>
+			<template #custom>
+				<div class="periodo-details">
+					<h3>Periodo - {{ periodo_inicio }} - {{ periodo_fin }}</h3>
 				</div>
 			</template>
 			<template #details>
@@ -312,35 +318,38 @@ export default {
 
 		async GetEmpleadosReports() {
 			try {
-				await axios.get(generateUrl('/apps/empleados/GetEmpleadosReports'))
-					.then(
-						(response) => {
-							if (response?.data?.ocs?.meta?.status !== 'ok') {
-								showError(response?.data?.ocs?.meta?.message)
-								this.loading = false
-								window.location.href = '/apps/empleados/#/'
-								return
-							}
-
-							const keyMap = {
-								Id_empleados: 'id',
-								displayname: 'name',
-								uid: 'image',
-							}
-
-							const renameKeys = (obj, map) =>
-								Object.fromEntries(Object.entries(obj).map(([k, v]) => [map[k] ?? k, v]))
-
-							const arr = Array.isArray(response?.data?.ocs?.data.Empleados) ? response.data.ocs.data.Empleados : []
-
-							this.listas = arr.map(o => renameKeys(o, keyMap))
-
+				await axios.post(generateUrl('/apps/empleados/GetEmpleadosReports'), {
+					periodo_inicio: this.periodo_inicio,
+					periodo_fin: this.periodo_fin,
+					anio: this.anioSeleccionado,
+				}).then(
+					(response) => {
+						if (response?.data?.ocs?.meta?.status !== 'ok') {
+							showError(response?.data?.ocs?.meta?.message)
 							this.loading = false
-						},
-						(err) => {
-							showError(err)
-						},
-					)
+							window.location.href = '/apps/empleados/#/'
+							return
+						}
+
+						const keyMap = {
+							Id_empleados: 'id',
+							displayname: 'name',
+							Id_user: 'image',
+						}
+
+						const renameKeys = (obj, map) =>
+							Object.fromEntries(Object.entries(obj).map(([k, v]) => [map[k] ?? k, v]))
+
+						const arr = Array.isArray(response?.data?.ocs?.data.Empleados) ? response.data.ocs.data.Empleados : []
+
+						this.listas = arr.map(o => renameKeys(o, keyMap))
+
+						this.loading = false
+					},
+					(err) => {
+						showError(err)
+					},
+				)
 			} catch (err) {
 				showError(t('empleados', 'Se ha producido una excepcion [01] [{error}]', { error: String(err) }))
 			}
@@ -503,5 +512,9 @@ export default {
 .appli-report {
 	margin-top: 15px;
 	align-self: center;
+}
+.periodo-details {
+	margin-bottom: 10px;
+	text-align: center;
 }
 </style>

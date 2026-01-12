@@ -161,8 +161,7 @@ return [
 		['name' => 'reportetiempo#modificarReporte', 'url' => '/modificarReporte', 'verb' => 'POST'],
 		['name' => 'reportetiempo#deleteReport', 'url' => '/deleteReport', 'verb' => 'POST'],
 
-
-		['name' => 'reportetiempo#GetEmpleadosReports', 'url' => '/GetEmpleadosReports', 'verb' => 'GET'],
+		['name' => 'reportetiempo#GetEmpleadosReports', 'url' => '/GetEmpleadosReports', 'verb' => 'POST'],
 		
 
 	],

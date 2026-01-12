@@ -67,3 +67,45 @@ const keyMap = {
 				this.detalles = arr.map(o => renameKeys(o, keyMap))
 
 				this.loading = false
+
+
+
+		<List
+			:loading="loading"
+			:listas="listas"
+			:select="select"
+			:defaultbuttons="false"
+			:custom="true">  <----- para meterle datos de en vez detalles del empleado
+			<template #custombuttons>
+				<div class="button-container">
+					<NcActions>
+						<template #icon>
+							<DatabaseCog :size="20" />
+						</template>
+						<NcActionButton
+							:close-after-click="true"
+							@click="reportConfig()">
+							<template #icon>
+								<AccountMultiplePlusOutline :size="20" />
+							</template>
+							{{ t('empleados', 'configure period') }}
+						</NcActionButton>
+
+						<NcActionButton @click="Exportar()">
+							<template #icon>
+								<DatabaseExport :size="20" />
+							</template>
+							{{ t('empleados', 'Export period report') }}
+						</NcActionButton>
+
+						<NcActionSeparator />
+					</NcActions>
+				</div>
+			</template>
+			<template #custom>
+				detalles
+			</template>
+			<template #details>
+				<AdminDetalles :select="select" />
+			</template>
+		</List>
