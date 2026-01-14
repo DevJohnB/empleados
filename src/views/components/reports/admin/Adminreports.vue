@@ -401,7 +401,6 @@ export default {
 							window.location.href = '/apps/empleados/#/'
 							return
 						}
-
 						const keyMap = {
 							Id_empleados: 'id',
 							displayname: 'name',
@@ -410,7 +409,14 @@ export default {
 						}
 
 						const renameKeys = (obj, map) =>
-							Object.fromEntries(Object.entries(obj).map(([k, v]) => [map[k] ?? k, v]))
+							Object.fromEntries(
+								Object.entries(obj).map(([k, v]) => {
+									if (k === 'displayname') {
+										return ['name', v ?? obj.Id_user]
+									}
+									return [map[k] ?? k, v]
+								})
+							)
 
 						const arr = Array.isArray(response?.data?.ocs?.data) ? response.data.ocs.data : []
 
