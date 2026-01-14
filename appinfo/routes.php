@@ -156,13 +156,12 @@ return [
 
 		/************************** REPORTE DE TIEMPOS ************************************/
 		['name' => 'reportetiempo#crearReporte', 'url' => '/crearReporte', 'verb' => 'POST'],
-		['name' => 'reportetiempo#findById', 'url' => '/GetReportes', 'verb' => 'GET'],
+		['name' => 'reportetiempo#GetReportesAll', 'url' => '/GetReportesAll', 'verb' => 'GET'],
+		['name' => 'reportetiempo#findById', 'url' => '/GetReportesById', 'verb' => 'POST'],
 
 		['name' => 'reportetiempo#modificarReporte', 'url' => '/modificarReporte', 'verb' => 'POST'],
 		['name' => 'reportetiempo#deleteReport', 'url' => '/deleteReport', 'verb' => 'POST'],
 
 		['name' => 'reportetiempo#GetEmpleadosReports', 'url' => '/GetEmpleadosReports', 'verb' => 'POST'],
-		
-
 	],
 ];

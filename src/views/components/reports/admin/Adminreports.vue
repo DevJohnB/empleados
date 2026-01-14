@@ -38,6 +38,7 @@
 				</div>
 			</template>
 			<template #details>
+				<h3>Periodo - {{ meses.find(m => m.value === periodo_inicio)?.label }} - {{ meses.find(m => m.value === periodo_fin)?.label }}</h3>
 				<AdminDetalles :select="select" />
 			</template>
 		</List>
@@ -169,7 +170,7 @@ import AccountMultiplePlusOutline from 'vue-material-design-icons/AccountMultipl
 import DatabaseCog from 'vue-material-design-icons/DatabaseCog.vue'
 
 // public imports
-import { showError, showSuccess } from '@nextcloud/dialogs'
+import { showError /*, showSuccess */ } from '@nextcloud/dialogs'
 import { generateUrl } from '@nextcloud/router'
 import axios from '@nextcloud/axios'
 import { translate as t } from '@nextcloud/l10n'
@@ -222,6 +223,7 @@ export default {
 			periodo_inicio: null,
 			periodo_fin: null,
 			anioSeleccionado: null,
+			actividades: [],
 			meses: [
 				{ label: 'Enero', value: 1 },
 				{ label: 'Febrero', value: 2 },
@@ -245,10 +247,8 @@ export default {
 		this.periodo_fin = Number(localStorage.getItem('nextcloud_empleados_mes_fin')) || null
 		this.anioSeleccionado = Number(localStorage.getItem('nextcloud_empleados_anio_seleccionado')) || null
 
-		this._onDetails = (id) => this.GetActividad(id)
+		this._onDetails = (id) => this.gethistorial(id)
 		this._onNew = () => this.openModal()
-		this._onDelete = () => this.delete()
-		this._onEdit = () => this.edit()
 		this._onExport = () => this.Exportar()
 		this._onImport = () => this.$refs.file.click()
 		// deteccion de esc
@@ -261,6 +261,8 @@ export default {
 		this.$root.$on('exportlist', this._onExport)
 		this.$root.$on('importlist', this._onImport)
 		this.GetEmpleadosReports()
+		this.GetCompaniesGroups()
+		this.GetActividades()
 	},
 
 	beforeUnmount() {
@@ -306,16 +308,80 @@ export default {
 			this.modalReport = true
 		},
 
-		async GetActividad(id) {
+		async GetActividades() {
 			try {
-				await axios.post(generateUrl('/apps/empleados/GetActividad'), {
-					id,
-				}).then(
-					(response) => {
-						this.select = response?.data?.ocs?.data
-					},
-					(err) => { showError(err) },
-				)
+				await axios.get(generateUrl('/apps/empleados/GetActividades'))
+					.then(
+						(response) => {
+							const keyMap = {
+								id_actividad: 'id',
+								nombre: 'label',
+								tiempo_real: 'count',
+							}
+
+							const renameKeys = (obj, map) =>
+								Object.fromEntries(Object.entries(obj).map(([k, v]) => [map[k] ?? k, v]))
+
+							const arr = Array.isArray(response?.data?.ocs?.data) ? response.data.ocs.data : []
+
+							this.actividades = arr.map(o => renameKeys(o, keyMap))
+
+							this.loading = false
+						},
+						(err) => {
+							showError(err)
+						},
+					)
+			} catch (err) {
+				showError(t('empleados', 'Se ha producido una excepcion [01] [{error}]', { error: String(err) }))
+			}
+		},
+
+		async GetCompaniesGroups() {
+			try {
+				await axios.get(generateUrl('/apps/empleados/GetCompaniesGroups'))
+					.then(
+						(response) => {
+							if (response?.data?.ocs?.meta?.status !== 'ok') {
+								showError(response?.data?.ocs?.meta?.message)
+								this.loading = false
+								window.location.href = '/apps/empleados/#/'
+								return
+							}
+							const keyMap = {
+								id_cliente: 'id',
+								nombre: 'name',
+								cliente_padre: 'count',
+							}
+
+							const renameKeys = (obj, map) =>
+								Object.fromEntries(Object.entries(obj).map(([k, v]) => [map[k] ?? k, v]))
+
+							const arr = Array.isArray(response?.data?.ocs?.data) ? response.data.ocs.data : []
+
+							this.temp_listas = arr.map(o => renameKeys(o, keyMap))
+
+							const data = Array.isArray(response?.data?.ocs?.data) ? response.data.ocs.data : []
+
+							// Lista para tu <List>
+							this.temp_listas = data.map(o => ({
+								id: o.id_cliente,
+								name: o.nombre,
+								count: o.child_count,
+							}))
+
+							// Opciones para <NcSelect>
+							this.actividades = data.map(o => ({
+								id: o.id_cliente,
+								label: o.nombre,
+							}))
+
+							this.loading = false
+						},
+						(err) => {
+							showError(err)
+						},
+					)
 			} catch (err) {
 				showError(t('empleados', 'Se ha producido una excepcion [01] [{error}]', { error: String(err) }))
 			}
@@ -361,82 +427,6 @@ export default {
 			}
 		},
 
-		async create() {
-			try {
-				await axios.post(generateUrl('/apps/empleados/crearActividad'), {
-					nombre: this.name_activity,
-					detalles: this.description_activity,
-					tiempoestimado: this.time_activity != null ? this.time_activity : 0,
-					tipo: this.type_time,
-				}).then(
-					() => {
-						showSuccess(t('empleados', 'Área creada exitosamente'))
-						this.GetEmpleadosReports()
-						this.closeModal()
-					},
-					(err) => { showError(err) },
-				)
-			} catch (err) {
-				showError(t('empleados', 'Se ha producido una excepcion [03] [{error}]', { error: String(err) }))
-			}
-		},
-
-		async delete() {
-			try {
-				await axios.post(generateUrl('/apps/empleados/DeleteActividad'), {
-					id: this.select[0].id_actividad,
-				}).then(
-					() => {
-						showSuccess(t('empleados', 'Se ha eliminadon exitosamente'))
-						this.GetEmpleadosReports()
-						this.closeModal()
-						this.select = []
-					},
-					(err) => { showError(err) },
-				)
-			} catch (err) {
-				showError(t('empleados', 'Se ha producido una excepcion [03] [{error}]', { error: String(err) }))
-			}
-		},
-
-		async modify() {
-			try {
-				await axios.post(generateUrl('/apps/empleados/ModificarActividad'), {
-					id_actividad: this.select[0].id_actividad,
-					nombre: this.name_activity,
-					detalles: this.description_activity,
-					tiempoestimado: this.time_activity,
-					tipo: this.type_time,
-				}).then(
-					() => {
-						showSuccess(t('empleados', 'Modificacion exitosa'))
-						const id = this.select?.[0]?.id_actividad ?? null
-						this.select = [{
-							id_actividad: id,
-							nombre: this.name_activity,
-							detalles: this.description_activity,
-							tiempo_estimado: this.time_activity,
-							tipo: 'minutos',
-						}]
-						this.GetEmpleadosReports()
-						this.closeModal()
-					},
-					(err) => { showError(err) },
-				)
-			} catch (err) {
-				showError(t('empleados', 'Se ha producido una excepcion [03] [{error}]', { error: String(err) }))
-			}
-		},
-
-		edit() {
-			this.editing = true
-			this.name_activity = this.select[0].nombre
-			this.description_activity = this.select[0].detalles
-			this.type_time = 'minutos'
-			this.time_activity = this.select[0].tiempo_estimado
-			this.modal = true
-		},
-
 		ChangeReportConfig() {
 			localStorage.setItem('nextcloud_empleados_mes_inicio', String(this.periodo_inicio ?? ''))
 			localStorage.setItem('nextcloud_empleados_mes_fin', String(this.periodo_fin ?? ''))
@@ -446,21 +436,55 @@ export default {
 			this.GetEmpleadosReports()
 		},
 
-		async importar() {
-			const formData = new FormData()
-			formData.append('ActividadesfileXLSX', this.$refs.file.files[0])
+		async gethistorial(id) {
 			try {
-				await axios.post(generateUrl('/apps/empleados/ImportarActividades'), formData, {
-					headers: { 'Content-Type': 'multipart/form-data' },
+				await axios.post(generateUrl('/apps/empleados/GetReportesById'), {
+					id,
 				}).then(
-					() => {
-						this.GetEmpleadosReports()
-						showSuccess(t('empleados', 'Se actualizó la base de datos exitosamente'))
+					(response) => {
+						const data = response?.data?.ocs?.data
+						const arr = Array.isArray(data) ? data : []
+
+						const actividadesMap = new Map(
+							(this.listas || []).map(c => [Number(c.id), c.name || c.nombre || c.label]),
+						)
+
+						const clientesMap = new Map(
+							(this.temp_listas || []).map(a => [Number(a.id), a.label || a.nombre || a.name]),
+						)
+
+						this.historial = arr
+							.filter(r => r && typeof r === 'object')
+							.map((r, i) => {
+								// fuerza PK real (id_reporte) y siempre string
+								const rawId = r.id_reporte ?? r.idReporte ?? r.Id_reporte ?? r.id ?? i
+								const id = String(rawId)
+
+								const idCliente = r.id_cliente ?? r.idCliente ?? r.Id_cliente ?? null
+								const idActividad = r.id_actividad ?? r.idActividad ?? r.Id_actividad ?? null
+
+								const clienteNombre = clientesMap.get(Number(idCliente)) || `Cliente ${idCliente ?? ''}`.trim()
+								const actividadNombre = actividadesMap.get(Number(idActividad)) || `Actividad ${idActividad ?? ''}`.trim()
+
+								return {
+									...r,
+									id,
+									idCliente,
+									idActividad,
+									clienteNombre,
+									actividadNombre,
+								}
+							})
 					},
-					(err) => { showError(err) },
+					(err) => {
+						showError(err)
+					},
 				)
-			} catch (err) {
-				showError(t('empleados', 'Se ha producido una excepcion [03] [{error}]', { error: String(err) }))
+
+			} catch (e) {
+				showError(t('ahorrosgossler', 'Could not fetch your information'))
+			} finally {
+				this.loading = false
 			}
 		},
 
