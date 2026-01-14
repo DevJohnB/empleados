@@ -34,7 +34,7 @@
 			</template>
 			<template #custom>
 				<div class="periodo-details">
-					<h3>Periodo - {{ periodo_inicio }} - {{ periodo_fin }}</h3>
+					<h3>Periodo - {{ meses.find(m => m.value === periodo_inicio)?.label }} - {{ meses.find(m => m.value === periodo_fin)?.label }}</h3>
 				</div>
 			</template>
 			<template #details>
@@ -130,11 +130,16 @@
 						<NcSelect
 							v-model="periodo_inicio"
 							:options="meses"
+							label="label"
+							:reduce="m => m.value"
 							input-label="Mes de inicio"
 							class="select-date" />
+
 						<NcSelect
 							v-model="periodo_fin"
 							:options="meses"
+							label="label"
+							:reduce="m => m.value"
 							input-label="Mes de fin"
 							class="select-date" />
 						<NcSelect
@@ -214,31 +219,31 @@ export default {
 			type_time: 'minutos',
 			time_activity: 0,
 			modalReport: false,
-			periodo_inicio: '',
-			periodo_fin: '',
+			periodo_inicio: null,
+			periodo_fin: null,
 			anioSeleccionado: null,
 			meses: [
-				'Enero',
-				'Febrero',
-				'Marzo',
-				'Abril',
-				'Mayo',
-				'Junio',
-				'Julio',
-				'Agosto',
-				'Septiembre',
-				'Octubre',
-				'Noviembre',
-				'Diciembre',
+				{ label: 'Enero', value: 1 },
+				{ label: 'Febrero', value: 2 },
+				{ label: 'Marzo', value: 3 },
+				{ label: 'Abril', value: 4 },
+				{ label: 'Mayo', value: 5 },
+				{ label: 'Junio', value: 6 },
+				{ label: 'Julio', value: 7 },
+				{ label: 'Agosto', value: 8 },
+				{ label: 'Septiembre', value: 9 },
+				{ label: 'Octubre', value: 10 },
+				{ label: 'Noviembre', value: 11 },
+				{ label: 'Diciembre', value: 12 },
 			],
-			anios: Array.from({ length: 10 }, (_, i) => 2024 + i),
+			anios: Array.from({ length: Math.max(0, new Date().getFullYear() - 2026 + 1) }, (_, i) => 2026 + i),
 		}
 	},
 
 	async mounted() {
-		this.periodo_inicio = localStorage.getItem('nextcloud_empleados_mes_inicio')
-		this.periodo_fin = localStorage.getItem('nextcloud_empleados_mes_fin')
-		this.anioSeleccionado = localStorage.getItem('nextcloud_empleados_anio_seleccionado')
+		this.periodo_inicio = Number(localStorage.getItem('nextcloud_empleados_mes_inicio')) || null
+		this.periodo_fin = Number(localStorage.getItem('nextcloud_empleados_mes_fin')) || null
+		this.anioSeleccionado = Number(localStorage.getItem('nextcloud_empleados_anio_seleccionado')) || null
 
 		this._onDetails = (id) => this.GetActividad(id)
 		this._onNew = () => this.openModal()
@@ -335,12 +340,13 @@ export default {
 							Id_empleados: 'id',
 							displayname: 'name',
 							Id_user: 'image',
+							total_tiempo_registrado: 'count',
 						}
 
 						const renameKeys = (obj, map) =>
 							Object.fromEntries(Object.entries(obj).map(([k, v]) => [map[k] ?? k, v]))
 
-						const arr = Array.isArray(response?.data?.ocs?.data.Empleados) ? response.data.ocs.data.Empleados : []
+						const arr = Array.isArray(response?.data?.ocs?.data) ? response.data.ocs.data : []
 
 						this.listas = arr.map(o => renameKeys(o, keyMap))
 
@@ -432,9 +438,10 @@ export default {
 		},
 
 		ChangeReportConfig() {
-			localStorage.setItem('nextcloud_empleados_mes_inicio', this.periodo_inicio)
-			localStorage.setItem('nextcloud_empleados_mes_fin', this.periodo_fin)
-			localStorage.setItem('nextcloud_empleados_anio_seleccionado', this.anioSeleccionado)
+			localStorage.setItem('nextcloud_empleados_mes_inicio', String(this.periodo_inicio ?? ''))
+			localStorage.setItem('nextcloud_empleados_mes_fin', String(this.periodo_fin ?? ''))
+			localStorage.setItem('nextcloud_empleados_anio_seleccionado', String(this.anioSeleccionado ?? ''))
+
 			this.closeModal()
 			this.GetEmpleadosReports()
 		},

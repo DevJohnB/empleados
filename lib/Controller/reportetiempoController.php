@@ -166,39 +166,32 @@ class reportetiempoController extends BaseController {
      */
     #[UseSession]
     #[NoAdminRequired]
-    public function GetEmpleadosReports(): DataResponse {
+    public function GetEmpleadosReports($periodo_inicio = null, $periodo_fin = null, $anio = null): DataResponse {
         $this->checkAccess(['admin', 'recursos_humanos', 'empleados']);
 
         $user = $this->userSession->getUser();
         $equipo_empleado = $this->empleadosMapper->GetSubordinates($user->getUID());
 
+        $empleados_data = [];
+
         foreach ($equipo_empleado as $empleado) {
-            $id_empleado = $this->empleadosMapper->GetMyEmployeeInfo($empleado['Id_user']);
-            $ausencias = $this->reportetiempoMapper->findById($id_empleado[0]['Id_empleados'], 0, 0);
+            $total = 0.0;
 
-            if (empty($ausencias)) {
-                continue; // Si no hay ausencias, no seguimos con este empleado
+            $ausencias = $this->reportetiempoMapper->findById((int)$empleado['Id_empleados'], 0, 0, $periodo_fin, $periodo_inicio, $anio);
+
+            foreach ($ausencias as $item) {
+                $total += (float)$item['tiempo_registrado'];
             }
 
-            if ($id_empleado[0]['Id_gerente'] == $user->getUID()) {
-                $ausencias_historial = $this->historialausenciasMapper
-                    ->GetAusenciasHistorialGerente($ausencias[0]['id_ausencias']);
-            } elseif ($id_empleado[0]['Id_socio'] == $user->getUID()) {
-                $ausencias_historial = $this->historialausenciasMapper
-                    ->GetAusenciasHistorialSocio($ausencias[0]['id_ausencias']);
-            } else {
-                continue; // Si no es ni socio ni gerente, lo ignoramos
-            }
+            // agrega el total al array del empleado con una clave
+            $empleado['total_tiempo_registrado'] = $total;
 
-            if (!empty($ausencias_historial)) {
-                foreach ($ausencias_historial as $item) {
-                    $empleados_data[] = array_merge($empleado, $item); // Fusiona empleado + historial
-                }
-            }
+            $empleados_data[] = $empleado;
         }
 
         return new DataResponse($empleados_data, Http::STATUS_OK);
     }
+
 
     /**
      * Exporta la lista de reportetiempo a un archivo XLSX.

@@ -17,16 +17,40 @@ class reportetiempoMapper extends QBMapper {
 	}
 
 	/** @return reportetiempo[] */
-	public function findById(int $id, int $limit = 20, int $offset = 0): array {
+	public function findById(int $id, int $limit = 20, int $offset = 0, $periodo_inicio = null, $periodo_fin = null, $anio = null): array {
 		$qb = $this->db->getQueryBuilder();
+
 		$qb->select('*')
 			->from($this->getTableName())
-			->orderBy('id_reporte', 'DESC')
-			->setMaxResults($limit)
-			->setFirstResult($offset)
 			->where(
 				$qb->expr()->eq('id_empleado', $qb->createNamedParameter($id, IQueryBuilder::PARAM_INT))
-			);
+			)
+			->orderBy('id_reporte', 'DESC');
+
+		// Filtro por rango de meses del año
+		if ($anio !== null && $periodo_inicio !== null && $periodo_fin !== null) {
+			$periodo_inicio = max(1, min(12, (int)$periodo_inicio));
+			$periodo_fin    = max(1, min(12, (int)$periodo_fin));
+
+			// si vienen invertidos, los acomodamos
+			if ($periodo_inicio > $periodo_fin) {
+				[$periodo_inicio, $periodo_fin] = [$periodo_fin, $periodo_inicio];
+			}
+
+			$inicio = sprintf('%04d-%02d-01', (int)$anio, $periodo_inicio);
+
+			$fin = (new \DateTimeImmutable(sprintf('%04d-%02d-01', (int)$anio, $periodo_fin)))
+				->modify('last day of this month')
+				->format('Y-m-d');
+
+			$qb->andWhere($qb->expr()->gte('fecha_registro', $qb->createNamedParameter($inicio)));
+			$qb->andWhere($qb->expr()->lte('fecha_registro', $qb->createNamedParameter($fin)));
+		}
+
+		if ($limit > 0) {
+			$qb->setMaxResults($limit)
+			->setFirstResult($offset);
+		}
 
 		$result = $qb->executeQuery();
 		$rows = $result->fetchAll();
