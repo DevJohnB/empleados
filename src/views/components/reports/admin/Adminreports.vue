@@ -34,11 +34,11 @@
 			</template>
 			<template #custom>
 				<div class="periodo-details">
-					<h3>Resumen - {{ meses.find(m => m.value === periodo_inicio)?.label }} - {{ meses.find(m => m.value === periodo_fin)?.label }}</h3>
+					<h3>Resumen - {{ meses.find(m => m.value === periodo_inicio)?.label }} - {{ meses.find(m => m.value === periodo_fin)?.label }}  ({{ anioSeleccionado }})</h3>
 				</div>
 			</template>
 			<template #details>
-				<h3>Resumen general Periodo - {{ meses.find(m => m.value === periodo_inicio)?.label }} - {{ meses.find(m => m.value === periodo_fin)?.label }}</h3>
+				<h3>Resumen general Periodo - {{ meses.find(m => m.value === periodo_inicio)?.label }} - {{ meses.find(m => m.value === periodo_fin)?.label }} ({{ anioSeleccionado }})</h3>
 				<AdminDetalles :select="select"
 					:sueldo="sueldo"
 					:actividades-list="actividades"
@@ -241,7 +241,7 @@ export default {
 				{ label: 'Noviembre', value: 11 },
 				{ label: 'Diciembre', value: 12 },
 			],
-			anios: Array.from({ length: Math.max(0, new Date().getFullYear() - 2026 + 1) }, (_, i) => 2026 + i),
+			anios: Array.from({ length: Math.max(0, new Date().getFullYear() - 2025 + 1) }, (_, i) => 2025 + i),
 		}
 	},
 
@@ -450,6 +450,9 @@ export default {
 			try {
 				await axios.post(generateUrl('/apps/empleados/GetReportesById'), {
 					id,
+					periodo_inicio: this.periodo_inicio,
+					periodo_fin: this.periodo_fin,
+					anio: this.anioSeleccionado,
 				}).then(
 					(response) => {
 						this.select = response?.data?.ocs?.data
