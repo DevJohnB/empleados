@@ -38,8 +38,8 @@
 				</div>
 			</template>
 			<template #details>
-				<h3>Periodo - {{ meses.find(m => m.value === periodo_inicio)?.label }} - {{ meses.find(m => m.value === periodo_fin)?.label }}</h3>
-				<AdminDetalles :select="select" />
+				<h3>Resumen general Periodo - {{ meses.find(m => m.value === periodo_inicio)?.label }} - {{ meses.find(m => m.value === periodo_fin)?.label }}</h3>
+				<AdminDetalles :select="select" :sueldo="sueldo" />
 			</template>
 		</List>
 
@@ -406,6 +406,7 @@ export default {
 							displayname: 'name',
 							Id_user: 'image',
 							total_tiempo_registrado: 'count',
+							Sueldo: 'Sueldo',
 						}
 
 						const renameKeys = (obj, map) =>
@@ -449,6 +450,7 @@ export default {
 				}).then(
 					(response) => {
 						this.select = response?.data?.ocs?.data
+						this.sueldo = parseInt(this.listas.find(e => e.id === id).Sueldo)
 					},
 					(err) => {
 						showError(err)

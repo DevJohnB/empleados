@@ -22,7 +22,7 @@ class empleadosMapper extends QBMapper {
 	public function GetSubordinates($id): array {
 		$qb = $this->db->getQueryBuilder();
 
-		$qb->select('e.Id_empleados', 'e.Id_user', 'u.displayname')
+		$qb->select('e.Id_empleados', 'e.Id_user', 'u.displayname', 'e.Sueldo')
 			->from('empleados', 'e')
 			->innerJoin('e', 'users', 'u', $qb->expr()->eq('u.uid', 'e.Id_user'))
 			->where(
