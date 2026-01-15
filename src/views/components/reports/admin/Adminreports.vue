@@ -34,7 +34,7 @@
 			</template>
 			<template #custom>
 				<div class="periodo-details">
-					<h3>Periodo - {{ meses.find(m => m.value === periodo_inicio)?.label }} - {{ meses.find(m => m.value === periodo_fin)?.label }}</h3>
+					<h3>Resumen - {{ meses.find(m => m.value === periodo_inicio)?.label }} - {{ meses.find(m => m.value === periodo_fin)?.label }}</h3>
 				</div>
 			</template>
 			<template #details>
@@ -415,7 +415,7 @@ export default {
 										return ['name', v ?? obj.Id_user]
 									}
 									return [map[k] ?? k, v]
-								})
+								}),
 							)
 
 						const arr = Array.isArray(response?.data?.ocs?.data) ? response.data.ocs.data : []
@@ -448,39 +448,7 @@ export default {
 					id,
 				}).then(
 					(response) => {
-						const data = response?.data?.ocs?.data
-						const arr = Array.isArray(data) ? data : []
-
-						const actividadesMap = new Map(
-							(this.listas || []).map(c => [Number(c.id), c.name || c.nombre || c.label]),
-						)
-
-						const clientesMap = new Map(
-							(this.temp_listas || []).map(a => [Number(a.id), a.label || a.nombre || a.name]),
-						)
-
-						this.historial = arr
-							.filter(r => r && typeof r === 'object')
-							.map((r, i) => {
-								// fuerza PK real (id_reporte) y siempre string
-								const rawId = r.id_reporte ?? r.idReporte ?? r.Id_reporte ?? r.id ?? i
-								const id = String(rawId)
-
-								const idCliente = r.id_cliente ?? r.idCliente ?? r.Id_cliente ?? null
-								const idActividad = r.id_actividad ?? r.idActividad ?? r.Id_actividad ?? null
-
-								const clienteNombre = clientesMap.get(Number(idCliente)) || `Cliente ${idCliente ?? ''}`.trim()
-								const actividadNombre = actividadesMap.get(Number(idActividad)) || `Actividad ${idActividad ?? ''}`.trim()
-
-								return {
-									...r,
-									id,
-									idCliente,
-									idActividad,
-									clienteNombre,
-									actividadNombre,
-								}
-							})
+						this.select = response?.data?.ocs?.data
 					},
 					(err) => {
 						showError(err)
