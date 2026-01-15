@@ -1,6 +1,6 @@
 <!-- eslint-disable object-curly-newline -->
 <template>
-	<div class="center">
+	<div class="center contenedor">
 		<div class="kpi-grid">
 			<div class="kpi-card">
 				<div class="kpi-value">
@@ -38,6 +38,47 @@
 				</div>
 			</div>
 		</div>
+
+		{{ select }}
+
+		<div class="top">
+			<div class="acc">
+				<details v-if="select.length > 0" class="acc-item">
+					<summary class="acc-title">
+						Reportes del periodo (detalles)
+						<span class="acc-icon" aria-hidden="true" />
+					</summary>
+					<div class="acc-body">
+						<VirtualList
+							class="list"
+							:data-sources="select"
+							:data-key="'id_reporte'"
+							:data-component="rowComponent"
+							:extra-props="{ proyectosList, actividadesList }" />
+					</div>
+				</details>
+
+				<details class="acc-item">
+					<summary class="acc-title">
+						Proyectos
+						<span class="acc-icon" aria-hidden="true" />
+					</summary>
+					<div class="acc-body">
+						<p>Lista de proyectos / clientes.</p>
+					</div>
+				</details>
+
+				<details class="acc-item">
+					<summary class="acc-title">
+						Actividades
+						<span class="acc-icon" aria-hidden="true" />
+					</summary>
+					<div class="acc-body">
+						<p>Lista de actividades y tiempos.</p>
+					</div>
+				</details>
+			</div>
+		</div>
 	</div>
 </template>
 
@@ -47,6 +88,8 @@
 // import axios from '@nextcloud/axios'
 // import { showError, showSuccess } from '@nextcloud/dialogs'
 // import { translate as t } from '@nextcloud/l10n'
+import ReportRow from '../../Helpers/Lists/ReportRow.vue'
+import VirtualList from 'vue-virtual-scroll-list'
 
 import {
 // NcTextField,
@@ -57,15 +100,19 @@ export default {
 
 	components: {
 		// NcTextField,
+		VirtualList,
 	},
 
 	props: {
 		select: { type: Array, required: true },
 		sueldo: { type: Number, required: false, default: 0 },
+		actividadesList: { type: Array, required: false, default: () => [] },
+		proyectosList: { type: Array, required: false, default: () => [] },
 	},
 
 	data() {
 		return {
+			rowComponent: ReportRow,
 			horasreportadas: '',
 			costototal: '',
 			proyectosactivos: '',
@@ -216,5 +263,69 @@ export default {
     grid-template-columns: 1fr;
   }
 }
+.acc {
+  width: 100%;
+}
 
+/* item */
+.acc-item {
+  background: #fff;
+  border: 1px solid rgba(0,0,0,0.08);
+  border-radius: 10px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.04);
+  margin-bottom: 12px;
+  overflow: hidden;
+}
+
+/* title */
+.acc-title {
+  list-style: none;
+  cursor: pointer;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-weight: 600;
+  color: #3c3532;
+  user-select: none;
+}
+
+/* quita el marcador default */
+.acc-title::-webkit-details-marker {
+  display: none;
+}
+
+/* icon */
+.acc-icon {
+  width: 10px;
+  height: 10px;
+  border-right: 2px solid rgba(0,0,0,0.55);
+  border-bottom: 2px solid rgba(0,0,0,0.55);
+  transform: rotate(45deg);
+  transition: transform 0.2s ease;
+  margin-left: 12px;
+}
+
+/* abierto => flecha hacia arriba */
+.acc-item[open] .acc-icon {
+  transform: rotate(-135deg);
+}
+
+/* body */
+.acc-body {
+  padding: 0 16px 16px 16px;
+  color: rgba(0,0,0,0.68);
+  line-height: 1.5;
+}
+
+/* separador suave entre title y body */
+.acc-item[open] .acc-title {
+  border-bottom: 1px solid rgba(0,0,0,0.06);
+}
+
+.contenedor {
+	margin-right: 10px;
+	margin-left: 10px;
+	margin-top: 20px;
+}
 </style>

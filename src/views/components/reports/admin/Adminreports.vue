@@ -39,7 +39,10 @@
 			</template>
 			<template #details>
 				<h3>Resumen general Periodo - {{ meses.find(m => m.value === periodo_inicio)?.label }} - {{ meses.find(m => m.value === periodo_fin)?.label }}</h3>
-				<AdminDetalles :select="select" :sueldo="sueldo" />
+				<AdminDetalles :select="select"
+					:sueldo="sueldo"
+					:actividades-list="actividades"
+					:proyectos-list="temp_listas" />
 			</template>
 		</List>
 
