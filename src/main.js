@@ -40,7 +40,7 @@ loadTranslations('empleados').then(() => {
 			parameters: configuraciones,
 			groupsUser: groups,
 			employee,
-			subordinates,
+			subordinatesGroup: subordinates,
 		},
 	}).$mount('#content')
 })

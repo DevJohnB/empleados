@@ -71,6 +71,7 @@
 				</NcAppNavigationItem>
 
 				<NcAppNavigationItem
+					v-if="(subordinates?.length || 0) > 0"
 					:name="t('empleados', 'Admin reports')"
 					:to="{ name: 'Adminreports' }">
 					<template #icon>
@@ -193,7 +194,7 @@ export default {
 		FileChartOutline,
 		CalendarClock,
 	},
-	inject: ['groupuser', 'configuraciones'],
+	inject: ['groupuser', 'configuraciones', 'subordinates'],
 	methods: {
 		t, // expone t al template
 		navigateTo(route) {

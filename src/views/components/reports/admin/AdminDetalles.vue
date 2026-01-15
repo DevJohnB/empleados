@@ -1,6 +1,6 @@
 <!-- eslint-disable object-curly-newline -->
 <template>
-	<div class="center contenedor">
+	<div class="contenedor">
 		<div class="kpi-grid">
 			<div class="kpi-card">
 				<div class="kpi-value">
@@ -39,8 +39,6 @@
 			</div>
 		</div>
 
-		{{ select }}
-
 		<div class="top">
 			<div class="acc">
 				<details v-if="select.length > 0" class="acc-item">
@@ -51,7 +49,7 @@
 					<div class="acc-body">
 						<VirtualList
 							class="list"
-							:data-sources="select"
+							:data-sources="historial"
 							:data-key="'id_reporte'"
 							:data-component="rowComponent"
 							:extra-props="{ proyectosList, actividadesList }" />
@@ -86,7 +84,7 @@
 
 // import { generateUrl } from '@nextcloud/router'
 // import axios from '@nextcloud/axios'
-// import { showError, showSuccess } from '@nextcloud/dialogs'
+// import { showError /* showSuccess */ } from '@nextcloud/dialogs'
 // import { translate as t } from '@nextcloud/l10n'
 import ReportRow from '../../Helpers/Lists/ReportRow.vue'
 import VirtualList from 'vue-virtual-scroll-list'
@@ -121,12 +119,45 @@ export default {
 	},
 
 	computed: {
+		historial() {
+			const arr = Array.isArray(this.select) ? this.select : []
+
+			const actividadesMap = new Map(
+				(this.actividadesList || []).map(c => [Number(c.id), c.name || c.nombre || c.label]),
+			)
+
+			const clientesMap = new Map(
+				(this.proyectosList || []).map(a => [Number(a.id), a.label || a.nombre || a.name]),
+			)
+
+			return arr
+				.filter(r => r && typeof r === 'object')
+				.map((r, i) => {
+					const rawId = r.id_reporte ?? r.idReporte ?? r.Id_reporte ?? r.id ?? i
+					const id = String(rawId)
+
+					const idCliente = r.id_cliente ?? r.idCliente ?? r.Id_cliente ?? null
+					const idActividad = r.id_actividad ?? r.idActividad ?? r.Id_actividad ?? null
+
+					const clienteNombre = clientesMap.get(Number(idCliente)) || `Cliente ${idCliente ?? ''}`.trim()
+					const actividadNombre = actividadesMap.get(Number(idActividad)) || `Actividad ${idActividad ?? ''}`.trim()
+
+					return {
+						...r,
+						id,
+						idCliente,
+						idActividad,
+						clienteNombre,
+						actividadNombre,
+					}
+				})
+		},
+
 		kpis() {
 			const arr = Array.isArray(this.select) ? this.select : []
 
 			const toNum = (v) => {
 				if (v === null || v === undefined) return 0
-				// soporta "60.00", "60,00", "$1,234.50"
 				const s = String(v).trim().replace(',', '.').replace(/[^\d.-]/g, '')
 				const x = Number(s)
 				return Number.isFinite(x) ? x : 0
@@ -138,19 +169,11 @@ export default {
 
 			for (const it of arr) {
 				minutos += toNum(it?.tiempo_registrado)
-
-				if (it?.id_cliente !== null && it?.id_cliente !== undefined) {
-					proyectos.add(String(it.id_cliente))
-				}
-
-				if (it?.id_actividad !== null && it?.id_actividad !== undefined) {
-					actividades.add(String(it.id_actividad))
-				}
+				if (it?.id_cliente != null) proyectos.add(String(it.id_cliente))
+				if (it?.id_actividad != null) actividades.add(String(it.id_actividad))
 			}
 
 			const horas = minutos / 60
-
-			// Sueldo por hora del empleado (ej: "175")
 			const sueldoHora = toNum(this.sueldo)
 			const costo = horas * sueldoHora
 

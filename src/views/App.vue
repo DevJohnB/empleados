@@ -40,7 +40,7 @@ export default {
 			type: Array,
 			required: true,
 		},
-		subordinates: {
+		subordinatesGroup: {
 			type: Array,
 			required: true,
 		},
@@ -51,6 +51,7 @@ export default {
 			configuraciones: this.parameters,
 			groupsuser: this.groupsUser,
 			employeeUser: this.employee,
+			subordinates: this.subordinatesGroup,
 		}
 	},
 }
