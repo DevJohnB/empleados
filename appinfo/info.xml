@@ -7,7 +7,7 @@
     <description>
         Módulo de gestión de empleados para Nextcloud. Permite administrar información de los empleados, equipos de trabajo, puestos, ausencias y vacaciones. Desarrollado para integrarse con Nextcloud y facilitar la administración de recursos humanos.
     </description>
-    <version>1.1.5</version>
+    <version>1.1.6</version>
     <licence>agpl</licence>
     <author mail="luis.alvarado@crowe.mx" homepage="https://gossler-torreon.com">Luis Angel Alvarado Hernandez</author>
     <namespace>Empleados</namespace>
@@ -25,7 +25,7 @@
     <screenshot>https://raw.githubusercontent.com/Destripador/employees/refs/heads/main/docs/screenshots/configuraciones.png</screenshot>
 
     <dependencies>
-        <nextcloud min-version="27" max-version="31"/>
+        <nextcloud min-version="27" max-version="33"/>
     </dependencies>
 
     <activity>
