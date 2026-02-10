@@ -16,6 +16,8 @@ use OCP\IUserManager;
 use OCA\Empleados\Db\empleadosMapper;
 use OCA\Empleados\Db\reportetiempoMapper;
 use OCA\Empleados\Db\configuracionesMapper;
+use OCA\Empleados\Db\clientesMapper;
+use OCA\Empleados\Db\actividadMapper;
 use OCA\Empleados\Db\empleados;
 use OCA\Empleados\Db\reportetiempo;
 use OCA\Empleados\Db\configuraciones;
@@ -43,6 +45,8 @@ class reportetiempoController extends BaseController {
     protected $empleadosMapper;
     protected $reportetiempoMapper;
     protected $configuracionesMapper;
+    protected $clientesMapper;
+    protected $actividadMapper;
     protected $l10n;
     protected $groupManager;
     private IConfig $config;
@@ -58,6 +62,8 @@ class reportetiempoController extends BaseController {
         empleadosMapper $empleadosMapper,
         reportetiempoMapper $reportetiempoMapper,
         configuracionesMapper $configuracionesMapper,
+        clientesMapper $clientesMapper,
+        actividadMapper $actividadMapper,
         IL10N $l10n,
         IConfig $config,
 		IGroupManager $groupManager,
@@ -78,6 +84,9 @@ class reportetiempoController extends BaseController {
         $this->urlGenerator = $urlGenerator;
         $this->clientService = $clientService;
         $this->subAdmin = $subAdmin;
+        $this->clienteMapper = $clienteMapper;
+		$this->actividadMapper = $actividadMapper;
+		$this->empleadoMapper = $empleadoMapper;
     }
 
     /**
@@ -211,22 +220,35 @@ class reportetiempoController extends BaseController {
     /**
      * Exporta la lista de reportetiempo a un archivo XLSX.
      */
-    public function ExportarReportes(): DataResponse {
+    public function ExportarReportes($periodo_inicio = null, $periodo_fin = null, $anio = null): Response {
         $this->checkAccess(['admin', 'recursos_humanos']);
-        $reportetiempo = $this->reportetiempoMapper->findAll();
-        $books = [['id_reportetiempo', 'nombre', 'detalles', 'tiempo_estimado', 'tiempo_real']];
 
-        foreach ($reportetiempo as $reportetiempo) {
+        $reportes = $this->reportetiempoMapper->findAll(0, 0, $periodo_fin, $periodo_inicio, $anio);
+        $clientes = $this->clientesMapper->findAll();
+        $actividades = $this->actividadMapper->findAll();
+        $empleados = $this->empleadosMapper->GetUserLists(); // aquí revisa qué trae exactamente
+
+        $books = [[
+            'id_cliente', 'id_actividad', 'id_empleado', 'descripcion',
+            'tiempo_registrado', 'fecha_registro', 'created_at', 'updated_at'
+        ]];
+
+        foreach ($reportes as $reporte) {
+            $row = $reporte->read(); // <-- aquí está la clave (te regresa snake_case como tú lo definiste)
             $books[] = [
-                $reportetiempo['id_reportetiempo'],
-                $reportetiempo['nombre'],
-                $reportetiempo['tiempo_estimado'],
-                $reportetiempo['tiempo_real'],
+                $row['id_cliente'],
+                $row['id_actividad'],
+                $row['id_empleado'],
+                $row['descripcion'],
+                $row['tiempo_registrado'],
+                $row['fecha_registro'],
+                $row['created_at'],
+                $row['updated_at'],
             ];
         }
 
-        \Shuchkin\SimpleXLSXGen::fromArray($books)->downloadAs('reportetiempotiempo.xlsx');
-        return new DataResponse($books, Http::STATUS_OK);
+        // Esto YA es la respuesta HTTP (descarga). No regreses DataResponse.
+        return \Shuchkin\SimpleXLSXGen::fromArray($books)->downloadAs('reportetiempo.xlsx');
     }
 
     /**

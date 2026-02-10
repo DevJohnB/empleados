@@ -163,5 +163,6 @@ return [
 		['name' => 'reportetiempo#deleteReport', 'url' => '/deleteReport', 'verb' => 'POST'],
 
 		['name' => 'reportetiempo#GetEmpleadosReports', 'url' => '/GetEmpleadosReports', 'verb' => 'POST'],
+		['name' => 'reportetiempo#ExportarReportes', 'url' => '/ExportarReportes', 'verb' => 'POST'],
 	],
 ];
