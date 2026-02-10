@@ -23,7 +23,7 @@ require_once 'SimpleXLSX.php';
 /**
  * Controlador para la gestión de áreas en Nextcloud.
  */
-class TipoAusenciasController extends Controller {
+class TipoausenciasController extends Controller {
 
     protected $l10n;
     protected $tipoausenciaMapper;
