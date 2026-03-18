@@ -126,18 +126,4 @@ class TipoausenciasController extends Controller {
         return $file;
     }
 
-    /**
-     * Obtiene la lista de tipoausencias.
-     */
-    #[UseSession]
-    #[NoAdminRequired]
-    public function GetAniversarioByDate(string $ingreso): array {
-        $fechaInicio = new DateTime($ingreso);
-        $hoy = new DateTime();
-    
-        $diferencia = $hoy->diff($fechaInicio);
-    
-        return $this->tipoausenciaMapper->GetAniversarioByDate($diferencia->y);
-
-    }
 }
