@@ -100,29 +100,6 @@ class TipoausenciasController extends Controller {
     }
 
     /**
-     * Elimina un área por ID.
-     */
-    #[UseSession]
-    #[NoAdminRequired]
-    public function EliminarArea(int $id_departamento): string {
-        try {
-            $this->departamentosMapper->EliminarArea((string) $id_departamento);
-            return "ok";
-        } catch (\Exception $e) {
-            return $e->getMessage();
-        }
-    }
-
-    /**
-     * Guarda cambios en las áreas.
-     */
-    #[UseSession]
-    #[NoAdminRequired]
-    public function GuardarCambioArea(int $id_departamento, string $padre, string $nombre): void {
-        $this->departamentosMapper->updateTipoAusencias((string) $id_departamento, $padre, $nombre);
-    }
-
-    /**
      * Crea una nueva área.
      */
     #[UseSession]

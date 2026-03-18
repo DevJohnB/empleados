@@ -35,7 +35,7 @@ require_once 'SimpleXLSX.php';
 /**
  * Controlador para la gestión de actividad de empleados en Nextcloud.
  */
-class actividadesController extends BaseController {
+class ActividadesController extends BaseController {
 
     protected $userSession;
     protected $userManager;

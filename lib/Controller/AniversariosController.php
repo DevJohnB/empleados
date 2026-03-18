@@ -12,6 +12,7 @@ use OCP\IRequest;
 use OCP\IL10N;
 use OCA\Empleados\UploadException;
 use OCP\AppFramework\Http;
+use OCP\AppFramework\Http\DataDownloadResponse;
 use OCP\AppFramework\Http\DataResponse;
 
 use DateTime;
@@ -162,29 +163,6 @@ class AniversariosController extends BaseController {
                 'error' => $e->getMessage()
             ], 500);
         }
-    }
-
-    /**
-     * Elimina un área por ID.
-     */
-    #[UseSession]
-    #[NoAdminRequired]
-    public function EliminarArea(int $id_departamento): string {
-        try {
-            $this->departamentosMapper->EliminarArea((string) $id_departamento);
-            return "ok";
-        } catch (\Exception $e) {
-            return $e->getMessage();
-        }
-    }
-
-    /**
-     * Guarda cambios en las áreas.
-     */
-    #[UseSession]
-    #[NoAdminRequired]
-    public function GuardarCambioArea(int $id_departamento, string $padre, string $nombre): void {
-        $this->departamentosMapper->updateAniversarios((string) $id_departamento, $padre, $nombre);
     }
 
     /**

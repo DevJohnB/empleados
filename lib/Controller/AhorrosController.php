@@ -20,7 +20,7 @@ use OCA\Empleados\Db\historialahorroMapper;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\DataResponse;
 
-class ahorrosController extends BaseController {
+class AhorrosController extends BaseController {
 
     protected $empleadosMapper;
 	protected $configuracionesMapper;
