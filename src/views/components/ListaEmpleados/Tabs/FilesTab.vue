@@ -154,16 +154,24 @@ export default {
 		async fetchFiles() {
 			try {
 				this.client = getClient()
+				this.currentPath = this.normalizeDirectoryPath(this.currentPath)
 				const response = await this.client.getDirectoryContents(this.currentPath, { details: true })
 				this.files = Array.isArray(response.data)
-					? response.data.map(file => ({
-						id: file.id || file.etag,
-						name: file.basename || file.name,
-						size: file.size || 0,
-						isFolder: file.type === 'directory',
-						location: this.currentPath,
-						modified: file.lastmod || null,
-					}))
+					? response.data
+						.map(file => {
+							const name = this.getEntryName(file)
+							const path = this.getEntryPath(file) || this.joinDirectoryPath(this.currentPath, name)
+							return {
+								id: file.id || file.etag || path,
+								name,
+								size: file.size || 0,
+								isFolder: file.type === 'directory',
+								location: this.currentPath,
+								path,
+								modified: file.lastmod || null,
+							}
+						})
+						.filter(file => !this.isCurrentDirectoryEntry(file))
 					: []
 			} catch (error) {
 				showError('❌ Error al obtener archivos: ' + error.message)
@@ -172,7 +180,7 @@ export default {
 		exploreFolder(file) {
 			if (file.isFolder) {
 				this.navigationStack.push(this.currentPath)
-				this.currentPath += `${file.name}/`
+				this.currentPath = this.normalizeDirectoryPath(file.path || this.joinDirectoryPath(this.currentPath, file.name))
 				this.fetchFiles()
 			}
 		},
@@ -254,6 +262,63 @@ export default {
 		OpenFolder() {
 			const url = `${window.location.origin}/apps/files?dir=${encodeURIComponent(this.getCleanPath(this.currentPath))}`
 			window.open(url, '_blank')
+		},
+		getEntryName(file) {
+			const candidate = file.basename || file.name || file.filename || file.href || ''
+			const segments = String(candidate).split('/').filter(Boolean)
+			return decodeURIComponent(segments.length ? segments[segments.length - 1] : candidate)
+		},
+		getEntryPath(file) {
+			const candidate = file.filename || file.href || file.path || ''
+			if (!candidate) {
+				return null
+			}
+			if (typeof candidate === 'string' && candidate.startsWith('http')) {
+				return this.normalizeDirectoryPath(new URL(candidate, window.location.origin).pathname)
+			}
+			if (typeof candidate === 'string' && candidate.startsWith('/')) {
+				return this.normalizeDirectoryPath(candidate)
+			}
+			return this.joinDirectoryPath(this.currentPath, String(candidate))
+		},
+		getCurrentFolderName(path = this.currentPath) {
+			const segments = this.normalizeDirectoryPath(path).split('/').filter(Boolean)
+			return segments.length ? segments[segments.length - 1] : ''
+		},
+		joinDirectoryPath(basePath, childName) {
+			const normalizedBase = this.normalizeDirectoryPath(basePath)
+			const normalizedChild = String(childName).split('/').filter(Boolean).pop()
+			if (!normalizedChild) {
+				return normalizedBase
+			}
+			const currentFolderName = this.getCurrentFolderName(normalizedBase)
+			if (normalizedChild === currentFolderName) {
+				return normalizedBase
+			}
+			return this.normalizeDirectoryPath(`${normalizedBase}${normalizedChild}/`)
+		},
+		normalizeDirectoryPath(path) {
+			if (!path) {
+				return '/'
+			}
+			let normalizedPath = decodeURIComponent(String(path))
+			if (normalizedPath.startsWith('http')) {
+				normalizedPath = new URL(normalizedPath, window.location.origin).pathname
+			}
+			normalizedPath = normalizedPath.replace(window.location.origin, '')
+			normalizedPath = normalizedPath.replace(/\/{2,}/g, '/')
+			return normalizedPath.endsWith('/') ? normalizedPath : `${normalizedPath}/`
+		},
+		isCurrentDirectoryEntry(file) {
+			if (!file.isFolder) {
+				return false
+			}
+			const currentPath = this.normalizeDirectoryPath(this.currentPath)
+			const filePath = this.normalizeDirectoryPath(file.path)
+			if (filePath === currentPath) {
+				return true
+			}
+			return file.name === '.' || file.name === '..'
 		},
 		getCleanPath(path) {
 			const seg = path.split('/').filter(Boolean)
