@@ -70,33 +70,72 @@ class AniversariosController extends BaseController {
     /**
      * Exporta la lista de áreas a un archivo XLSX.
      */
-    public function ExportListAniversarios(): array {
-        $aniversarios = $this->aniversarioMapper->GetAniversarios();
-        $books = [['numero_aniversario', 'dias']];
+    public function ExportListAniversarios(): DataDownloadResponse {
 
+        $aniversarios = $this->aniversarioMapper->GetAniversarios();
+    
+        $books = [['numero_aniversario', 'dias']];
+    
         foreach ($aniversarios as $area) {
             $books[] = [
                 $area['numero_aniversario'],
                 $area['dias'],
             ];
         }
-
-        \Shuchkin\SimpleXLSXGen::fromArray($books)->downloadAs('aniversarios.xlsx');
-        return $books;
+    
+        $xlsx = \Shuchkin\SimpleXLSXGen::fromArray($books)->toString();
+    
+        return new DataDownloadResponse(
+            $xlsx,
+            'aniversarios.xlsx',
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        );
     }
 
     /**
      * Importa la lista de áreas desde un archivo XLSX.
      */
-    public function ImportListAniversarios(): void {
-        $file = $this->getUploadedFile('fileXLSX');
-        if ($xlsx = \Shuchkin\SimpleXLSX::parse($file['tmp_name'])) {
-            foreach ($xlsx->rows() as $row) {
-                $area = new aniversario();
-                $area->setnumero_aniversario($row[0]);
-                $area->setdias($row[1]);
-                $this->aniversarioMapper->insert($area);
+    public function ImportListAniversarios(): DataResponse {
+
+        try {
+    
+            $file = $this->getUploadedFile('fileXLSX');
+    
+            if (!$file || !isset($file['tmp_name'])) {
+                return new DataResponse([
+                    'success' => false,
+                    'error' => 'Archivo no recibido'
+                ], 400);
             }
+    
+            if ($xlsx = \Shuchkin\SimpleXLSX::parse($file['tmp_name'])) {
+    
+                foreach ($xlsx->rows() as $row) {
+    
+                    $area = new aniversario();
+                    $area->setnumero_aniversario((int)$row[0]);
+                    $area->setdias((float)$row[1]);
+    
+                    $this->aniversarioMapper->insert($area);
+                }
+    
+                return new DataResponse([
+                    'success' => true,
+                    'message' => 'Importación completada'
+                ]);
+            }
+    
+            return new DataResponse([
+                'success' => false,
+                'error' => 'No se pudo leer el archivo XLSX'
+            ], 400);
+    
+        } catch (\Exception $e) {
+    
+            return new DataResponse([
+                'success' => false,
+                'error' => $e->getMessage()
+            ], 500);
         }
     }
         
@@ -105,12 +144,23 @@ class AniversariosController extends BaseController {
      */
     #[UseSession]
     #[NoAdminRequired]
-    public function VaciarAniversarios(): string {
+    public function VaciarAniversarios(): DataResponse {
+
         try {
+    
             $this->aniversarioMapper->VaciarAniversarios();
-            return "ok";
+    
+            return new DataResponse([
+                'success' => true,
+                'message' => 'Aniversarios eliminados correctamente'
+            ]);
+    
         } catch (\Exception $e) {
-            return $e->getMessage();
+    
+            return new DataResponse([
+                'success' => false,
+                'error' => $e->getMessage()
+            ], 500);
         }
     }
 
@@ -142,13 +192,29 @@ class AniversariosController extends BaseController {
      */
     #[UseSession]
     #[NoAdminRequired]
-    public function AgregarNuevoAniversario(int $numero_aniversario, string $fecha_de, string $fecha_hasta, float $dias): void {
-        $area = new aniversario();
-        $area->setnumero_aniversario($numero_aniversario);
-        $area->setfecha_de($fecha_de);
-        $area->setfecha_hasta($fecha_hasta);
-        $area->setdias($dias);
-        $this->aniversarioMapper->insert($area);
+    public function AgregarNuevoAniversario( int $numero_aniversario, string $fecha_de, string $fecha_hasta, float $dias): DataResponse {
+        try {
+    
+            $area = new aniversario();
+            $area->setnumero_aniversario($numero_aniversario);
+            $area->setfecha_de($fecha_de);
+            $area->setfecha_hasta($fecha_hasta);
+            $area->setdias($dias);
+    
+            $this->aniversarioMapper->insert($area);
+    
+            return new DataResponse([
+                'success' => true,
+                'message' => 'Aniversario agregado correctamente'
+            ]);
+    
+        } catch (\Exception $e) {
+    
+            return new DataResponse([
+                'success' => false,
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
@@ -169,13 +235,15 @@ class AniversariosController extends BaseController {
      */
     #[UseSession]
     #[NoAdminRequired]
-    public function GetAniversarioByDate(string $ingreso): array {
-        $fechaInicio = new DateTime($ingreso);
-        $hoy = new DateTime();
+    public function GetAniversarioByDate(string $ingreso): DataResponse {
+
+        $fechaInicio = new \DateTime($ingreso);
+        $hoy = new \DateTime();
     
         $diferencia = $hoy->diff($fechaInicio);
     
-        return $this->aniversarioMapper->GetAniversarioByDate($diferencia->y);
-
+        $resultado = $this->aniversarioMapper->GetAniversarioByDate($diferencia->y);
+    
+        return new DataResponse($resultado);
     }
 }
