@@ -207,7 +207,7 @@ class AusenciasController extends BaseController {
     #[NoAdminRequired]
     public function GetAusencias(): DataResponse {
         $this->checkAccess(['admin', 'empleados']);
-        return new DataResponse($this->ausenciasMapper->Getausencias(), Http::STATUS_OK);
+        return new DataResponse($this->ausenciasMapper->GetAusencias(), Http::STATUS_OK);
     }
 
     /**
@@ -225,7 +225,7 @@ class AusenciasController extends BaseController {
      */
     public function ExportListAusencias(): DataResponse {
         $this->checkAccess(['admin', 'empleados']);
-        $ausencias = $this->ausenciasMapper->Getausencias();
+        $ausencias = $this->ausenciasMapper->GetAusencias();
         $books = [['id_universario', 'numero_ausencias', 'dias']];
 
         foreach ($ausencias as $area) {
@@ -283,22 +283,6 @@ class AusenciasController extends BaseController {
             throw new UploadException($this->l10n->t('Error en la subida del archivo.'));
         }
         return $file;
-    }
-
-    /**
-     * Obtiene la lista de ausencias.
-     */
-    #[UseSession]
-    #[NoAdminRequired]
-    public function GetAniversarioByDate(string $ingreso): DataResponse {
-        $this->checkAccess(['admin', 'empleados']);
-        $fechaInicio = new DateTime($ingreso);
-        $hoy = new DateTime();
-    
-        $diferencia = $hoy->diff($fechaInicio);
-    
-        return new DataResponse($this->ausenciasMapper->GetAniversarioByDate($diferencia->y), Http::STATUS_OK);
-
     }
 
     /**

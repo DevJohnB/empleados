@@ -35,7 +35,7 @@ require_once 'SimpleXLSX.php';
 /**
  * Controlador para la gestión de equipos de empleados en Nextcloud.
  */
-class equiposController extends BaseController {
+class EquiposController extends BaseController {
 
     protected $userSession;
     protected $userManager;

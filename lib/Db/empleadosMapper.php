@@ -238,7 +238,7 @@ class empleadosMapper extends QBMapper {
 			$query->execute();
 		}
 		catch(Exception $e){
-			console.log($e);
+			\OC::$server->getLogger()->error($e->getMessage(), ['app' => 'empleados', 'exception' => $e]);
 		}
 	}
 
@@ -258,7 +258,7 @@ class empleadosMapper extends QBMapper {
 			$query->execute();
 		}
 		catch(Exception $e){
-			console.log($e);
+			\OC::$server->getLogger()->error($e->getMessage(), ['app' => 'empleados', 'exception' => $e]);
 		}
 	}
 
@@ -376,7 +376,7 @@ class empleadosMapper extends QBMapper {
 			
 		}
 		catch(Exception $e){
-			console.log($e);
+			\OC::$server->getLogger()->error($e->getMessage(), ['app' => 'empleados', 'exception' => $e]);
 		}
 	}
 

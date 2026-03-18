@@ -431,6 +431,9 @@ export default {
 	},
 
 	computed: {
+		currentEmployee() {
+			return Array.isArray(this.employee) && this.employee.length > 0 ? this.employee[0] : null
+		},
 		AniversariosAgrupados() {
 			const agrupados = []
 			let inicio = null
@@ -535,9 +538,13 @@ export default {
 			this.modalEvento = false
 		},
 		async GetAusencias() {
+			if (!this.currentEmployee?.Id_empleados) {
+				this.Ausencias = []
+				return
+			}
 			try {
 				const response = await axios.post(generateUrl('/apps/empleados/GetAusenciasByUser'), {
-					id: this.employee[0].Id_empleados,
+					id: this.currentEmployee.Id_empleados,
 				})
 				this.Ausencias = response?.data?.ocs?.data[0]
 			} catch (err) {
@@ -590,6 +597,10 @@ export default {
 		},
 
 		getMyAusencias(fetchInfo, success, failure) {
+			if (!this.currentEmployee?.Id_user) {
+				success([])
+				return
+			}
 			axios.post(generateUrl('/apps/empleados/GetAusenciasHistorial'), {
 				desde: fetchInfo.startStr,
 				hasta: fetchInfo.endStr,
@@ -607,7 +618,7 @@ export default {
 							start: fechaInicio.toISOString(),
 							end: fechaHasta.toISOString(),
 							allDay: true,
-							color: this.color(this.employee[0].Id_user),
+							color: this.color(this.currentEmployee.Id_user),
 							nombre_empleado: item.nombre_empleado,
 						}
 					})
@@ -812,13 +823,16 @@ export default {
 						this.peopleEquipo = response?.data?.ocs?.data
 					})
 			} catch (err) {
-				// eslint-disable-next-line no-console
-				console.log(err)
+				showError(t('empleados', 'An exception has occurred while getting team members: {err}', { err: String(err) }))
 			}
 		},
 		async getEquipos() {
-			axios.post(generateUrl(generateUrl('/apps/empleados/GetEquipoJefe')), {
-				id: this.employee[0].Id_equipo,
+			if (!this.currentEmployee?.Id_equipo) {
+				this.Equipo = {}
+				return
+			}
+			axios.post(generateUrl('/apps/empleados/GetEquipoJefe'), {
+				id: this.currentEmployee.Id_equipo,
 			})
 				.then(r => {
 					const response = r?.data?.ocs?.data || []
