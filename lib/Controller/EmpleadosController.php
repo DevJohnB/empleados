@@ -146,6 +146,15 @@ class EmpleadosController extends BaseController {
     }
 
     /**
+     * Alias legacy para la ruta /GetEmpleadosListFix.
+     */
+    #[UseSession]
+    #[NoAdminRequired]
+    public function GetEmpleadosListFix(): DataResponse {
+        return $this->GetEmpleadosList();
+    }
+
+    /**
      * Obtiene empleados de un área específica.
      */
     #[UseSession]
@@ -612,8 +621,17 @@ class EmpleadosController extends BaseController {
 
         return new DataResponse([
             'Users' => $userList
-        ], Http::STATUS_OK);
+	        ], Http::STATUS_OK);
 	}
+
+    /**
+     * Alias legacy para la ruta /GetUser.
+     */
+    #[NoCSRFRequired]
+    #[NoAdminRequired]
+    public function GetUser(): DataResponse {
+        return $this->GetUsers();
+    }
 
     /** 
      * Obtiene la información del empleado actual

@@ -3,15 +3,15 @@ declare(strict_types=1);
 
 namespace OCA\Empleados\Controller;
 
-use OCP\AppFramework\OCSController;
-use OCP\AppFramework\OCS\OCSForbiddenException;
+use OCP\AppFramework\Controller;
+use OCP\AppFramework\Http\ForbiddenException;
 use OCP\IRequest;
 use OCP\IUserSession;
 use OCP\IGroupManager;
 use OCA\Empleados\Db\empleadosMapper;
 use OCA\Empleados\Db\configuracionesMapper;
 
-abstract class BaseController extends OCSController {
+abstract class BaseController extends Controller {
 
     protected $userSession;
     protected $groupManager;
@@ -38,7 +38,7 @@ abstract class BaseController extends OCSController {
     public function checkAccess($allowedGroups): void {
         $user = $this->userSession->getUser();
         if (!$user) {
-            throw new OCSForbiddenException("❌ Debes estar autenticado para acceder a este módulo.");
+            throw new ForbiddenException("❌ Debes estar autenticado para acceder a este módulo.");
         }
 
         // Recomendado: IDs directos para evitar firmas antiguas
@@ -46,7 +46,7 @@ abstract class BaseController extends OCSController {
         $userGroupIds = $this->groupManager->getUserGroupIds($user);
 
         if (!array_intersect($userGroupIds, $allowed)) {
-            throw new OCSForbiddenException("🚫 No tienes permiso para acceder a este apartado. Contacta al administrador.");
+            throw new ForbiddenException("🚫 No tienes permiso para acceder a este apartado. Contacta al administrador.");
         }
     }
 
@@ -57,12 +57,12 @@ abstract class BaseController extends OCSController {
             $user = $this->userSession->getUser();
 
             if (!$user) {
-                throw new OCSForbiddenException("❌ Debes estar autenticado para acceder a este módulo.");
+                throw new ForbiddenException("❌ Debes estar autenticado para acceder a este módulo.");
             }
 
             $userGroups = $this->groupManager->getUserGroups($user);
             if (!$userGroups || count($userGroups) === 0) {
-                throw new OCSForbiddenException("⚠️ No perteneces a ningún grupo permitido para acceder.");
+                throw new ForbiddenException("⚠️ No perteneces a ningún grupo permitido para acceder.");
             }
 
             foreach ($userGroups as $group) {
@@ -72,7 +72,7 @@ abstract class BaseController extends OCSController {
                 }
             }
 
-            throw new OCSForbiddenException("🚫 No tienes permiso para acceder a este módulo. Contacta al administrador.");
+            throw new ForbiddenException("🚫 No tienes permiso para acceder a este módulo. Contacta al administrador.");
         }
     }
 
