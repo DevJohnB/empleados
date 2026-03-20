@@ -18,7 +18,7 @@
 				<div class="bottom">
 					<div class="price_container">
 						<span class="devise">$</span>
-						<span class="price">{{ currentEmployee?.Fondo_ahorro ?? '0' }}</span>
+						<span class="price">{{ employee[0].Fondo_ahorro }}</span>
 						<span class="date">
 							<small><strong>{{ t('empleados', 'my savings') }}</strong></small>
 						</span>
@@ -208,9 +208,6 @@ export default {
 	},
 
 	computed: {
-		currentEmployee() {
-			return Array.isArray(this.employee) && this.employee.length > 0 ? this.employee[0] : null
-		},
 		cantidadFormateada() {
 			if (this.cantidad === '') return ''
 			const partes = this.cantidad.toString().split('.')
@@ -220,8 +217,8 @@ export default {
 	},
 
 	mounted() {
-		const fondoAhorro = this.currentEmployee?.Fondo_ahorro ?? '0'
-		this.aproxValor = Number(String(fondoAhorro).replace(',', '')) * 0.9
+		this.employee[0].Fondo_ahorro = this.employee[0].Fondo_ahorro === null ? '0' : this.employee[0].Fondo_ahorro
+		this.aproxValor = Number(this.employee[0].Fondo_ahorro.replace(',', '')) * 0.9
 		this.aproxFormateado = Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(this.aproxValor)
 		this.getAll()
 	},
@@ -231,14 +228,10 @@ export default {
 		t,
 
 		async getAll() {
-			if (!this.currentEmployee?.Id_empleados) {
-				this.loading = false
-				return
-			}
 			this.loading = true
 			try {
 				await axios.post(generateUrl('/apps/empleados/GetInfoAhorro'), {
-					Id_user: this.currentEmployee.Id_empleados,
+					Id_user: this.employee[0].Id_empleados,
 				})
 					.then(
 						(response) => {

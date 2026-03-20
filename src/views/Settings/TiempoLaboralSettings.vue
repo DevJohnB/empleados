@@ -41,7 +41,7 @@
 									</tr>
 								</thead>
 								<tbody>
-									<tr v-for="(item) in Aniversarios" v-bind="$attrs">
+									<tr v-for="item in Aniversarios" :key="item.id_aniversario">
 										<td>{{ item.numero_aniversario }}</td>
 										<td>{{ item.dias }}</td>
 									</tr>
@@ -246,7 +246,11 @@ export default {
 			try {
 				await axios.get(generateUrl('/apps/empleados/Getaniversarios'))
 					.then(
-						(response) => { this.Aniversarios = response.data },
+						(response) => { this.Aniversarios = []
+                                        this.$nextTick(() => {
+                                            this.Aniversarios = response.data.data
+                                        } 
+                                    },
 						(err) => { showError(err) },
 					)
 			} catch (err) {
@@ -262,7 +266,7 @@ export default {
 			try {
 				await axios.get(generateUrl('/apps/empleados/getTipo'))
 					.then(
-						(response) => { this.TipoAusencias = response.data },
+						(response) => { this.TipoAusencias = response.data.data },
 						(err) => { showError(err) },
 					)
 			} catch (err) {
@@ -401,7 +405,7 @@ export default {
 
 .table_component { overflow: auto; width: 100%; }
 .table_component table {
-	border: 1px solid #dededf;
+	border: 1px solid  #dededf;
 	height: 100%;
 	width: 100%;
 	table-layout: fixed;

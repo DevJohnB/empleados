@@ -24,10 +24,10 @@ const groupElement = document.getElementById('group-user')
 const groups = groupElement ? JSON.parse(groupElement.getAttribute('data-parameters') || '{}') : {}
 
 const employeeElement = document.getElementById('employee')
-const employee = employeeElement ? JSON.parse(employeeElement.getAttribute('data-parameters') || '[]') : []
+const employee = employeeElement ? JSON.parse(employeeElement.getAttribute('data-parameters') || '{}') : {}
 
 const subordinatesElement = document.getElementById('subordinates')
-const subordinates = subordinatesElement ? JSON.parse(subordinatesElement.getAttribute('data-parameters') || '[]') : []
+const subordinates = subordinatesElement ? JSON.parse(subordinatesElement.getAttribute('data-parameters') || '{}') : {}
 
 const emitter = mitt()
 Vue.prototype.$bus = emitter

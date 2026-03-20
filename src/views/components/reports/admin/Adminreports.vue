@@ -471,33 +471,24 @@ export default {
 		},
 
 		Exportar() {
-			axios.post(
-				generateUrl('/apps/empleados/ExportarReportes'),
-				{
-					periodo_inicio: this.periodo_inicio,
-					periodo_fin: this.periodo_fin,
-					anio: this.anioSeleccionado,
-				},
-				{
-					responseType: 'blob',
-				},
-			).then((response) => {
-				const blob = new Blob([response.data], {
-					type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-				})
-
-				const url = URL.createObjectURL(blob)
-				const link = document.createElement('a')
-				link.href = url
-				link.download = 'reportetiempo.xlsx'
-				document.body.appendChild(link)
-				link.click()
-				link.remove()
-				URL.revokeObjectURL(url)
-			}).catch((err) => {
-				showError(t('empleados', 'Se ha producido un error {error}, reporte al administrador', { error: String(err) }))
-			})
+			axios.get(generateUrl('/apps/empleados/ExportarActividades'), { responseType: 'blob' })
+				.then(
+					(response) => {
+						const url = URL.createObjectURL(new Blob([response.data], {
+							type: 'application/vnd.ms-excel',
+						}))
+						const link = document.createElement('a')
+						link.href = url
+						link.setAttribute('download', 'actividades.xlsx')
+						document.body.appendChild(link)
+						link.click()
+					},
+					(err) => {
+						showError(t('empleados', 'Se ha producido un error {error}, reporte al administrador', { error: String(err) }))
+					},
+				)
 		},
+
 	},
 }
 </script>
